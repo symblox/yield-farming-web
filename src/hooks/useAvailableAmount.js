@@ -1,17 +1,16 @@
-import { useEffect, useState, useContext } from "react";
-import {
-  parseUnits,
-  formatUnits,
-  parseEther,
-  formatEther,
-} from "@ethersproject/units";
+import { useEffect, useContext } from "react";
+import { atom, useAtom } from "jotai";
+import { formatUnits, parseEther } from "@ethersproject/units";
 import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config from "../config";
 
-const useAvailableAmount = (pool) => {
+const availableAmountAtom = atom("-");
+export default availableAmountAtom;
+
+export function useAvailableAmount(pool) {
   const { ethersProvider, providerNetwork } = useContext(Web3Context);
-  const [availableAmounts, setAvailableAmounts] = useState("-");
+  const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
 
   useEffect(() => {
     if (!ethersProvider || !pool) return;
@@ -24,14 +23,14 @@ const useAvailableAmount = (pool) => {
   }, [ethersProvider, pool]);
 
   return [availableAmounts, setAvailableAmounts];
-};
+}
 
-const fetchAvailableValues = async (
+export async function fetchAvailableValues(
   provider,
   providerNetwork,
   pool,
-  setAvailableAmount
-) => {
+  setAvailableAmounts
+) {
   if (provider && pool) {
     try {
       let array = [];
@@ -90,12 +89,10 @@ const fetchAvailableValues = async (
         });
       }
 
-      setAvailableAmount(array);
+      setAvailableAmounts(array);
     } catch (e) {
       console.error(e);
       return;
     }
   }
-};
-
-export default useAvailableAmount;
+}

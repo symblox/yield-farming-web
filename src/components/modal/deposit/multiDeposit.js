@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { atom, useAtom } from "jotai";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -14,15 +15,19 @@ import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
-import useAvailableAmount from "../../../hooks/useAvailableAmount";
-import { formatNumberPrecision } from "../../../utils/numberFormat.js";
-import styles from "../../../styles/deposit";
-import Store from "../../../stores";
-import { DEPOSIT } from "../../../constants";
-import config from "../../../config";
+import { Web3Context } from "../../../contexts/Web3Context";
+import availableAmountAtom, {
+  fetchAvailableValues,
+} from "../../../hooks/useAvailableAmount";
+import tokenBalanceAtom, {
+  fetchTokenBalanceValues,
+} from "../../../hooks/useTokenBalance";
+import poolMaxTokenAmountInAtom, {
+  fetchPoolMaxTokenAmountInValues,
+} from "../../../hooks/usePoolMaxTokenAmountIn";
 
-const dispatcher = Store.dispatcher;
-const emitter = Store.emitter;
+import styles from "../../../styles/deposit";
+import config from "../../../config";
 
 const DialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props;
@@ -55,78 +60,130 @@ function getUrlParams() {
   return theRequest;
 }
 
+const maxTokenDepositAmountAtom = atom((get) => {
+  const poolMaxTokenAmountIn = get(poolMaxTokenAmountInAtom);
+  const tokenBalances = get(tokenBalanceAtom);
+  let maxTokenDepositAmount = {};
+  for (let key in tokenBalances) {
+    if (key === "VLX") {
+      tokenBalances[key] =
+        tokenBalances[key] > config.minReservedAmount
+          ? tokenBalances[key] - config.minReservedAmount
+          : 0;
+    }
+
+    if (poolMaxTokenAmountIn[key] > tokenBalances[key]) {
+      maxTokenDepositAmount[key] = tokenBalances[key];
+    } else {
+      maxTokenDepositAmount[key] = poolMaxTokenAmountIn[key];
+    }
+  }
+  return maxTokenDepositAmount;
+});
+
+const loadingAtom = atom((get) => {
+  const availableAmounts = get(availableAmountAtom);
+  const poolMaxTokenAmountIn = get(poolMaxTokenAmountInAtom);
+  const tokenBalances = get(tokenBalanceAtom);
+  let loading = false;
+  if (
+    !Array.isArray(availableAmounts) ||
+    Object.keys(poolMaxTokenAmountIn).length === 0 ||
+    Object.keys(tokenBalances).length === 0
+  )
+    loading = true;
+  return loading;
+});
+
 const MultiDepositModal = (props) => {
   const { data: pool, classes, closeModal, modalOpen } = props;
   const fullScreen = window.innerWidth < 450;
-  const [availableAmounts, setAvailableAmounts] = useAvailableAmount(pool);
-  const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState("0");
+  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const [amounts, setAmounts] = useState({});
   const [referral, setReferral] = useState("");
+  const [loading] = useAtom(loadingAtom);
+  const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
+  const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
+  const [poolMaxTokenAmountIn, setPoolMaxTokenAmountIn] = useAtom(
+    poolMaxTokenAmountInAtom
+  );
+  const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
 
   useEffect(() => {
     setReferral(getUrlParams()["referral"]);
-  }, [pool]);
+    if (!ethersProvider || !pool) return;
+    fetchAvailableValues(
+      ethersProvider,
+      providerNetwork,
+      pool,
+      setAvailableAmounts
+    );
 
-  const amountChange = (event) => {
-    setAmount(event.target.value);
-  };
+    fetchTokenBalanceValues(
+      account,
+      ethersProvider,
+      providerNetwork,
+      pool.supportTokens,
+      setTokenBalances
+    );
+
+    fetchPoolMaxTokenAmountInValues(
+      ethersProvider,
+      providerNetwork,
+      pool,
+      setPoolMaxTokenAmountIn
+    );
+  }, [ethersProvider, pool]);
 
   const referralChange = (event) => {
     setReferral(event.target.value);
   };
 
-  const getMaxAmount = (tokenName) => {
-    let erc20Balance = parseFloat(pool.erc20Balance);
-    let erc20Balance2 = parseFloat(pool.erc20Balance2);
-    if (pool.type === "swap-native") {
-      erc20Balance =
-        erc20Balance > config.minReservedAmount
-          ? erc20Balance - config.minReservedAmount
-          : 0;
-    }
+  const amountChange = (event) => {
+    const { name, value } = event.target;
+    const ratio =
+      parseFloat(value) /
+      parseFloat(
+        maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol]
+      );
 
-    switch (pool.type) {
-      case "swap":
-      case "swap-native":
-        if (token === pool.supportTokens[0]) {
-          if (parseFloat(pool.maxSyxIn) > erc20Balance2) {
-            return formatNumberPrecision(erc20Balance2);
-          } else {
-            return formatNumberPrecision(pool.maxSyxIn);
-          }
-        } else {
-          if (parseFloat(pool.maxErc20In) > erc20Balance) {
-            return formatNumberPrecision(erc20Balance);
-          } else {
-            return formatNumberPrecision(pool.maxErc20In);
-          }
-        }
-      default:
-        return 0;
-    }
+    let amounts = {};
+    pool.supportTokens.forEach((token, i) => {
+      if (name === i + "") {
+        amounts[i + ""] = value;
+      } else {
+        amounts[i + ""] = Number.isNaN(ratio)
+          ? ""
+          : ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
+      }
+    });
+    setAmounts(amounts);
   };
 
-  const max = (token) => {
-    setAmount(getMaxAmount(token) + "");
+  const max = (token, key) => {
+    amountChange({
+      target: {
+        name: key,
+        value: (maxTokenDepositAmount[token.symbol] || 0) + "",
+      },
+    });
   };
 
   const confirm = () => {
-    if (parseFloat(amount) === 0 || isNaN(parseFloat(amount))) return;
-
-    setLoading(true);
-
-    dispatcher.dispatch({
-      type: DEPOSIT,
-      content: {
-        asset: pool,
-        amount: parseFloat(amount).toString(),
-        referral: referral,
-        token:
-          token === pool.supportTokens[0]
-            ? pool.erc20Address2
-            : pool.erc20Address,
-      },
-    });
+    // if (parseFloat(amount) === 0 || isNaN(parseFloat(amount))) return;
+    // setLoading(true);
+    // dispatcher.dispatch({
+    //   type: DEPOSIT,
+    //   content: {
+    //     asset: pool,
+    //     amount: parseFloat(amount).toString(),
+    //     referral: referral,
+    //     token:
+    //       token === pool.supportTokens[0]
+    //         ? pool.erc20Address2
+    //         : pool.erc20Address,
+    //   },
+    // });
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {
@@ -135,24 +192,29 @@ const MultiDepositModal = (props) => {
         <FormControl variant="outlined" style={{ flex: "4" }}>
           <OutlinedInput
             className={classes.customInput}
-            error={parseFloat(amount) > parseFloat(getMaxAmount(v))}
+            name={i + ""}
+            error={
+              parseFloat(amounts[i] || 0) >
+              parseFloat(maxTokenDepositAmount[v.symbol] || 0)
+            }
             id="outlined-adornment-password"
             type={"text"}
-            value={amount}
+            value={amounts[i] || ""}
             onChange={amountChange}
             endAdornment={
               <InputAdornment position="end">
                 <Button
                   className={classes.maxBtn}
                   disabled={loading}
-                  onClick={max.bind(this, v)}
+                  onClick={max.bind(this, v, i + "")}
                 >
                   <FormattedMessage id="POPUP_INPUT_MAX" />
                 </Button>
               </InputAdornment>
             }
           />
-          {parseFloat(amount) > parseFloat(getMaxAmount(v)) ? (
+          {parseFloat(amounts[i] || 0) >
+          parseFloat(maxTokenDepositAmount[v.symbol] || 0) ? (
             <span style={{ color: "red" }}>
               <FormattedMessage id="TRADE_ERROR_BALANCE" />
             </span>
@@ -217,7 +279,7 @@ const MultiDepositModal = (props) => {
           <span className={classes.rightText}>
             {Array.isArray(availableAmounts) ? (
               availableAmounts.map((v, i) => (
-                <>
+                <span key={i}>
                   <NumberFormat
                     value={v.amount}
                     defaultValue={"-"}
@@ -229,7 +291,7 @@ const MultiDepositModal = (props) => {
                   />{" "}
                   {v.name}
                   {i === availableAmounts.length - 1 ? "" : " / "}
-                </>
+                </span>
               ))
             ) : (
               <>- / -</>
@@ -246,7 +308,7 @@ const MultiDepositModal = (props) => {
               return (
                 <span key={i}>
                   <NumberFormat
-                    value={getMaxAmount(v)}
+                    value={maxTokenDepositAmount[v.symbol] || "-"}
                     defaultValue={"-"}
                     displayType={"text"}
                     thousandSeparator={true}
