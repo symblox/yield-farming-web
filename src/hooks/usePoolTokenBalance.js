@@ -3,35 +3,33 @@ import { atom, useAtom } from "jotai";
 import { formatUnits, parseEther } from "@ethersproject/units";
 import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
-import config from "../config";
+import config from "../config/config";
 
-const poolMaxTokenAmountInAtom = atom({});
-export default poolMaxTokenAmountInAtom;
+const poolTokenBalanceAtom = atom({});
+export default poolTokenBalanceAtom;
 
-export function usePoolMaxTokenAmountIn(pool) {
+export function usePoolTokenBalance(pool) {
   const { ethersProvider, providerNetwork } = useContext(Web3Context);
-  const [poolMaxTokenAmountIn, setPoolMaxTokenAmountIn] = useAtom(
-    poolMaxTokenAmountInAtom
-  );
+  const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
 
   useEffect(() => {
     if (!ethersProvider || !pool) return;
-    fetchPoolMaxTokenAmountInValues(
+    fetchPoolTokenBalance(
       ethersProvider,
       providerNetwork,
       pool,
-      setPoolMaxTokenAmountIn
+      setPoolTokenBalance
     );
   }, [ethersProvider, pool]);
 
-  return [poolMaxTokenAmountIn, setPoolMaxTokenAmountIn];
+  return [poolTokenBalance, setPoolTokenBalance];
 }
 
-export async function fetchPoolMaxTokenAmountInValues(
+export async function fetchPoolTokenBalance(
   provider,
   providerNetwork,
   pool,
-  setPoolMaxTokenAmountIn
+  setPoolTokenBalance
 ) {
   if (provider && pool) {
     try {
@@ -41,22 +39,21 @@ export async function fetchPoolMaxTokenAmountInValues(
       await ethcallProvider.init();
       const bptContract = new Contract(pool.address, pool.abi);
 
-      let calls = [bptContract.MAX_IN_RATIO()];
+      let calls = [];
       for (let i = 0; i < pool.supportTokens.length; i++) {
         calls.push(bptContract.getBalance(pool.supportTokens[i].address));
       }
 
       const amountsRes = await ethcallProvider.all(calls);
       let amounts = {};
-      const ratio = formatUnits(amountsRes[0], 18);
-      //0 is MAX_IN_RATIO,so from 1 to end, supportTokens index is i - 1
-      for (let i = 1; i < amountsRes.length; i++) {
-        amounts[pool.supportTokens[i - 1].symbol] =
-          formatUnits(amountsRes[i], pool.supportTokens[i - 1].decimals) *
-          ratio;
+      for (let i = 0; i < amountsRes.length; i++) {
+        amounts[pool.supportTokens[i].symbol] = formatUnits(
+          amountsRes[i],
+          pool.supportTokens[i].decimals
+        );
       }
 
-      setPoolMaxTokenAmountIn(amounts);
+      setPoolTokenBalance(amounts);
     } catch (e) {
       console.error(e);
       return;

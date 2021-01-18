@@ -22,9 +22,9 @@ import availableAmountAtom, {
 import tokenBalanceAtom, {
   fetchTokenBalanceValues,
 } from "../../../hooks/useTokenBalance";
-import poolMaxTokenAmountInAtom, {
-  fetchPoolMaxTokenAmountInValues,
-} from "../../../hooks/usePoolMaxTokenAmountIn";
+import poolTokenBalanceAtom, {
+  fetchPoolTokenBalance,
+} from "../../../hooks/usePoolTokenBalance";
 
 import styles from "../../../styles/deposit";
 import config from "../../../config";
@@ -60,35 +60,14 @@ function getUrlParams() {
   return theRequest;
 }
 
-const maxTokenDepositAmountAtom = atom((get) => {
-  const poolMaxTokenAmountIn = get(poolMaxTokenAmountInAtom);
-  const tokenBalances = get(tokenBalanceAtom);
-  let maxTokenDepositAmount = {};
-  for (let key in tokenBalances) {
-    if (key === "VLX") {
-      tokenBalances[key] =
-        tokenBalances[key] > config.minReservedAmount
-          ? tokenBalances[key] - config.minReservedAmount
-          : 0;
-    }
-
-    if (poolMaxTokenAmountIn[key] > tokenBalances[key]) {
-      maxTokenDepositAmount[key] = tokenBalances[key];
-    } else {
-      maxTokenDepositAmount[key] = poolMaxTokenAmountIn[key];
-    }
-  }
-  return maxTokenDepositAmount;
-});
-
 const loadingAtom = atom((get) => {
   const availableAmounts = get(availableAmountAtom);
-  const poolMaxTokenAmountIn = get(poolMaxTokenAmountInAtom);
+  const poolTokenBalance = get(poolTokenBalanceAtom);
   const tokenBalances = get(tokenBalanceAtom);
   let loading = false;
   if (
     !Array.isArray(availableAmounts) ||
-    Object.keys(poolMaxTokenAmountIn).length === 0 ||
+    Object.keys(poolTokenBalance).length === 0 ||
     Object.keys(tokenBalances).length === 0
   )
     loading = true;
@@ -98,14 +77,56 @@ const loadingAtom = atom((get) => {
 const MultiDepositModal = (props) => {
   const { data: pool, classes, closeModal, modalOpen } = props;
   const fullScreen = window.innerWidth < 450;
+  const poolAtom = atom(pool);
+  const maxTokenDepositAmountAtom = atom((get) => {
+    const pool = get(poolAtom);
+    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const tokenBalances = get(tokenBalanceAtom);
+    let maxTokenDepositAmount = {},
+      minRatio;
+    for (let key in tokenBalances) {
+      if (key === "VLX") {
+        tokenBalances[key] =
+          tokenBalances[key] > config.minReservedAmount
+            ? tokenBalances[key] - config.minReservedAmount
+            : 0;
+      }
+
+      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
+      let maxAmount;
+      if (tokenMaxIn > tokenBalances[key]) {
+        maxAmount = tokenBalances[key];
+      } else {
+        maxAmount = tokenMaxIn;
+      }
+
+      const ratio = maxAmount / poolTokenBalance[key];
+      if (minRatio) {
+        if (ratio < minRatio) {
+          minRatio = ratio;
+        }
+      } else {
+        minRatio = ratio;
+      }
+
+      maxTokenDepositAmount[key] = poolTokenBalance[key];
+    }
+
+    for (let key in maxTokenDepositAmount) {
+      maxTokenDepositAmount[key] = maxTokenDepositAmount[key] * minRatio;
+    }
+
+    return maxTokenDepositAmount;
+  });
+
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [amounts, setAmounts] = useState({});
   const [referral, setReferral] = useState("");
   const [loading] = useAtom(loadingAtom);
   const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
-  const [poolMaxTokenAmountIn, setPoolMaxTokenAmountIn] = useAtom(
-    poolMaxTokenAmountInAtom
+  const [poolTokenBalance, setPoolMaxTokenAmountIn] = useAtom(
+    poolTokenBalanceAtom
   );
   const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
 
@@ -127,7 +148,7 @@ const MultiDepositModal = (props) => {
       setTokenBalances
     );
 
-    fetchPoolMaxTokenAmountInValues(
+    fetchPoolTokenBalance(
       ethersProvider,
       providerNetwork,
       pool,
