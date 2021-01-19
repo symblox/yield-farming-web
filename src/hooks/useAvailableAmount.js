@@ -49,6 +49,8 @@ export async function fetchAvailableValues(
         swapFeeCall,
       ]);
 
+      const ratio = parseFloat(1 / pool.supportTokens.length);
+
       for (let i = 0; i < pool.supportTokens.length; i++) {
         const balanceCall = bptContract.getBalance(
           pool.supportTokens[i].address
@@ -63,9 +65,7 @@ export async function fetchAvailableValues(
         ]);
 
         const stakeAmount = parseEther(
-          parseFloat(pool.stakeAmount) *
-            parseFloat(pool.supportTokens[i].allotRatio) +
-            ""
+          parseFloat(pool.stakeAmount) * ratio + ""
         );
 
         const calcSingleOutGivenPoolInCall = bptContract.calcSingleOutGivenPoolIn(
@@ -81,7 +81,7 @@ export async function fetchAvailableValues(
         ]);
 
         array.push({
-          name: pool.supportTokens[i].name,
+          name: pool.supportTokens[i].symbol,
           amount: formatUnits(
             amountOut.toString(),
             pool.supportTokens[i].decimals

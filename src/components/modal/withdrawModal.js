@@ -2,8 +2,11 @@ import React, { Component } from "react";
 import { FormattedMessage } from "react-intl";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
+import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Dialog from "@material-ui/core/Dialog";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import MuiDialogContent from "@material-ui/core/DialogContent";
 import MuiDialogActions from "@material-ui/core/DialogActions";
@@ -203,12 +206,7 @@ class WithdrawRewardsModal extends Component {
   constructor(props) {
     super(props);
 
-    let curPool;
-    props.data.forEach((data) => {
-      if (data.entryContractAddress) {
-        curPool = data;
-      }
-    });
+    let curPool = props.data;
     this.state = {
       pool: curPool,
       token: curPool.tokens[0],
@@ -250,29 +248,6 @@ class WithdrawRewardsModal extends Component {
         that.calculateAmount();
       }
     );
-  };
-
-  poolHandleChange = (event) => {
-    const that = this;
-    let selectPool;
-    for (let i = 0; i < this.props.data.length; i++) {
-      if (
-        this.props.data[i].index.toString() === event.target.value.toString()
-      ) {
-        selectPool = this.props.data[i];
-        break;
-      }
-    }
-    if (selectPool)
-      this.setState(
-        {
-          pool: selectPool,
-          token: selectPool.tokens[0],
-        },
-        () => {
-          that.calculateAmount();
-        }
-      );
   };
 
   amountChange = (event) => {
@@ -425,7 +400,7 @@ class WithdrawRewardsModal extends Component {
   };
 
   render() {
-    const { classes, data, closeModal, modalOpen } = this.props;
+    const { classes, closeModal, modalOpen } = this.props;
     const { loading } = this.state;
     const fullScreen = window.innerWidth < 450;
 
@@ -443,35 +418,6 @@ class WithdrawRewardsModal extends Component {
         ></DialogTitle>
         <DialogContent>
           <>
-            <Typography gutterBottom style={{ marginBottom: "16px" }}>
-              <span style={{ color: "#ACAEBC" }}>
-                <FormattedMessage id="WITHDRAWABLE_REWARDS" />
-                {": "}
-              </span>
-              <span style={{ float: "right" }}>
-                <img
-                  className={classes.icon}
-                  src={
-                    "/" +
-                    tokensName[this.state.pool.rewardsSymbol.toLowerCase()] +
-                    ".png"
-                  }
-                  alt=""
-                />{" "}
-                <NumberFormat
-                  value={this.state.pool.rewardsAvailable}
-                  defaultValue={"-"}
-                  displayType={"text"}
-                  thousandSeparator={true}
-                  isNumericString={true}
-                  suffix={
-                    tokensName[this.state.pool.rewardsSymbol.toLowerCase()]
-                  }
-                  decimalScale={4}
-                  fixedDecimalScale={true}
-                />
-              </span>
-            </Typography>
             <div className={classes.customSelect}>
               <FormattedMessage id="RP_LIST_TITLE" />:
               <img
@@ -482,31 +428,173 @@ class WithdrawRewardsModal extends Component {
                 alt=""
               />
               {this.state.pool.id}
-              <Select
-                value={this.state.pool.index}
-                onChange={this.poolHandleChange.bind(this)}
-              >
-                {data.map((v, i) => {
-                  if (v.entryContractAddress) {
-                    return (
-                      <MenuItem value={v.index} key={i}>
-                        {v.id}
-                      </MenuItem>
-                    );
-                  }
-                })}
-              </Select>
-              <img
-                className={classes.icon}
-                style={{
-                  float: "right",
-                  marginTop: "12px",
-                  width: "12px",
-                }}
-                src={"/down.svg"}
-                alt=""
-              />
             </div>
+
+            <div style={{ fontSize: "16px" }}>
+              <span style={{ color: "#ACAEBC" }}>
+                <FormattedMessage id="POPUP_WITHDRAWABLE_AMOUNT" />
+              </span>
+              <span style={{ float: "right" }}>
+                {this.state.pool.type === "seed" ? (
+                  <NumberFormat
+                    value={this.state.pool.stakeAmount}
+                    defaultValue={"-"}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    isNumericString={true}
+                    decimalScale={4}
+                    fixedDecimalScale={true}
+                  />
+                ) : this.state.availableAmountLoading ? (
+                  <CircularProgress
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                    }}
+                  ></CircularProgress>
+                ) : this.state.token === this.state.pool.tokens[1] ? (
+                  parseFloat(this.state.availableAmount) >
+                  parseFloat(this.state.pool.maxErc20Out) ? (
+                    <NumberFormat
+                      value={this.state.pool.maxErc20Out}
+                      defaultValue={"-"}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      isNumericString={true}
+                      decimalScale={4}
+                      fixedDecimalScale={true}
+                    />
+                  ) : (
+                    <NumberFormat
+                      value={this.state.availableAmount}
+                      defaultValue={"-"}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      isNumericString={true}
+                      decimalScale={4}
+                      fixedDecimalScale={true}
+                    />
+                  )
+                ) : parseFloat(this.state.availableAmount) >
+                  parseFloat(this.state.pool.maxSyxOut) ? (
+                  <NumberFormat
+                    value={this.state.pool.maxSyxOut}
+                    defaultValue={"-"}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    isNumericString={true}
+                    decimalScale={4}
+                    fixedDecimalScale={true}
+                  />
+                ) : (
+                  <NumberFormat
+                    value={this.state.availableAmount}
+                    defaultValue={"-"}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    isNumericString={true}
+                    decimalScale={4}
+                    fixedDecimalScale={true}
+                  />
+                )}
+                {" " + tokensName[this.state.token.toLowerCase()]}
+              </span>
+            </div>
+            <div className={classes.formContent}>
+              <FormControl variant="outlined" style={{ flex: "4" }}>
+                <OutlinedInput
+                  className={classes.customInput}
+                  id="outlined-adornment-password"
+                  type={"text"}
+                  value={this.state.amount}
+                  onChange={this.amountChange}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <Button
+                        className={classes.maxBtn}
+                        style={{
+                          opacity:
+                            parseFloat(this.state.amount).toFixed(4) ===
+                            this.getMaxAmount().toFixed(4)
+                              ? "0.6"
+                              : "1",
+                        }}
+                        disabled={loading}
+                        onClick={this.max}
+                      >
+                        <FormattedMessage id="POPUP_INPUT_MAX" />
+                      </Button>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+              <FormControl
+                variant="outlined"
+                className={classes.formControl}
+                style={{ flex: "1" }}
+              >
+                <Select
+                  className={classes.select}
+                  value={this.state.token}
+                  onChange={this.handleChange.bind(this)}
+                  inputProps={{
+                    name: "token",
+                    id: "outlined-token",
+                  }}
+                >
+                  {this.state.pool.tokens.map((v, i) => (
+                    <MenuItem value={v} key={i}>
+                      <img
+                        className={classes.icon}
+                        src={"/" + tokensName[v.toLowerCase()] + ".png"}
+                        alt=""
+                      />
+                      {tokensName[v.toLowerCase()]}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <>
+              <Typography gutterBottom>
+                <span className={classes.text}>
+                  <FormattedMessage id="POPUP_WITHDRAW_AMOUNT" />
+                </span>
+                <NumberFormat
+                  value={this.state.amount}
+                  defaultValue={"0"}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  isNumericString={true}
+                  suffix={tokensName[this.state.token.toLowerCase()]}
+                  decimalScale={4}
+                  fixedDecimalScale={true}
+                  renderText={(value) => (
+                    <span className={classes.rightText}>{value}</span>
+                  )}
+                />
+              </Typography>
+              <Typography gutterBottom>
+                <span className={classes.text}>
+                  <FormattedMessage id="POPUP_WITHDRAW_REWARD" />
+                </span>
+                <NumberFormat
+                  value={this.state.pool.rewardsAvailable}
+                  defaultValue={"0"}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  isNumericString={true}
+                  suffix={
+                    tokensName[this.state.pool.rewardsSymbol.toLowerCase()]
+                  }
+                  decimalScale={4}
+                  fixedDecimalScale={true}
+                  renderText={(value) => (
+                    <span className={classes.rightText}>{value}</span>
+                  )}
+                />
+              </Typography>
+            </>
           </>
         </DialogContent>
         <DialogActions>
@@ -514,13 +602,13 @@ class WithdrawRewardsModal extends Component {
             className={classes.buttonSecondary}
             disabled={loading}
             autoFocus
-            onClick={this.onClaim}
+            onClick={this.confirm}
             fullWidth={true}
           >
             {loading ? (
               <CircularProgress></CircularProgress>
             ) : (
-              <FormattedMessage id="RP_WITHDRAW_REWARDS" />
+              <FormattedMessage id="LP_WITHDRAW" />
             )}
           </Button>
         </DialogActions>

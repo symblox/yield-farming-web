@@ -59,6 +59,7 @@ let vlxSyxPool2 = {
   id: "SYX2/VLX-2",
   featured: false,
   depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
   name: "VLX",
   website: "Reward Pool",
   address: config.vlxSyxBpt,
@@ -79,7 +80,6 @@ let vlxSyxPool2 = {
       address: config.syx,
       abi: config.syxABI,
       decimals: 18,
-      allotRatio: 0.5, //all tokens the addition must be 1
     },
     {
       symbol: "VLX",
@@ -87,7 +87,6 @@ let vlxSyxPool2 = {
       address: config.wvlx,
       abi: config.erc20ABI,
       decimals: 18,
-      allotRatio: 0.5,
     },
   ],
   tokens: ["SYX", "VLX"],
