@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
+import { parseUnits, parseEther } from "@ethersproject/units";
+import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -25,6 +27,7 @@ import tokenBalanceAtom, {
 import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../../hooks/usePoolTokenBalance";
+import useMultiDeposit from "../../../hooks/payables/useMultiDeposit";
 
 import styles from "../../../styles/deposit";
 import config from "../../../config";
@@ -118,10 +121,11 @@ const MultiDepositModal = (props) => {
 
     return maxTokenDepositAmount;
   });
-
+  const multiDeposit = useMultiDeposit();
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [amounts, setAmounts] = useState({});
   const [referral, setReferral] = useState("");
+  const [txLoading, setTxLoading] = useState(false);
   const [loading] = useAtom(loadingAtom);
   const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
@@ -168,14 +172,16 @@ const MultiDepositModal = (props) => {
         maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol]
       );
 
-    let amounts = {};
+    let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
-        amounts[i + ""] = value;
+        amounts.push(value);
       } else {
-        amounts[i + ""] = Number.isNaN(ratio)
-          ? ""
-          : ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
+        amounts.push(
+          Number.isNaN(ratio)
+            ? ""
+            : ratio * parseFloat(maxTokenDepositAmount[token.symbol]) + ""
+        );
       }
     });
     setAmounts(amounts);
@@ -190,21 +196,27 @@ const MultiDepositModal = (props) => {
     });
   };
 
-  const confirm = () => {
-    // if (parseFloat(amount) === 0 || isNaN(parseFloat(amount))) return;
-    // setLoading(true);
-    // dispatcher.dispatch({
-    //   type: DEPOSIT,
-    //   content: {
-    //     asset: pool,
-    //     amount: parseFloat(amount).toString(),
-    //     referral: referral,
-    //     token:
-    //       token === pool.supportTokens[0]
-    //         ? pool.erc20Address2
-    //         : pool.erc20Address,
-    //   },
-    // });
+  const confirm = async () => {
+    // @TODO - fix calcs so no buffer is needed
+    const buffer = BigNumber.from("100");
+    //All token ratios are the same, so just use the first one
+    const ratio =
+      parseFloat(amounts[0]) /
+      parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
+
+    const poolAmountOut = parseEther(
+      parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
+    ).sub(buffer);
+
+    const tokensIn = pool.supportTokens.map((v) => v.address);
+    const maxAmountsIn = amounts.map((v, i) =>
+      parseUnits(v, pool.supportTokens[i].decimals)
+    );
+    const params = [poolAmountOut, tokensIn, maxAmountsIn, referral || ""];
+    setTxLoading(true);
+    const tx = await multiDeposit(pool, params);
+    await tx.wait();
+    setTxLoading(false);
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {
@@ -226,7 +238,7 @@ const MultiDepositModal = (props) => {
               <InputAdornment position="end">
                 <Button
                   className={classes.maxBtn}
-                  disabled={loading}
+                  disabled={loading || txLoading}
                   onClick={max.bind(this, v, i + "")}
                 >
                   <FormattedMessage id="POPUP_INPUT_MAX" />
@@ -368,12 +380,12 @@ const MultiDepositModal = (props) => {
       <MuiDialogActions>
         <Button
           autoFocus
-          disabled={loading}
+          disabled={loading || txLoading}
           onClick={confirm}
           className={classes.button}
           fullWidth={true}
         >
-          {loading ? (
+          {loading || txLoading ? (
             <CircularProgress></CircularProgress>
           ) : (
             <FormattedMessage id="LP_DEPOSIT_WITHDRAW_REWARD" />
