@@ -196,7 +196,7 @@ const MultiDepositModal = (props) => {
 
   const confirm = async () => {
     // @TODO - fix calcs so no buffer is needed
-    const buffer = BigNumber.from("100");
+    const buffer = BigNumber.from("1000000");
     //All token ratios are the same, so just use the first one
     const ratio =
       parseFloat(amounts[0]) /
@@ -205,6 +205,7 @@ const MultiDepositModal = (props) => {
     const poolAmountOut = parseEther(
       parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
     ).sub(buffer);
+
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const tokensIn = pool.supportTokens.map((v) => {
       if (v.symbol === "VLX") {
