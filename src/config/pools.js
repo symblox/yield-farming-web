@@ -62,7 +62,7 @@ let vlxSyxPool2 = {
   withdrawModal: "multiWithdraw",
   name: "VLX",
   website: "Reward Pool",
-  address: config.vlxSyxBpt,
+  address: config.vlxSyxBpt2,
   symbol: "BPT",
   ROI: "DF",
   type: "swap-native",
@@ -272,7 +272,7 @@ function getPools() {
       vlxEthPool.index,
       pvlxSyxPool.index,
       vlxSyxPool2.index,
-    ] = [0, 1, 2, 3, 4, 5, 0];
+    ] = [0, 1, 2, 3, 4, 5, 6];
     return [
       vlxSyxPool,
       vlxUsdtPool,

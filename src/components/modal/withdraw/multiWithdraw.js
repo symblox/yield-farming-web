@@ -170,8 +170,12 @@ const MultiWithdrawModal = (props) => {
     const minAmountsOut = amounts.map((v, i) => "0");
     const params = [poolAmountIn, tokensOut, minAmountsOut || ""];
     setTxLoading(true);
-    const tx = await multiWithdraw(pool, params);
-    await tx.wait();
+    try {
+      const tx = await multiWithdraw(pool, params);
+      await tx.wait();
+    } catch (error) {
+      console.log(error);
+    }
     setTxLoading(false);
   };
 

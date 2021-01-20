@@ -86,7 +86,7 @@ const MultiDepositModal = (props) => {
     const poolTokenBalance = get(poolTokenBalanceAtom);
     const tokenBalances = get(tokenBalanceAtom);
     let maxTokenDepositAmount = {},
-      minRatio;
+      minRatio = -1;
     for (let key in tokenBalances) {
       if (key === "VLX") {
         tokenBalances[key] =
@@ -102,9 +102,8 @@ const MultiDepositModal = (props) => {
       } else {
         maxAmount = tokenMaxIn;
       }
-
       const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio) {
+      if (minRatio != -1) {
         if (ratio < minRatio) {
           minRatio = ratio;
         }
@@ -114,7 +113,6 @@ const MultiDepositModal = (props) => {
 
       maxTokenDepositAmount[key] = poolTokenBalance[key];
     }
-
     for (let key in maxTokenDepositAmount) {
       maxTokenDepositAmount[key] = maxTokenDepositAmount[key] * minRatio;
     }
@@ -207,15 +205,30 @@ const MultiDepositModal = (props) => {
     const poolAmountOut = parseEther(
       parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
     ).sub(buffer);
-
-    const tokensIn = pool.supportTokens.map((v) => v.address);
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+    const tokensIn = pool.supportTokens.map((v) => {
+      if (v.symbol === "VLX") {
+        return ZERO_ADDRESS;
+      } else {
+        return v.address;
+      }
+    });
     const maxAmountsIn = amounts.map((v, i) =>
       parseUnits(v, pool.supportTokens[i].decimals)
     );
-    const params = [poolAmountOut, tokensIn, maxAmountsIn, referral || ""];
+    const params = [
+      poolAmountOut,
+      tokensIn,
+      maxAmountsIn,
+      referral || ZERO_ADDRESS,
+    ];
     setTxLoading(true);
-    const tx = await multiDeposit(pool, params);
-    await tx.wait();
+    try {
+      const tx = await multiDeposit(pool, params);
+      await tx.wait();
+    } catch (error) {
+      console.log(error);
+    }
     setTxLoading(false);
   };
 
@@ -341,7 +354,12 @@ const MultiDepositModal = (props) => {
               return (
                 <span key={i}>
                   <NumberFormat
-                    value={maxTokenDepositAmount[v.symbol] || "-"}
+                    value={
+                      maxTokenDepositAmount[v.symbol] ||
+                      maxTokenDepositAmount[v.symbol] === 0
+                        ? maxTokenDepositAmount[v.symbol]
+                        : "-"
+                    }
                     defaultValue={"-"}
                     displayType={"text"}
                     thousandSeparator={true}

@@ -16,7 +16,6 @@ export default function useMultiWithdraw() {
         account,
         pool.index
       );
-
       const connectorContract = new Contract(
         connectorAddress,
         pool.entryContractABI,

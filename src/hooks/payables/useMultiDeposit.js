@@ -18,24 +18,34 @@ export default function useMultiDeposit() {
         pool.index
       );
 
-      if (Array.isArray(params.tokensIn)) {
-        for (let i = 0; i < params.tokensIn.length; i++) {
-          const erc20Contract = new Contract(
-            params.tokensIn[i],
-            pool.erc20ABI,
-            signer
-          );
+      let value = "0";
+      //0: poolAmountOut,1: tokensIn,2: maxAmountsIn,3: referral
+      const [, tokensIn, maxAmountsIn] = params;
+      if (Array.isArray(tokensIn)) {
+        for (let i = 0; i < tokensIn.length; i++) {
+          if (tokensIn[i] === "0x0000000000000000000000000000000000000000") {
+            value = maxAmountsIn[i];
+          } else {
+            const erc20Contract = new Contract(
+              tokensIn[i],
+              pool.erc20ABI,
+              signer
+            );
 
-          const allowance = await erc20Contract.allowance(
-            account,
-            connectorAddress
-          );
-          if (allowance.lt(params.maxAmountsIn[i])) {
-            await erc20Contract.approve(connectorAddress, MaxUint256);
+            const allowance = await erc20Contract.allowance(
+              account,
+              connectorAddress
+            );
+            if (allowance.lt(maxAmountsIn[i])) {
+              const tx = await erc20Contract.approve(
+                connectorAddress,
+                MaxUint256
+              );
+              await tx.wait();
+            }
           }
         }
       }
-
       const connectorContract = new Contract(
         connectorAddress,
         pool.entryContractABI,
@@ -46,7 +56,9 @@ export default function useMultiDeposit() {
       try {
         gasLimit = await connectorContract.estimateGas[
           "multiDeposit(uint256,address[],uint256[],address)"
-        ](...params);
+        ](...params, {
+          value,
+        });
       } catch (err) {
         gasLimit = 1000000;
       }
@@ -55,6 +67,7 @@ export default function useMultiDeposit() {
         "multiDeposit(uint256,address[],uint256[],address)"
       ](...params, {
         gasLimit,
+        value,
       });
     },
     [signer]

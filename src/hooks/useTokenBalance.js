@@ -55,9 +55,8 @@ export async function fetchTokenBalanceValues(
       const balancesRes = await ethcallProvider.all(calls);
       let balances = {};
       for (let i = 0; i < balancesRes.length; i++) {
-        balances[supportTokens[i].symbol] = formatUnits(
-          balancesRes[i],
-          supportTokens[i].decimals
+        balances[supportTokens[i].symbol] = parseFloat(
+          formatUnits(balancesRes[i], supportTokens[i].decimals)
         );
       }
 

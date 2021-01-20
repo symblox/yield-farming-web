@@ -69,6 +69,7 @@ function env() {
       oldSyx: "0xC20932B245840CA1C6F8c9c90BDb2F4E0289DE48",
       pVlx: "0x3724d456d7D02327A06B6a12DB429D83A2617c9B",
       vlxSyxBpt: "0x3FBaf23119a999336bb9bB0744bcC6f60540B4B4",
+      vlxSyxBpt2: "0xFf5508e0DEFF2723a354bf1399815B8eA9421a30",
       vlxUsdtBpt: "0x4b067bc68b54133fe64832affbab3d7a6d361ba5",
       usdtSyxBpt: "0x53c74185bad56d362e0932fdfb4cea0bea5dccff",
       ethSyxBpt: "0xa64b215b3b532cf7c4d1e384eff15346f0f5681c",
