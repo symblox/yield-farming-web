@@ -356,9 +356,13 @@ const MultiDepositModal = (props) => {
                 <span key={i}>
                   <NumberFormat
                     value={
-                      maxTokenDepositAmount[v.symbol] ||
-                      maxTokenDepositAmount[v.symbol] === 0
-                        ? maxTokenDepositAmount[v.symbol]
+                      maxTokenDepositAmount[v.symbol]
+                        ? maxTokenDepositAmount[v.symbol].toLocaleString(
+                            undefined,
+                            {
+                              maximumFractionDigits: 10,
+                            }
+                          )
                         : "-"
                     }
                     defaultValue={"-"}

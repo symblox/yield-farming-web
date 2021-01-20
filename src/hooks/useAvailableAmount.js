@@ -40,45 +40,18 @@ export async function fetchAvailableValues(
       const bptContract = new Contract(pool.address, pool.abi);
 
       const totalSupplyCall = bptContract.totalSupply();
-      const totalWeightCall = bptContract.getTotalDenormalizedWeight();
-      const swapFeeCall = bptContract.getSwapFee();
 
-      const [totalSupply, totalWeight, swapFee] = await ethcallProvider.all([
-        totalSupplyCall,
-        totalWeightCall,
-        swapFeeCall,
-      ]);
-
-      const ratio = parseFloat(1 / pool.supportTokens.length);
+      const [totalSupply] = await ethcallProvider.all([totalSupplyCall]);
 
       for (let i = 0; i < pool.supportTokens.length; i++) {
         const balanceCall = bptContract.getBalance(
           pool.supportTokens[i].address
         );
-        const denormCall = bptContract.getDenormalizedWeight(
-          pool.supportTokens[i].address
-        );
 
-        const [balance, denorm] = await ethcallProvider.all([
-          balanceCall,
-          denormCall,
-        ]);
+        const [balance] = await ethcallProvider.all([balanceCall]);
+        const stakeAmount = parseEther(pool.stakeAmount + "");
 
-        const stakeAmount = parseEther(
-          parseFloat(pool.stakeAmount) * ratio + ""
-        );
-
-        const calcSingleOutGivenPoolInCall = bptContract.calcSingleOutGivenPoolIn(
-          balance,
-          denorm,
-          totalSupply,
-          totalWeight,
-          stakeAmount,
-          swapFee
-        );
-        const [amountOut] = await ethcallProvider.all([
-          calcSingleOutGivenPoolInCall,
-        ]);
+        const amountOut = stakeAmount.mul(balance).div(totalSupply);
 
         array.push({
           name: pool.supportTokens[i].symbol,

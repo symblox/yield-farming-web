@@ -135,12 +135,14 @@ const MultiWithdrawModal = (props) => {
     let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
-        amounts.push(value);
+        amounts.push(parseFloat(value).toFixed(8));
       } else {
         amounts.push(
           Number.isNaN(ratio)
             ? ""
-            : ratio * parseFloat(maxTokenWithdrawAmount[token.symbol]) + ""
+            : (
+                ratio * parseFloat(maxTokenWithdrawAmount[token.symbol])
+              ).toFixed(8)
         );
       }
     });
@@ -251,7 +253,16 @@ const MultiWithdrawModal = (props) => {
               return (
                 <span key={i}>
                   <NumberFormat
-                    value={maxTokenWithdrawAmount[v.symbol] || "-"}
+                    value={
+                      maxTokenWithdrawAmount[v.symbol]
+                        ? maxTokenWithdrawAmount[v.symbol].toLocaleString(
+                            undefined,
+                            {
+                              maximumFractionDigits: 10,
+                            }
+                          )
+                        : "-"
+                    }
                     defaultValue={"-"}
                     displayType={"text"}
                     thousandSeparator={true}
