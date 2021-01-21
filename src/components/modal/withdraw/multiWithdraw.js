@@ -144,23 +144,23 @@ const MultiWithdrawModal = (props) => {
       if (name === i + "") {
         amounts.push(value);
       } else {
-        amounts.push(
-          Number.isNaN(ratio)
-            ? ""
-            : (
-                ratio * parseFloat(maxTokenWithdrawAmount[token.symbol])
-              ).toFixed(8)
-        );
+        let amount = ratio * parseFloat(maxTokenWithdrawAmount[token.symbol]);
+        const minAmount = 0.000001;
+        if (amount < minAmount) amount = 0;
+        amounts.push(Number.isNaN(ratio) ? "" : amount + "");
       }
     });
     setAmounts(amounts);
   };
 
   const max = (token, key) => {
+    let amount = parseFloat(maxTokenWithdrawAmount[token.symbol]) || 0;
+    const minAmount = 0.000001;
+    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
         name: key,
-        value: parseFloat(maxTokenWithdrawAmount[token.symbol]).toFixed(8) || 0,
+        value: amount + "",
       },
     });
   };
