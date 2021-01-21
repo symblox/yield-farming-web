@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
-import { parseUnits, parseEther } from "@ethersproject/units";
+import { parseEther } from "@ethersproject/units";
 import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -97,7 +97,7 @@ const MultiWithdrawModal = (props) => {
     return maxTokenWithdrawAmount;
   });
   const multiWithdraw = useMultiWithdraw();
-  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const { ethersProvider, providerNetwork } = useContext(Web3Context);
   const [amounts, setAmounts] = useState({});
   const [txLoading, setTxLoading] = useState(false);
   const [loading] = useAtom(loadingAtom);

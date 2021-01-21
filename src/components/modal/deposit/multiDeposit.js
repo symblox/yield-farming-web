@@ -178,9 +178,9 @@ const MultiDepositModal = (props) => {
         amounts.push(
           Number.isNaN(ratio)
             ? ""
-            : (
-                ratio * parseFloat(maxTokenWithdrawAmount[token.symbol])
-              ).toFixed(8)
+            : (ratio * parseFloat(maxTokenDepositAmount[token.symbol])).toFixed(
+                8
+              )
         );
       }
     });
