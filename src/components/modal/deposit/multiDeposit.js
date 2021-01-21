@@ -78,7 +78,14 @@ const loadingAtom = atom((get) => {
 });
 
 const MultiDepositModal = (props) => {
-  const { data: pool, classes, closeModal, modalOpen } = props;
+  const {
+    data: pool,
+    classes,
+    closeModal,
+    modalOpen,
+    showHash,
+    errorReturned,
+  } = props;
   const fullScreen = window.innerWidth < 450;
   const poolAtom = atom(pool);
   const maxTokenDepositAmountAtom = atom((get) => {
@@ -228,11 +235,14 @@ const MultiDepositModal = (props) => {
     setTxLoading(true);
     try {
       const tx = await multiDeposit(pool, params);
-      await tx.wait();
+      showHash(tx.hash);
+      //await tx.wait();
     } catch (error) {
       console.log(error);
+      errorReturned(JSON.stringify(error));
     }
     setTxLoading(false);
+    closeModal();
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {

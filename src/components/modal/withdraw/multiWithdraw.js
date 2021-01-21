@@ -60,7 +60,14 @@ const loadingAtom = atom((get) => {
 });
 
 const MultiWithdrawModal = (props) => {
-  const { data: pool, classes, closeModal, modalOpen } = props;
+  const {
+    data: pool,
+    classes,
+    closeModal,
+    modalOpen,
+    showHash,
+    errorReturned,
+  } = props;
   const fullScreen = window.innerWidth < 450;
   const poolAtom = atom(pool);
   const maxTokenWithdrawAmountAtom = atom((get) => {
@@ -159,6 +166,8 @@ const MultiWithdrawModal = (props) => {
   };
 
   const confirm = async () => {
+    if (parseFloat(amounts[0]) <= 0) return;
+
     // @TODO - fix calcs so no buffer is needed
     const buffer = BigNumber.from("1000000");
     //All token ratios are the same, so just use the first one
@@ -171,14 +180,18 @@ const MultiWithdrawModal = (props) => {
     const tokensOut = pool.supportTokens.map((v) => v.address);
     const minAmountsOut = amounts.map((v, i) => "0");
     const params = [poolAmountIn, tokensOut, minAmountsOut || ""];
+
     setTxLoading(true);
     try {
       const tx = await multiWithdraw(pool, params);
-      await tx.wait();
+      showHash(tx.hash);
+      //await tx.wait();
     } catch (error) {
       console.log(error);
+      errorReturned(JSON.stringify(error));
     }
     setTxLoading(false);
+    closeModal();
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {

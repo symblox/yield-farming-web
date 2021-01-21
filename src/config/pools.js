@@ -271,16 +271,14 @@ function getPools() {
       usdtSyxPool.index,
       ethSyxPool.index,
       vlxEthPool.index,
-      pvlxSyxPool.index,
       vlxSyxPool2.index,
-    ] = [0, 1, 2, 3, 4, 5, 6];
+    ] = [0, 1, 2, 3, 4, 6];
     return [
       vlxSyxPool,
       vlxUsdtPool,
       usdtSyxPool,
       ethSyxPool,
       vlxEthPool,
-      pvlxSyxPool,
       vlxSyxPool2,
     ];
   }

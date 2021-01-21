@@ -552,6 +552,8 @@ class Home extends Component {
         loading={this.state.loading || this.state.txLoading}
         closeModal={this.closeMultiDepositModal}
         modalOpen={this.state.multiDepositModalOpen}
+        showHash={this.showHash}
+        errorReturned={this.errorReturned}
       />
     );
   };
@@ -563,6 +565,8 @@ class Home extends Component {
         loading={this.state.loading || this.state.txLoading}
         closeModal={this.closeMultiWithdrawModal}
         modalOpen={this.state.multiWithdrawModalOpen}
+        showHash={this.showHash}
+        errorReturned={this.errorReturned}
       />
     );
   };
