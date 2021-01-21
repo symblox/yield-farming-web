@@ -63,12 +63,12 @@ const MultiWithdrawModal = (props) => {
   const { data: pool, classes, closeModal, modalOpen } = props;
   const fullScreen = window.innerWidth < 450;
   const poolAtom = atom(pool);
-  const maxTokenDepositAmountAtom = atom((get) => {
+  const maxTokenWithdrawAmountAtom = atom((get) => {
     const pool = get(poolAtom);
     const poolTokenBalance = get(poolTokenBalanceAtom);
     const availableAmounts = get(availableAmountAtom);
     let maxTokenWithdrawAmount = {},
-      minRatio;
+      minRatio = -1;
     for (let i = 0; i < availableAmounts.length; i++) {
       const key = availableAmounts[i].name;
       const tokenMaxOut = poolTokenBalance[key] * pool.maxOut;
@@ -80,7 +80,7 @@ const MultiWithdrawModal = (props) => {
       }
 
       const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio) {
+      if (minRatio != -1) {
         if (ratio < minRatio) {
           minRatio = ratio;
         }
@@ -105,7 +105,7 @@ const MultiWithdrawModal = (props) => {
   const [poolTokenBalance, setPoolMaxTokenAmountIn] = useAtom(
     poolTokenBalanceAtom
   );
-  const [maxTokenWithdrawAmount] = useAtom(maxTokenDepositAmountAtom);
+  const [maxTokenWithdrawAmount] = useAtom(maxTokenWithdrawAmountAtom);
 
   useEffect(() => {
     if (!ethersProvider || !pool) return;
