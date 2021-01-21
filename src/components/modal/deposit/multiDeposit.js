@@ -180,7 +180,7 @@ const MultiDepositModal = (props) => {
     let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
-        amounts.push(parseFloat(value).toFixed(8));
+        amounts.push(value);
       } else {
         amounts.push(
           Number.isNaN(ratio)
@@ -198,7 +198,7 @@ const MultiDepositModal = (props) => {
     amountChange({
       target: {
         name: key,
-        value: (maxTokenDepositAmount[token.symbol] || 0) + "",
+        value: parseFloat(maxTokenDepositAmount[token.symbol]).toFixed(8) || 0,
       },
     });
   };
