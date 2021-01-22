@@ -56,8 +56,8 @@ let vlxSyxPool = {
 
 //new pool type
 let vlxSyxPool2 = {
-  id: "SYX2/VLX-2",
-  featured: false,
+  id: "SYX2/VLX",
+  featured: true,
   depositModal: "multiDeposit",
   withdrawModal: "multiWithdraw",
   name: "VLX",
