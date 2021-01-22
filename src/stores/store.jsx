@@ -1025,9 +1025,13 @@ class Store {
           maxIn: toStringDecimals(maxIn, asset.decimals),
           maxOut: toStringDecimals(maxOut, asset.decimals),
           weight:
-            parseInt(toStringDecimals(weight1 * 100, asset.decimals)) +
+            parseFloat(toStringDecimals(weight1 * 100, asset.decimals)).toFixed(
+              0
+            ) +
             ":" +
-            parseInt(toStringDecimals(weight2 * 100, asset.decimals)),
+            parseFloat(toStringDecimals(weight2 * 100, asset.decimals)).toFixed(
+              0
+            ),
           erc20Balance2: toStringDecimals(erc20Balance2, asset.erc20Decimals2),
           erc20Balance: toStringDecimals(erc20Balance, asset.erc20Decimals),
           totalSupply: toStringDecimals(totalSupply, asset.decimals),
