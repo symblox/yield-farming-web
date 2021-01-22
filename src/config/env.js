@@ -61,8 +61,8 @@ function env() {
       rewardPool: "0x2c140E4561ef42c20B60E600CA52B86147858AC5",
       //connectorFactory: "0x2dE16283FA78149EE21Ff6F29913be7c3C4234a5", //no set governor
       connectorFactory: "0xBB9DE3c9E64ba58FDADE6ac832e08Be03BAc0a39",
-      bptConnector: "0x9b839EAa4A688622a1d1bB6d16c8DBe989A2306A", //BptReferralConnector
-      bptFactory: "0x01365EDf0079d31311e3cc732CD4D2083EE8e3c1",
+      bptConnector: " 0x5D5170936b988af311e28c404850353b4F34544D", //BptReferralConnector
+      //bptFactory: "0x01365EDf0079d31311e3cc732CD4D2083EE8e3c1",
       wvlx: "0x78f18612775a2c54efc74c2911542aa034fe8d3f",
       weth: "0x41e7fb07236a736e06b3460e458a5b827e552521",
       syx: "0x28a6312D786e9d7a78637dD137AbeF5332F3b2Aa",
@@ -73,7 +73,9 @@ function env() {
       vlxSyxBpt2: "0xFf5508e0DEFF2723a354bf1399815B8eA9421a30",
       vlxUsdtBpt: "0x4b067bc68b54133fe64832affbab3d7a6d361ba5",
       usdtSyxBpt: "0x53c74185bad56d362e0932fdfb4cea0bea5dccff",
+      usdtSyxBpt2: "0x90b0b69FE53de137416CDf091AA2ec419E90C626",
       ethSyxBpt: "0xa64b215b3b532cf7c4d1e384eff15346f0f5681c",
+      ethSyxBpt2: "0xE37FdfF908CBB6Fa733076ab2153bF5A3517F985",
       vlxEthBpt: "0xCF433aBcB66E8085744Adc97D65E38BFd5Ebbc15",
       pvlxSyxBpt: "0xc0dcFf3CA8FCBe9ee1f382D9C428d59fea91ABEA",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",

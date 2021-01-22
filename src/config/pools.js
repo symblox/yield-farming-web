@@ -58,14 +58,14 @@ let vlxSyxPool = {
 let vlxSyxPool2 = {
   id: "SYX2/VLX",
   featured: true,
-  depositModal: "multiDeposit",
-  withdrawModal: "multiWithdraw",
   name: "VLX",
   website: "Reward Pool",
   address: config.vlxSyxBpt2,
   symbol: "BPT",
   ROI: "DF",
   type: "swap-native",
+  depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",
@@ -147,6 +147,62 @@ let usdtSyxPool = {
   ROI: "DF",
   type: "swap",
   referral: true,
+  tokens: ["SYX", "USDT"], //reward token must in first
+  abi: config.bptABI,
+  decimals: 18,
+  entryContractABI: config.bptRefConnectorABI,
+  entryContractFactoryAddress: config.connectorFactory,
+  entryContractFactoryABI: config.connectorFactoryABI,
+  rewardsAddress: config.syx,
+  rewardsABI: config.syxABI,
+  rewardsSymbol: "SYX",
+  erc20Address: config.usdt,
+  erc20ABI: config.erc20ABI,
+  erc20Decimals: 6,
+  erc20Address2: config.syx,
+  erc20ABI2: config.syxABI,
+  erc20Decimals2: 18,
+  poolAddress: config.rewardPool,
+  poolABI: config.rewardPoolABI,
+};
+
+//new pool type
+let usdtSyxPool2 = {
+  id: "SYX2/USDT",
+  featured: true,
+  name: "USDT",
+  website: "Reward Pool",
+  address: config.usdtSyxBpt2,
+  symbol: "BPT",
+  ROI: "DF",
+  type: "swap",
+  referral: false,
+  depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
+  supportTokens: [
+    {
+      symbol: "USDT",
+      name: "USDT",
+      address: config.usdt,
+      abi: config.erc20ABI,
+      decimals: 6,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
+  ],
   tokens: ["SYX", "USDT"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,
@@ -253,6 +309,62 @@ let ethSyxPool = {
   poolABI: config.rewardPoolABI,
 };
 
+//new pool type
+let ethSyxPool2 = {
+  id: "SYX2/ETH",
+  featured: true,
+  name: "ETH",
+  website: "Reward Pool",
+  address: config.ethSyxBpt2,
+  symbol: "BPT",
+  ROI: "DF",
+  type: "swap",
+  referral: false,
+  depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
+  supportTokens: [
+    {
+      symbol: "ETH",
+      name: "ETH",
+      address: config.weth,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
+  ],
+  tokens: ["SYX", "ETH"], //reward token must in first
+  abi: config.bptABI,
+  decimals: 18,
+  rewardsAddress: config.syx,
+  rewardsABI: config.syxABI,
+  rewardsSymbol: "SYX",
+  entryContractABI: config.bptRefConnectorABI,
+  entryContractFactoryAddress: config.connectorFactory,
+  entryContractFactoryABI: config.connectorFactoryABI,
+  erc20Address: config.weth,
+  erc20ABI: config.erc20ABI,
+  erc20Decimals: 18,
+  erc20Address2: config.syx,
+  erc20ABI2: config.erc20ABI,
+  erc20Decimals2: 18,
+  poolAddress: config.rewardPool,
+  poolABI: config.rewardPoolABI,
+};
+
 function getPools() {
   // assign pool IDs to the pools
   if (process.env.REACT_APP_ENV === "production") {
@@ -267,15 +379,18 @@ function getPools() {
   } else {
     [
       vlxSyxPool2.index,
+      ethSyxPool2.index,
+      usdtSyxPool2.index,
       vlxUsdtPool.index,
       usdtSyxPool.index,
       ethSyxPool.index,
       vlxEthPool.index,
-
       vlxSyxPool.index,
-    ] = [6, 1, 2, 3, 4, 0];
+    ] = [6, 7, 8, 1, 2, 3, 4, 0];
     return [
       vlxSyxPool2,
+      ethSyxPool2,
+      usdtSyxPool2,
       vlxUsdtPool,
       usdtSyxPool,
       ethSyxPool,
