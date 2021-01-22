@@ -134,9 +134,7 @@ const MultiDepositModal = (props) => {
   const [loading] = useAtom(loadingAtom);
   const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
-  const [poolTokenBalance, setPoolMaxTokenAmountIn] = useAtom(
-    poolTokenBalanceAtom
-  );
+  const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
 
   useEffect(() => {
@@ -161,7 +159,7 @@ const MultiDepositModal = (props) => {
       ethersProvider,
       providerNetwork,
       pool,
-      setPoolMaxTokenAmountIn
+      setPoolTokenBalance
     );
   }, [ethersProvider, pool]);
 
@@ -203,6 +201,13 @@ const MultiDepositModal = (props) => {
     });
   };
 
+  const closeAndInitModal = () => {
+    setAvailableAmounts([]);
+    setPoolTokenBalance({});
+    setTokenBalances({});
+    closeModal();
+  };
+
   const confirm = async () => {
     // @TODO - fix calcs so no buffer is needed
     const buffer = BigNumber.from("1000000");
@@ -242,7 +247,7 @@ const MultiDepositModal = (props) => {
       errorReturned(JSON.stringify(error));
     }
     setTxLoading(false);
-    closeModal();
+    closeAndInitModal();
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {
@@ -297,13 +302,13 @@ const MultiDepositModal = (props) => {
 
   return (
     <Dialog
-      onClose={closeModal}
+      onClose={closeAndInitModal}
       aria-labelledby="customized-dialog-title"
       open={modalOpen}
       fullWidth={true}
       fullScreen={fullScreen}
     >
-      <DialogTitle id="customized-dialog-title" onClose={closeModal}>
+      <DialogTitle id="customized-dialog-title" onClose={closeAndInitModal}>
         <FormattedMessage id="POPUP_TITLE_DEPOSIT" />
       </DialogTitle>
       <MuiDialogContent>

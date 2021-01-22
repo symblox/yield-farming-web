@@ -109,11 +109,8 @@ const MultiWithdrawModal = (props) => {
   const [txLoading, setTxLoading] = useState(false);
   const [loading] = useAtom(loadingAtom);
   const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
-  const [poolTokenBalance, setPoolMaxTokenAmountIn] = useAtom(
-    poolTokenBalanceAtom
-  );
+  const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenWithdrawAmount] = useAtom(maxTokenWithdrawAmountAtom);
-
   useEffect(() => {
     if (!ethersProvider || !pool) return;
     fetchAvailableValues(
@@ -127,7 +124,7 @@ const MultiWithdrawModal = (props) => {
       ethersProvider,
       providerNetwork,
       pool,
-      setPoolMaxTokenAmountIn
+      setPoolTokenBalance
     );
   }, [ethersProvider, pool]);
 
@@ -165,6 +162,12 @@ const MultiWithdrawModal = (props) => {
     });
   };
 
+  const closeAndInitModal = () => {
+    setAvailableAmounts([]);
+    setPoolTokenBalance({});
+    closeModal();
+  };
+
   const confirm = async () => {
     if (parseFloat(amounts[0]) <= 0) return;
 
@@ -191,7 +194,7 @@ const MultiWithdrawModal = (props) => {
       errorReturned(JSON.stringify(error));
     }
     setTxLoading(false);
-    closeModal();
+    closeAndInitModal();
   };
 
   const inputHtmls = pool.supportTokens.map((v, i) => {
@@ -246,13 +249,13 @@ const MultiWithdrawModal = (props) => {
 
   return (
     <Dialog
-      onClose={closeModal}
+      onClose={closeAndInitModal}
       aria-labelledby="customized-dialog-title"
       open={modalOpen}
       fullWidth={true}
       fullScreen={fullScreen}
     >
-      <DialogTitle id="customized-dialog-title" onClose={closeModal}>
+      <DialogTitle id="customized-dialog-title" onClose={closeAndInitModal}>
         <FormattedMessage id="POPUP_TITLE_WITHDRAW" />
       </DialogTitle>
       <MuiDialogContent>
