@@ -266,20 +266,21 @@ function getPools() {
     return [vlxSyxPool, vlxUsdtPool, usdtSyxPool, ethSyxPool, vlxEthPool];
   } else {
     [
-      vlxSyxPool.index,
+      vlxSyxPool2.index,
       vlxUsdtPool.index,
       usdtSyxPool.index,
       ethSyxPool.index,
       vlxEthPool.index,
-      vlxSyxPool2.index,
-    ] = [0, 1, 2, 3, 4, 6];
+
+      vlxSyxPool.index,
+    ] = [6, 1, 2, 3, 4, 0];
     return [
-      vlxSyxPool,
+      vlxSyxPool2,
       vlxUsdtPool,
       usdtSyxPool,
       ethSyxPool,
       vlxEthPool,
-      vlxSyxPool2,
+      vlxSyxPool,
     ];
   }
 }
