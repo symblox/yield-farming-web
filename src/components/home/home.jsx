@@ -690,8 +690,8 @@ class Home extends Component {
                 {rewardPools.length > 0 ? (
                   <Balance
                     outline={true}
-                    name={rewardPools[0].rewardsSymbol}
-                    balance={rewardPools[0].rewardsBalance}
+                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
+                    balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
                   />
                 ) : (
                   <></>
@@ -718,8 +718,8 @@ class Home extends Component {
                 <FormattedMessage id="WALLET_BALANCE" />
                 {rewardPools.length > 0 ? (
                   <Balance
-                    name={rewardPools[0].rewardsSymbol}
-                    balance={rewardPools[0].rewardsBalance}
+                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
+                    balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
                   />
                 ) : (
                   <></>
