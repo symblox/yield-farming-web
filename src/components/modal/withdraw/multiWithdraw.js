@@ -180,7 +180,16 @@ const MultiWithdrawModal = (props) => {
     const poolAmountIn = parseEther(
       parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
     ).sub(buffer);
-    const tokensOut = pool.supportTokens.map((v) => v.address);
+
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+    const tokensOut = pool.supportTokens.map((v) => {
+      if (v.symbol === "VLX") {
+        return ZERO_ADDRESS;
+      } else {
+        return v.address;
+      }
+    });
+
     const minAmountsOut = amounts.map((v, i) => "0");
     const params = [poolAmountIn, tokensOut, minAmountsOut || ""];
 
