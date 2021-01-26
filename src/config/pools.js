@@ -109,6 +109,60 @@ let vlxSyxPool2 = {
   poolABI: config.rewardPoolABI,
 };
 
+let svlxSyxPool = {
+  id: "SYX2/SVLX",
+  featured: true,
+  name: "SVLX",
+  website: "Reward Pool",
+  address: config.svlxSyxBpt,
+  symbol: "BPT",
+  ROI: "DF",
+  type: "swap",
+  depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
+  supportTokens: [
+    {
+      symbol: "SVLX",
+      name: "SVLX",
+      address: config.svlx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
+  ],
+  tokens: ["SYX", "SVLX"],
+  abi: config.bptABI,
+  decimals: 18,
+  rewardsAddress: config.syx,
+  rewardsABI: config.syxABI,
+  rewardsSymbol: "SYX",
+  entryContractABI: config.bptRefConnectorABI,
+  entryContractFactoryAddress: config.connectorFactory,
+  entryContractFactoryABI: config.connectorFactoryABI,
+  erc20Address: config.svlx,
+  erc20ABI: config.erc20ABI,
+  erc20Decimals: 18,
+  erc20Address2: config.syx,
+  erc20ABI2: config.syxABI,
+  erc20Decimals2: 18,
+  poolAddress: config.rewardPool,
+  poolABI: config.rewardPoolABI,
+};
+
 let pvlxSyxPool = {
   id: "SYX2/pVLX",
   featured: false,
@@ -381,16 +435,18 @@ function getPools() {
       vlxSyxPool2.index,
       ethSyxPool2.index,
       usdtSyxPool2.index,
+      svlxSyxPool.index,
       vlxUsdtPool.index,
       usdtSyxPool.index,
       ethSyxPool.index,
       vlxEthPool.index,
       vlxSyxPool.index,
-    ] = [6, 7, 8, 1, 2, 3, 4, 0];
+    ] = [6, 7, 8, 10, 1, 2, 3, 4, 0];
     return [
       vlxSyxPool2,
       ethSyxPool2,
       usdtSyxPool2,
+      svlxSyxPool,
       vlxUsdtPool,
       usdtSyxPool,
       ethSyxPool,
