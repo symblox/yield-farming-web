@@ -42,17 +42,14 @@ export async function fetchAvailableValues(
       const totalSupplyCall = bptContract.totalSupply();
 
       const [totalSupply] = await ethcallProvider.all([totalSupplyCall]);
-
       for (let i = 0; i < pool.supportTokens.length; i++) {
         const balanceCall = bptContract.getBalance(
           pool.supportTokens[i].address
         );
-
         const [balance] = await ethcallProvider.all([balanceCall]);
         const stakeAmount = parseEther(pool.stakeAmount + "");
 
         const amountOut = stakeAmount.mul(balance).div(totalSupply);
-
         array.push({
           name: pool.supportTokens[i].symbol,
           amount: formatUnits(
@@ -61,9 +58,9 @@ export async function fetchAvailableValues(
           ),
         });
       }
-
       setAvailableAmounts(array);
     } catch (e) {
+      console.log("fetchAvailableValues error");
       console.error(e);
       return;
     }

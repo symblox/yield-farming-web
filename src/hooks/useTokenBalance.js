@@ -59,9 +59,9 @@ export async function fetchTokenBalanceValues(
           formatUnits(balancesRes[i], supportTokens[i].decimals)
         );
       }
-
       setTokenBalances(balances);
     } catch (e) {
+      console.log("fetchTokenBalanceValues error");
       console.error(e);
       return;
     }

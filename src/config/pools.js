@@ -35,6 +35,30 @@ let vlxSyxPool = {
   symbol: "BPT",
   ROI: "DF",
   type: "swap-native",
+  depositModal: "singleDeposit",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  supportTokens: [
+    {
+      symbol: "VLX",
+      name: "VLX",
+      address: config.wvlx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
+  ],
   tokens: ["SYX", "VLX"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,
@@ -163,34 +187,6 @@ let svlxSyxPool = {
   poolABI: config.rewardPoolABI,
 };
 
-let pvlxSyxPool = {
-  id: "SYX2/pVLX",
-  featured: false,
-  name: "pVLX",
-  website: "Reward Pool",
-  address: config.pvlxSyxBpt,
-  symbol: "BPT",
-  ROI: "DF",
-  type: "swap",
-  tokens: ["SYX", "pVLX"], //reward token must in first
-  abi: config.bptABI,
-  entryContractABI: config.bptRefConnectorABI,
-  entryContractFactoryAddress: config.connectorFactory,
-  entryContractFactoryABI: config.connectorFactoryABI,
-  decimals: 18,
-  rewardsAddress: config.syx,
-  rewardsABI: config.syxABI,
-  rewardsSymbol: "SYX",
-  erc20Address: config.pVlx,
-  erc20ABI: config.erc20ABI,
-  erc20Decimals: 18,
-  erc20Address2: config.syx,
-  erc20ABI2: config.syxABI,
-  erc20Decimals2: 18,
-  poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
-};
-
 let usdtSyxPool = {
   id: "SYX2/USDT",
   featured: false,
@@ -201,6 +197,30 @@ let usdtSyxPool = {
   ROI: "DF",
   type: "swap",
   referral: true,
+  depositModal: "singleDeposit",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  supportTokens: [
+    {
+      symbol: "USDT",
+      name: "USDT",
+      address: config.usdt,
+      abi: config.erc20ABI,
+      decimals: 6,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
+  ],
   tokens: ["SYX", "USDT"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,
@@ -286,6 +306,30 @@ let vlxUsdtPool = {
   ROI: "DF",
   type: "swap-native",
   referral: true,
+  depositModal: "singleDeposit",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  supportTokens: [
+    {
+      symbol: "VLX",
+      name: "VLX",
+      address: config.wvlx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "USDT",
+      name: "USDT",
+      address: config.usdt,
+      abi: config.erc20ABI,
+      decimals: 6,
+    },
+  ],
   tokens: ["USDT", "VLX"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,
@@ -315,6 +359,30 @@ let vlxEthPool = {
   ROI: "DF",
   type: "swap-native",
   referral: false,
+  depositModal: "singleDeposit",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  supportTokens: [
+    {
+      symbol: "VLX",
+      name: "VLX",
+      address: config.wvlx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "ETH",
+      name: "ETH",
+      address: config.weth,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+  ],
   tokens: ["ETH", "VLX"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,
@@ -344,6 +412,30 @@ let ethSyxPool = {
   ROI: "DF",
   type: "swap",
   referral: false,
+  depositModal: "singleDeposit",
+  rewardToken: {
+    symbol: "SYX",
+    name: "SYX2",
+    address: config.syx,
+    abi: config.syxABI,
+    decimals: 18,
+  },
+  supportTokens: [
+    {
+      symbol: "ETH",
+      name: "ETH",
+      address: config.weth,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    {
+      symbol: "SYX",
+      name: "SYX2",
+      address: config.syx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+  ],
   tokens: ["SYX", "ETH"], //reward token must in first
   abi: config.bptABI,
   decimals: 18,

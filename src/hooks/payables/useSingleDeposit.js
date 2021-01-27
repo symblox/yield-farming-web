@@ -35,15 +35,15 @@ export default function useSingleDeposit() {
           value = tokenAmountIn;
           break;
         case 2:
-          action = "deposit(uint256, address)";
+          action = "deposit(uint256,address)";
           value = tokenAmountIn;
           break;
         case 3:
-          action = "deposit(address, uint256, uint256)";
+          action = "deposit(address,uint256,uint256)";
           await approve(params[0], connectorAddress, pool.erc20ABI, params[2]);
           break;
         case 4:
-          action = "deposit(address, uint256, uint256, address)";
+          action = "deposit(address,uint256,uint256,address)";
           await approve(params[0], connectorAddress, pool.erc20ABI, params[2]);
           break;
         default:
@@ -54,7 +54,6 @@ export default function useSingleDeposit() {
         pool.entryContractABI,
         signer
       );
-
       let gasLimit;
       try {
         gasLimit = await connectorContract.estimateGas[action](...params, {
