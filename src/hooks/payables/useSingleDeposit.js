@@ -40,11 +40,11 @@ export default function useSingleDeposit() {
           break;
         case 3:
           action = "deposit(address,uint256,uint256)";
-          await approve(params[0], connectorAddress, pool.erc20ABI, params[2]);
+          await approve(params[0], connectorAddress, pool.erc20ABI, params[1]);
           break;
         case 4:
           action = "deposit(address,uint256,uint256,address)";
-          await approve(params[0], connectorAddress, pool.erc20ABI, params[2]);
+          await approve(params[0], connectorAddress, pool.erc20ABI, params[1]);
           break;
         default:
       }
