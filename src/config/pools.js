@@ -36,6 +36,7 @@ let vlxSyxPool = {
   ROI: "DF",
   type: "swap-native",
   depositModal: "singleDeposit",
+  withdrawModal: "singleWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",
@@ -198,6 +199,7 @@ let usdtSyxPool = {
   type: "swap",
   referral: true,
   depositModal: "singleDeposit",
+  withdrawModal: "singleWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",
@@ -307,6 +309,7 @@ let vlxUsdtPool = {
   type: "swap-native",
   referral: true,
   depositModal: "singleDeposit",
+  withdrawModal: "singleWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",
@@ -360,6 +363,7 @@ let vlxEthPool = {
   type: "swap-native",
   referral: false,
   depositModal: "singleDeposit",
+  withdrawModal: "singleWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",
@@ -413,6 +417,7 @@ let ethSyxPool = {
   type: "swap",
   referral: false,
   depositModal: "singleDeposit",
+  withdrawModal: "singleWithdraw",
   rewardToken: {
     symbol: "SYX",
     name: "SYX2",

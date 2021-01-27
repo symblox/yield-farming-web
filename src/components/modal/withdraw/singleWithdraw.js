@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
-import { parseEther } from "@ethersproject/units";
-import { BigNumber } from "@ethersproject/bignumber";
+import { parseUnits } from "@ethersproject/units";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import FormControl from "@material-ui/core/FormControl";
@@ -18,13 +19,14 @@ import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../../contexts/Web3Context";
-import availableAmountAtom, {
+import singleAvailableAmountAtom, {
   fetchAvailableValues,
-} from "../../../hooks/useAvailableAmount";
+} from "../../../hooks/useSingleAvailableAmount";
 import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../../hooks/usePoolTokenBalance";
-import useMultiWithdraw from "../../../hooks/payables/useMultiWithdraw";
+import useSingleWithdraw from "../../../hooks/payables/useSingleWithdraw";
+import useCalcPoolInGivenSingleOut from "../../../hooks/useCalcPoolInGivenSingleOut";
 
 import styles from "../../../styles/withdraw";
 
@@ -47,7 +49,7 @@ const DialogTitle = withStyles(styles)((props) => {
 });
 
 const loadingAtom = atom((get) => {
-  const availableAmounts = get(availableAmountAtom);
+  const availableAmounts = get(singleAvailableAmountAtom);
   const poolTokenBalance = get(poolTokenBalanceAtom);
   let loading = false;
   if (
@@ -58,7 +60,7 @@ const loadingAtom = atom((get) => {
   return loading;
 });
 
-const MultiWithdrawModal = (props) => {
+const SingleWithdrawModal = (props) => {
   const {
     data: pool,
     classes,
@@ -72,9 +74,8 @@ const MultiWithdrawModal = (props) => {
   const maxTokenWithdrawAmountAtom = atom((get) => {
     const pool = get(poolAtom);
     const poolTokenBalance = get(poolTokenBalanceAtom);
-    const availableAmounts = get(availableAmountAtom);
-    let maxTokenWithdrawAmount = {},
-      minRatio = -1;
+    const availableAmounts = get(singleAvailableAmountAtom);
+    let maxTokenWithdrawAmount = {};
     for (let i = 0; i < availableAmounts.length; i++) {
       const key = availableAmounts[i].name;
       const tokenMaxOut = poolTokenBalance[key] * pool.maxOut;
@@ -85,32 +86,27 @@ const MultiWithdrawModal = (props) => {
         maxAmount = tokenMaxOut;
       }
 
-      const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio != -1) {
-        if (ratio < minRatio) {
-          minRatio = ratio;
-        }
-      } else {
-        minRatio = ratio;
-      }
-      maxTokenWithdrawAmount[key] = poolTokenBalance[key];
-    }
-
-    for (let key in maxTokenWithdrawAmount) {
-      maxTokenWithdrawAmount[key] = maxTokenWithdrawAmount[key] * minRatio;
+      maxTokenWithdrawAmount[key] = maxAmount;
     }
 
     return maxTokenWithdrawAmount;
   });
-  const multiWithdraw = useMultiWithdraw();
-  const { ethersProvider, providerNetwork } = useContext(Web3Context);
-  const [amounts, setAmounts] = useState({});
+
+  const singleWithdraw = useSingleWithdraw();
+  const calcPoolInGivenSingleOut = useCalcPoolInGivenSingleOut();
+  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const [amount, setAmount] = useState("");
+  const [selected, setSelected] = useState({});
   const [txLoading, setTxLoading] = useState(false);
   const [loading] = useAtom(loadingAtom);
-  const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
+  const [availableAmounts, setAvailableAmounts] = useAtom(
+    singleAvailableAmountAtom
+  );
   const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenWithdrawAmount] = useAtom(maxTokenWithdrawAmountAtom);
   useEffect(() => {
+    if (pool.supportTokens && pool.supportTokens.length > 0)
+      setSelected(pool.supportTokens[0]);
     if (!ethersProvider || !pool) return;
     fetchAvailableValues(
       ethersProvider,
@@ -128,34 +124,22 @@ const MultiWithdrawModal = (props) => {
   }, [ethersProvider, pool]);
 
   const amountChange = (event) => {
-    const { name, value } = event.target;
-    const ratio =
-      parseFloat(value) /
-      parseFloat(
-        maxTokenWithdrawAmount[pool.supportTokens[parseInt(name)].symbol]
-      );
-
-    let amounts = [];
-    pool.supportTokens.forEach((token, i) => {
-      if (name === i + "") {
-        amounts.push(value);
-      } else {
-        let amount = ratio * parseFloat(maxTokenWithdrawAmount[token.symbol]);
-        const minAmount = 0.000001;
-        if (amount < minAmount) amount = 0;
-        amounts.push(Number.isNaN(ratio) ? "" : amount + "");
-      }
-    });
-    setAmounts(amounts);
+    const { value } = event.target;
+    setAmount(value);
   };
 
-  const max = (token, key) => {
+  const handleChange = (event) => {
+    const { value } = event.target;
+    setAmount("");
+    setSelected(value);
+  };
+
+  const max = (token) => {
     let amount = parseFloat(maxTokenWithdrawAmount[token.symbol]) || 0;
     const minAmount = 0.000001;
     if (amount < minAmount) amount = 0;
     amountChange({
       target: {
-        name: key,
         value: amount + "",
       },
     });
@@ -168,33 +152,21 @@ const MultiWithdrawModal = (props) => {
   };
 
   const confirm = async () => {
-    if (parseFloat(amounts[0]) <= 0) return;
-
-    // @TODO - fix calcs so no buffer is needed
-    const buffer = BigNumber.from("1000000");
-    //All token ratios are the same, so just use the first one
-    const ratio =
-      parseFloat(amounts[0]) /
-      parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
-    const poolAmountIn = parseEther(
-      parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
-    ).sub(buffer);
-
-    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-    const tokensOut = pool.supportTokens.map((v) => {
-      if (v.symbol === "VLX") {
-        return ZERO_ADDRESS;
-      } else {
-        return v.address;
-      }
-    });
-
-    const minAmountsOut = amounts.map((v, i) => "0");
-    const params = [poolAmountIn, tokensOut, minAmountsOut || ""];
+    const tokenAmountOut = await calcPoolInGivenSingleOut(
+      pool,
+      selected.address,
+      parseUnits(amount, selected.decimals)
+    );
+    let params = [];
+    if (selected.symbol !== "VLX") {
+      params.push(selected.address);
+    }
+    params.push(tokenAmountOut);
+    params.push("0");
 
     setTxLoading(true);
     try {
-      const tx = await multiWithdraw(pool, params);
+      const tx = await singleWithdraw(pool, params);
       showHash(tx.hash);
       //await tx.wait();
     } catch (error) {
@@ -204,56 +176,6 @@ const MultiWithdrawModal = (props) => {
     setTxLoading(false);
     closeAndInitModal();
   };
-
-  const inputHtmls = pool.supportTokens.map((v, i) => {
-    return (
-      <div className={classes.formContent} key={i}>
-        <FormControl variant="outlined" style={{ flex: "4" }}>
-          <OutlinedInput
-            className={classes.customInput}
-            name={i + ""}
-            error={
-              parseFloat(amounts[i] || 0) >
-              parseFloat(maxTokenWithdrawAmount[v.symbol] || 0)
-            }
-            id="outlined-adornment-password"
-            type={"text"}
-            value={amounts[i] || ""}
-            onChange={amountChange}
-            endAdornment={
-              <InputAdornment position="end">
-                <Button
-                  className={classes.maxBtn}
-                  disabled={loading || txLoading}
-                  onClick={max.bind(this, v, i + "")}
-                >
-                  <FormattedMessage id="POPUP_INPUT_MAX" />
-                </Button>
-              </InputAdornment>
-            }
-          />
-          {parseFloat(amounts[i] || 0) >
-          parseFloat(maxTokenWithdrawAmount[v.symbol] || 0) ? (
-            <span style={{ color: "red" }}>
-              <FormattedMessage id="TRADE_ERROR_BALANCE" />
-            </span>
-          ) : (
-            <></>
-          )}
-        </FormControl>
-        <FormControl
-          variant="outlined"
-          className={classes.formControl}
-          style={{ flex: "1" }}
-        >
-          <div className={classes.tokenBtn}>
-            <img className={classes.icon} src={"/" + v.name + ".png"} alt="" />
-            {v.name}
-          </div>
-        </FormControl>
-      </div>
-    );
-  });
 
   return (
     <Dialog
@@ -273,36 +195,91 @@ const MultiWithdrawModal = (props) => {
             {": "}
           </span>
           <span className={classes.rightText}>
-            {pool.supportTokens.map((v, i) => {
-              return (
-                <span key={i}>
-                  <NumberFormat
-                    value={
-                      maxTokenWithdrawAmount[v.symbol]
-                        ? maxTokenWithdrawAmount[v.symbol].toLocaleString(
-                            undefined,
-                            {
-                              maximumFractionDigits: 10,
-                            }
-                          )
-                        : "-"
-                    }
-                    defaultValue={"-"}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    isNumericString={true}
-                    suffix={v.name}
-                    decimalScale={4}
-                    fixedDecimalScale={true}
-                    renderText={(value) => <span>{value}</span>}
-                  />
-                  {i === pool.supportTokens.length - 1 ? "" : " / "}
-                </span>
-              );
-            })}
+            <span>
+              <NumberFormat
+                value={
+                  maxTokenWithdrawAmount[selected.symbol] ||
+                  maxTokenWithdrawAmount[selected.symbol] === 0
+                    ? maxTokenWithdrawAmount[selected.symbol].toLocaleString(
+                        undefined,
+                        {
+                          maximumFractionDigits: 10,
+                        }
+                      )
+                    : "-"
+                }
+                defaultValue={"-"}
+                displayType={"text"}
+                thousandSeparator={true}
+                isNumericString={true}
+                suffix={selected.name}
+                decimalScale={4}
+                fixedDecimalScale={true}
+                renderText={(value) => <span>{value}</span>}
+              />
+            </span>
           </span>
         </Typography>
-        {inputHtmls}
+        <div className={classes.formContent}>
+          <FormControl variant="outlined" style={{ flex: "4" }}>
+            <OutlinedInput
+              className={classes.customInput}
+              error={
+                parseFloat(amount || 0) >
+                parseFloat(maxTokenWithdrawAmount[selected.symbol] || 0)
+              }
+              id="outlined-adornment-password"
+              type={"text"}
+              value={amount || ""}
+              onChange={amountChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <Button
+                    className={classes.maxBtn}
+                    disabled={loading || txLoading}
+                    onClick={max.bind(this, selected)}
+                  >
+                    <FormattedMessage id="POPUP_INPUT_MAX" />
+                  </Button>
+                </InputAdornment>
+              }
+            />
+            {parseFloat(amount || 0) >
+            parseFloat(maxTokenWithdrawAmount[selected.symbol] || 0) ? (
+              <span style={{ color: "red" }}>
+                <FormattedMessage id="TRADE_ERROR_BALANCE" />
+              </span>
+            ) : (
+              <></>
+            )}
+          </FormControl>
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            style={{ flex: "1" }}
+          >
+            <Select
+              className={classes.select}
+              value={selected}
+              onChange={handleChange}
+              inputProps={{
+                name: "token",
+                id: "outlined-token",
+              }}
+            >
+              {pool.supportTokens.map((v, i) => (
+                <MenuItem value={v} key={i}>
+                  <img
+                    className={classes.icon}
+                    src={"/" + v.name + ".png"}
+                    alt=""
+                  />
+                  {v.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
         <Typography gutterBottom>
           <span className={classes.text}>
             <FormattedMessage id="POPUP_WITHDRAW_REWARD" />
@@ -341,4 +318,4 @@ const MultiWithdrawModal = (props) => {
   );
 };
 
-export default withStyles(styles)(MultiWithdrawModal);
+export default withStyles(styles)(SingleWithdrawModal);

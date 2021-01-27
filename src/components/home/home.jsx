@@ -28,6 +28,7 @@ import DepositModal from "../modal/depositModal";
 import MultiDepositModal from "../modal/deposit/multiDeposit";
 import MultiWithdrawModal from "../modal/withdraw/multiWithdraw";
 import SingleDepositModal from "../modal/deposit/singleDeposit";
+import SingleWithdrawModal from "../modal/withdraw/singleWithdraw";
 import TransactionModal from "../modal/transactionModal";
 import WithdrawRewardsModal from "../modal/withdrawRewardsModal";
 import WithdrawModal from "../modal/withdrawModal";
@@ -280,6 +281,7 @@ class Home extends Component {
       multiDepositModalOpen: false,
       singleDepositModalOpen: false,
       multiWithdrawModalOpen: false,
+      singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
       withdrawModalOpen: false,
       transactionModalOpen: false,
@@ -354,6 +356,7 @@ class Home extends Component {
       multiDepositModalOpen: false,
       singleDepositModalOpen: false,
       multiWithdrawModalOpen: false,
+      singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
       withdrawModalOpen: false,
       transactionModalOpen: false,
@@ -415,6 +418,7 @@ class Home extends Component {
         multiDepositModalOpen: false,
         singleDepositModalOpen: false,
         multiWithdrawModalOpen: false,
+        singleWithdrawModalOpen: false,
         withdrawRewardsModalOpen: false,
         withdrawModalOpen: false,
         transactionModalOpen: false,
@@ -465,6 +469,9 @@ class Home extends Component {
       switch (data.withdrawModal) {
         case "multiWithdraw":
           key = "multiWithdrawModalOpen";
+          break;
+        case "singleWithdraw":
+          key = "singleWithdrawModalOpen";
           break;
         default:
           key = "withdrawModalOpen";
@@ -517,6 +524,10 @@ class Home extends Component {
 
   closeMultiWithdrawModal = () => {
     this.setState({ multiWithdrawModalOpen: false });
+  };
+
+  closeSingleWithdrawModal = () => {
+    this.setState({ singleWithdrawModalOpen: false });
   };
 
   closeWithdrawRewardsModal = () => {
@@ -588,6 +599,19 @@ class Home extends Component {
     );
   };
 
+  renderSingleWithdrawModal = (data) => {
+    return (
+      <SingleWithdrawModal
+        data={data}
+        loading={this.state.loading || this.state.txLoading}
+        closeModal={this.closeSingleWithdrawModal}
+        modalOpen={this.state.singleWithdrawModalOpen}
+        showHash={this.showHash}
+        errorReturned={this.errorReturned}
+      />
+    );
+  };
+
   renderWithdrawRewardsModal = (data) => {
     return (
       <WithdrawRewardsModal
@@ -632,6 +656,7 @@ class Home extends Component {
       multiDepositModalOpen,
       singleDepositModalOpen,
       multiWithdrawModalOpen,
+      singleWithdrawModalOpen,
       withdrawRewardsModalOpen,
       withdrawModalOpen,
       transactionModalOpen,
@@ -1295,6 +1320,8 @@ class Home extends Component {
           this.renderSingleDepositModal(this.state.depositData)}
         {multiWithdrawModalOpen &&
           this.renderMultiWithdrawModal(this.state.withdrawData)}
+        {singleWithdrawModalOpen &&
+          this.renderSingleWithdrawModal(this.state.withdrawData)}
         {withdrawRewardsModalOpen &&
           this.renderWithdrawRewardsModal(this.state.rewardPools)}
         {withdrawModalOpen && this.renderWithdrawModal(this.state.withdrawData)}
