@@ -150,7 +150,6 @@ const SingleDepositModal = (props) => {
   const fetchStakedAmount = async () => {
     let staked = {};
     const promises = pool.supportTokens.map(async (v) => {
-      console.log();
       let amount = await calcSingleOutGivenPoolIn(
         pool,
         v.address,
