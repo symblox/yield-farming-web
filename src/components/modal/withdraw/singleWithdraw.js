@@ -152,6 +152,7 @@ const SingleWithdrawModal = (props) => {
   };
 
   const confirm = async () => {
+    setTxLoading(true);
     const tokenAmountOut = await calcPoolInGivenSingleOut(
       pool,
       selected.address,
@@ -163,8 +164,6 @@ const SingleWithdrawModal = (props) => {
     }
     params.push(tokenAmountOut);
     params.push("0");
-
-    setTxLoading(true);
     try {
       const tx = await singleWithdraw(pool, params);
       showHash(tx.hash);

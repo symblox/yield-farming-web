@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
-import { parseUnits } from "@ethersproject/units";
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -19,9 +19,6 @@ import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../../contexts/Web3Context";
-import availableAmountAtom, {
-  fetchAvailableValues,
-} from "../../../hooks/useAvailableAmount";
 import tokenBalanceAtom, {
   fetchTokenBalanceValues,
 } from "../../../hooks/useTokenBalance";
@@ -29,7 +26,7 @@ import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../../hooks/usePoolTokenBalance";
 import useSingleDeposit from "../../../hooks/payables/useSingleDeposit";
-
+import useCalcSingleOutGivenPoolIn from "../../../hooks/useCalcSingleOutGivenPoolIn";
 import styles from "../../../styles/deposit";
 import config from "../../../config";
 
@@ -65,12 +62,10 @@ function getUrlParams() {
 }
 
 const loadingAtom = atom((get) => {
-  const availableAmounts = get(availableAmountAtom);
   const poolTokenBalance = get(poolTokenBalanceAtom);
   const tokenBalances = get(tokenBalanceAtom);
   let loading = false;
   if (
-    !Array.isArray(availableAmounts) ||
     Object.keys(poolTokenBalance).length === 0 ||
     Object.keys(tokenBalances).length === 0
   )
@@ -117,13 +112,15 @@ const SingleDepositModal = (props) => {
   });
 
   const singleDeposit = useSingleDeposit();
+  const calcSingleOutGivenPoolIn = useCalcSingleOutGivenPoolIn();
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [amount, setAmount] = useState("");
   const [selected, setSelected] = useState({});
   const [referral, setReferral] = useState("");
+  const [stakedAmount, setStakedAmount] = useState("-");
+  const [stakedList, setStakedList] = useState({});
   const [txLoading, setTxLoading] = useState(false);
   const [loading] = useAtom(loadingAtom);
-  const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
@@ -132,13 +129,6 @@ const SingleDepositModal = (props) => {
     if (pool.supportTokens && pool.supportTokens.length > 0)
       setSelected(pool.supportTokens[0]);
     if (!ethersProvider || !pool) return;
-    fetchAvailableValues(
-      ethersProvider,
-      providerNetwork,
-      pool,
-      setAvailableAmounts
-    );
-
     fetchTokenBalanceValues(
       account,
       ethersProvider,
@@ -153,7 +143,28 @@ const SingleDepositModal = (props) => {
       pool,
       setPoolTokenBalance
     );
+
+    fetchStakedAmount();
   }, [ethersProvider, pool]);
+
+  const fetchStakedAmount = async () => {
+    let staked = {};
+    const promises = pool.supportTokens.map(async (v) => {
+      console.log();
+      let amount = await calcSingleOutGivenPoolIn(
+        pool,
+        v.address,
+        parseUnits(pool.stakeAmount, pool.decimals)
+      );
+      amount = formatUnits(amount, v.decimals);
+      const minAmount = 0.000001;
+      if (parseFloat(amount) < minAmount) amount = 0;
+      staked[v.symbol] = amount;
+    });
+    await Promise.all(promises);
+    setStakedList(staked);
+    setStakedAmount(staked[pool.supportTokens[0].symbol]);
+  };
 
   const referralChange = (event) => {
     setReferral(event.target.value);
@@ -168,6 +179,7 @@ const SingleDepositModal = (props) => {
     const { value } = event.target;
     setAmount("");
     setSelected(value);
+    setStakedAmount(stakedList[value.symbol]);
   };
 
   const max = (token) => {
@@ -182,7 +194,6 @@ const SingleDepositModal = (props) => {
   };
 
   const closeAndInitModal = () => {
-    setAvailableAmounts([]);
     setPoolTokenBalance({});
     setTokenBalances({});
     closeModal();
@@ -216,20 +227,20 @@ const SingleDepositModal = (props) => {
     closeAndInitModal();
   };
 
-  const getAvailableAmount = () => {
-    let amount = "-";
-    if (Array.isArray(availableAmounts)) {
-      for (let i = 0; i < availableAmounts.length; i++) {
-        if (availableAmounts[i].name === selected.symbol) {
-          amount =
-            parseFloat(availableAmounts[i].amount) * pool.supportTokens.length;
-        }
-      }
-    }
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
-    return amount;
-  };
+  // const getAvailableAmount = () => {
+  //   let amount = "-";
+  //   if (Array.isArray(availableAmounts)) {
+  //     for (let i = 0; i < availableAmounts.length; i++) {
+  //       if (availableAmounts[i].name === selected.symbol) {
+  //         amount =
+  //           parseFloat(availableAmounts[i].amount) * pool.supportTokens.length;
+  //       }
+  //     }
+  //   }
+  //   const minAmount = 0.000001;
+  //   if (amount < minAmount) amount = 0;
+  //   return amount;
+  // };
 
   return (
     <Dialog
@@ -273,7 +284,7 @@ const SingleDepositModal = (props) => {
           </span>
           <span className={classes.rightText}>
             <NumberFormat
-              value={getAvailableAmount()}
+              value={stakedAmount}
               defaultValue={"-"}
               displayType={"text"}
               thousandSeparator={true}
