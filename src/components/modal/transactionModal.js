@@ -1,6 +1,8 @@
-import React, {Component} from "react";
-import {FormattedMessage} from "react-intl";
-import {withStyles} from "@material-ui/core/styles";
+import React, { useContext, useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
+import { atom, useAtom } from "jotai";
+import { parseUnits, formatUnits } from "@ethersproject/units";
+import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -15,629 +17,422 @@ import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import NumberFormat from 'react-number-format';
-import {debounce} from "../../utils/debounce.js";
-import {formatNumberPrecision} from "../../utils/numberFormat.js";
+import NumberFormat from "react-number-format";
+import { Web3Context } from "../../contexts/Web3Context";
+import styles from "../../styles/transaction";
+import tokenBalanceAtom, {
+  fetchTokenBalanceValues,
+} from "../../hooks/useTokenBalance";
+import poolTokenBalanceAtom, {
+  fetchPoolTokenBalance,
+} from "../../hooks/usePoolTokenBalance";
+import useCalcTradePrice from "../../hooks/useCalcTradePrice";
+import config from "../../config";
+import { debounce } from "../../utils/debounce.js";
 
-import config, {tokensName} from "../../config";
-
-import Store from "../../stores";
-import {
-    TRADE,
-    CALCULATE_PRICE,
-    CALCULATE_PRICE_RETURNED
-} from "../../constants";
-
-const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
-
-const styles = theme => ({
-    root: {
-        margin: 0,
-        padding: theme.spacing(2),
-        // fontFamily: "Noto Sans SC",
-        fontStyle: "normal",
-        fontWeight: 500,
-        fontSize: "28px",
-        lineHeight: "39px",
-        textAlign: "center",
-        color: "#1E304B"
-    },
-    button: {
-        background:
-            "linear-gradient(135deg, #42D9FE 0%, #2872FA 100%, #42D9FE)",
-        borderRadius: "26px",
-        // fontFamily: "Noto Sans SC",
-        fontStyle: "normal",
-        fontWeight: 500,
-        fontSize: "20px",
-        lineHeight: "34px",
-        color: "#FFFFFF",
-        minWidth: "115px",
-        height: "50px",
-        margin: "16px 8px 32px 8px",
-        "&:hover": {
-            background:
-                "linear-gradient(315deg, #4DB5FF 0%, #57E2FF 100%, #4DB5FF)"
-        },
-        "&.Mui-disabled": {
-            background:
-                "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
-            color: "#FFFFFF"
-        }
-    },
-    containedButton: {
-        borderRadius: "6px",
-        margin: "0 6px"
-    },
-    select: {
-        borderRadius: "6px"
-    },
-    closeButton: {
-        position: "absolute",
-        right: theme.spacing(1),
-        top: theme.spacing(1),
-        color: theme.palette.grey[500]
-    },
-    formControl: {
-        margin: 0,
-        minWidth: 120
-    },
-    formContent: {
-        margin: "16px 0px",
-        display: "flex"
-    },
-    textField: {
-        flex: 1
-    },
-    text: {
-        // fontFamily: "Noto Sans SC",
-        fontStyle: "normal",
-        fontWeight: "300",
-        fontSize: "16px",
-        lineHeight: "25px",
-        color: "#ACAEBC"
-    },
-    rightText: {
-        float: "right",
-        // fontFamily: "Noto Sans SC",
-        fontStyle: "normal",
-        fontWeight: 500,
-        fontSize: "16px",
-        lineHeight: "22px",
-        textAlign: "right",
-        color: "#4E5B70"
-    },
-    textPrimy: {
-        fontWeight: 500,
-        color: "#4E5B70"
-    },
-    icon: {
-        width: "24px",
-        height: "24px",
-        display: "inline-block",
-        margin: "auto 6px",
-        verticalAlign: "middle"
-    },
-    customInput: {
-        border: "1px solid #EAEAEA",
-        borderRadius: "6px",
-        paddingRight: "0px",
-        marginRight: "5px",
-
-        "& button": {
-            borderRadius: "0px",
-            margin: "0",
-            fontSize: "20px",
-            lineHeight: "23px",
-            color: "#ACAEBC"
-        }
-    },
-    maxBtn: {
-        padding: "10px 18px"
-    }
+const DialogTitle = withStyles(styles)((props) => {
+  const { children, classes, onClose, ...other } = props;
+  return (
+    <MuiDialogTitle disableTypography className={classes.root} {...other}>
+      <Typography variant="h6">{children}</Typography>
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          className={classes.closeButton}
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </MuiDialogTitle>
+  );
 });
 
-const DialogTitle = withStyles(styles)(props => {
-    const {children, classes, onClose, ...other} = props;
-    return (
-        <MuiDialogTitle disableTypography className={classes.root} {...other}>
-            <Typography variant="h6">{children}</Typography>
-            {onClose ? (
-                <IconButton
-                    aria-label="close"
-                    className={classes.closeButton}
-                    onClick={onClose}
-                >
-                    <CloseIcon />
-                </IconButton>
-            ) : null}
-        </MuiDialogTitle>
-    );
-});
-
-const DialogContent = withStyles(theme => ({
-    root: {
-        padding: theme.spacing(2),
-        // fontFamily: "Noto Sans SC",
-        fontStyle: "normal",
-        fontWeight: "300",
-        fontSize: "18px",
-        lineHeight: "25px",
-        color: "#ACAEBC"
-    }
+const DialogContent = withStyles((theme) => ({
+  root: {
+    padding: theme.spacing(2),
+    // fontFamily: "Noto Sans SC",
+    fontStyle: "normal",
+    fontWeight: "300",
+    fontSize: "18px",
+    lineHeight: "25px",
+    color: "#ACAEBC",
+  },
 }))(MuiDialogContent);
 
-const DialogActions = withStyles(theme => ({
-    root: {
-        margin: 0,
-        padding: theme.spacing(1)
-    }
+const DialogActions = withStyles((theme) => ({
+  root: {
+    margin: 0,
+    padding: theme.spacing(1),
+  },
 }))(MuiDialogActions);
 
-class TransactionModal extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tokens: props.data.tokens,
-            token: props.data.tokens[0],
-            amount: "0",
-            price: props.data.price,
-            buyToken: props.data.tokens[1],
-            buyAmount: "0",
-            loading: false
-        };
+const loadingAtom = atom((get) => {
+  const poolTokenBalance = get(poolTokenBalanceAtom);
+  const tokenBalances = get(tokenBalanceAtom);
+  let loading = false;
+  if (
+    Object.keys(poolTokenBalance).length === 0 ||
+    Object.keys(tokenBalances).length === 0
+  )
+    loading = true;
+  return loading;
+});
+
+const TransactionModal = (props) => {
+  const {
+    data: pool,
+    classes,
+    closeModal,
+    modalOpen,
+    showHash,
+    errorReturned,
+  } = props;
+  const fullScreen = window.innerWidth < 450;
+  const poolAtom = atom(pool);
+  const tradableAmountAtom = atom((get) => {
+    const pool = get(poolAtom);
+    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const tokenBalances = get(tokenBalanceAtom);
+    let tradableAmount = {};
+    for (let key in tokenBalances) {
+      if (key === "VLX") {
+        tokenBalances[key] =
+          tokenBalances[key] > config.minReservedAmount
+            ? tokenBalances[key] - config.minReservedAmount
+            : 0;
+      }
+
+      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
+      let maxAmount;
+      if (tokenMaxIn > tokenBalances[key]) {
+        maxAmount = tokenBalances[key];
+      } else {
+        maxAmount = tokenMaxIn;
+      }
+
+      tradableAmount[key] = maxAmount;
     }
 
-    componentWillMount() {
-        emitter.on(CALCULATE_PRICE_RETURNED, this.setPrice.bind(this));
-    }
+    return tradableAmount;
+  });
+  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const calcTradePrice = useCalcTradePrice();
+  const [txLoading, setTxLoading] = useState(false);
+  const [sellToken, setSellToken] = useState({});
+  const [buyToken, setBuyToken] = useState({});
+  const [sellAmount, setSellAmount] = useState("");
+  const [buyAmount, setBuyAmount] = useState("");
+  const [price, setPrice] = useState("-");
+  const [calcPriceLoading, setCalcPriceLoading] = useState(false);
+  const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
+  const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
+  const [tradableAmount] = useAtom(tradableAmountAtom);
+  const [loading] = useAtom(loadingAtom);
 
-    componentWillUnmount() {
-        emitter.removeListener(
-            CALCULATE_PRICE_RETURNED,
-            this.setPrice.bind(this)
+  useEffect(() => {
+    if (!ethersProvider || !pool || !account) return;
+    if (pool.supportTokens.length >= 2) {
+      setSellToken(pool.supportTokens[0]);
+      setBuyToken(pool.supportTokens[1]);
+      fetchTradePrice(pool.supportTokens[0], pool.supportTokens[1]);
+    }
+    fetchTokenBalanceValues(
+      account,
+      ethersProvider,
+      providerNetwork,
+      pool.supportTokens,
+      setTokenBalances
+    );
+
+    fetchPoolTokenBalance(
+      ethersProvider,
+      providerNetwork,
+      pool,
+      setPoolTokenBalance
+    );
+  }, [ethersProvider, pool, account]);
+
+  const fetchTradePrice = async (
+    sellToken,
+    buyToken,
+    amount = 1,
+    type = "sell",
+    callback
+  ) => {
+    if (amount) {
+      setCalcPriceLoading(true);
+      debounce(1000, async () => {
+        const price = await calcTradePrice(
+          pool,
+          sellToken.address,
+          buyToken.address,
+          parseUnits(amount + "", sellToken.decimals),
+          type
         );
+        setPrice(parseFloat(price).toFixed(6));
+        if (typeof callback === "function") callback(price);
+        setCalcPriceLoading(false);
+      })();
     }
+  };
 
-    setPrice(data) {
-        this.setState({
-            price: data.price.tradePrice,
-            finallPrice: data.price.finallPrice,
-            loading: false,
-            last: null
-        });
-        const price = parseFloat(data.price.tradePrice);
-        if (data.type === "sell") {
-            this.setState({
-                buyAmount: (parseFloat(data.amount) * price).toFixed(4)
-            });
-        } else if (data.type === "buyIn") {
-            this.setState({
-                amount: ((parseFloat(data.amount) * 1) / price).toFixed(4)
-            });
-        }
+  const getAnotherToken = (tokenSymbol) => {
+    for (let i = 0; i < pool.supportTokens.length; i++) {
+      if (tokenSymbol !== pool.supportTokens[i].symbol) {
+        return pool.supportTokens[i];
+      }
     }
+  };
 
-    getPrice = (type, amount) => {
-        if (type) {
-            this.setState({loading: true});
-            const that = this;
-            debounce(
-                1000,
-                () => {
-                    dispatcher.dispatch({
-                        type: CALCULATE_PRICE,
-                        content: {
-                            asset: that.props.data,
-                            amount,
-                            type,
-                            tokenName: that.state.token,
-                            tokenIn:
-                                that.state.token === that.props.data.tokens[1]
-                                    ? that.props.data.erc20Address
-                                    : that.props.data.erc20Address2,
-                            tokenOut:
-                                that.state.buyToken === that.props.data.tokens[1]
-                                    ? that.props.data.erc20Address
-                                    : that.props.data.erc20Address2
-                        }
-                    });
-                },
-                that
-            )();
-        } else {
-            this.setState({
-                price:
-                    this.state.token === this.props.data.tokens[0]
-                        ? this.props.data.price
-                        : 1 / this.props.data.price
-            });
-        }
-    };
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    const anotherToken = getAnotherToken(value.symbol);
+    switch (name) {
+      case "sellToken":
+        setSellToken(value);
+        setBuyToken(anotherToken);
+        setPrice("-");
+        fetchTradePrice(value, anotherToken);
+        break;
+      case "buyToken":
+        setBuyToken(value);
+        setSellToken(anotherToken);
+        setPrice("-");
+        fetchTradePrice(anotherToken, value);
+        break;
+      default:
+    }
+    setSellAmount("");
+    setBuyAmount("");
+  };
 
-    handleChange = event => {
-        const token = event.target.name;
-        this.setState({
-            [token]: event.target.value,
-            buyToken:
-                this.state.tokens[0] === event.target.value
-                    ? this.state.tokens[this.state.tokens.length - 1]
-                    : this.state.tokens[0],
-            amount: 0.0,
-            buyAmount: 0.0,
-            price: 1 / this.state.price
-        });
-    };
-
-    buyHandleChange = event => {
-        const token = event.target.name;
-        this.setState({
-            [token]: event.target.value,
-            token:
-                this.state.tokens[0] === event.target.value
-                    ? this.state.tokens[this.state.tokens.length - 1]
-                    : this.state.tokens[0],
-            amount: 0.0,
-            buyAmount: 0.0,
-            price: 1 / this.state.price
-        });
-    };
-
-    amountChange = event => {
-        if (parseFloat(event.target.value) > 0) {
-            this.setState({
-                amount: event.target.value
-            });
-            this.getPrice("sell", parseFloat(event.target.value));
-        } else {
-            this.setState({
-                amount: event.target.value,
-                buyAmount: isNaN(
-                    parseFloat(event.target.value) *
-                        parseFloat(this.props.data.price)
-                )
-                    ? 0.0
-                    : parseFloat(event.target.value) *
-                      parseFloat(this.props.data.price).toFixed(4)
-            });
-            this.getPrice();
-        }
-    };
-
-    buyAmountChange = event => {
-        if (parseFloat(event.target.value) > 0) {
-            this.setState({
-                buyAmount: event.target.value
-            });
-            this.getPrice("buyIn", parseFloat(event.target.value));
-        } else {
-            this.setState({
-                amount: isNaN(
-                    (parseFloat(event.target.value) * 1) /
-                        parseFloat(this.props.data.price)
-                )
-                    ? 0.0
-                    : (
-                          (parseFloat(event.target.value) * 1) /
-                          parseFloat(this.props.data.price)
-                      ).toFixed(4),
-                buyAmount: event.target.value
-            });
-            this.getPrice();
-        }
-    };
-
-    getMaxAmount = () => {
-        const pool = this.props.data;
-        const token = this.state.token;
-
-        let erc20Balance;
-        if(pool.type==="swap-native" && pool.erc20Balance>config.minReservedAmount){
-            erc20Balance = parseFloat(pool.erc20Balance)-config.minReservedAmount;
-        }else{
-            erc20Balance = pool.erc20Balance;
-        }
-
-        return token === pool.tokens[0]
-            ? parseFloat(pool.maxSyxIn) > parseFloat(pool.erc20Balance2)
-                ? formatNumberPrecision(pool.erc20Balance2)
-                : formatNumberPrecision(pool.maxSyxIn)
-            : parseFloat(pool.maxErc20In) > erc20Balance
-            ? formatNumberPrecision(erc20Balance+'')
-            : formatNumberPrecision(pool.maxErc20In);
-    };
-
-    max = () => {
-        const maxAmount = this.getMaxAmount();
-
-        if (parseFloat(maxAmount) > 0) {
-            this.setState({
-                amount: maxAmount + ""
-            });
-            this.getPrice("sell", maxAmount);
-        } else {
-            this.setState({
-                amount: maxAmount + "",
-                buyAmount: (maxAmount * this.props.data.price).toFixed(6)
-            });
-
-            this.getPrice();
-        }
-    };
-
-    confirm = () => {
-        if (
-            parseFloat(this.state.amount) === 0 ||
-            isNaN(parseFloat(this.state.amount))
-        )
-            return;
-            
-        this.setState({
-            loading: true
-        });
-
-        dispatcher.dispatch({
-            type: TRADE,
-            content: {
-                asset: this.props.data,
-                amount: parseFloat(this.state.amount).toString(),
-                price: (parseFloat(this.state.finallPrice)*1.1).toString(),
-                token:
-                    this.state.token === this.props.data.tokens[0]
-                        ? this.props.data.erc20Address2
-                        : this.props.data.erc20Address,
-                token2:
-                    this.state.buyToken === this.props.data.tokens[0]
-                        ? this.props.data.erc20Address2
-                        : this.props.data.erc20Address
-            }
-        });
-    };
-
-    render() {
-        const {classes, data, closeModal, modalOpen} = this.props;
-        const {loading} = this.state;
-        const fullScreen = window.innerWidth < 450;
-
-        const availableAmount = parseFloat(
-            this.state.token === data.tokens[0]
-                ? parseFloat(data.maxSyxIn) > parseFloat(data.erc20Balance2)
-                    ? parseFloat(data.erc20Balance2)
-                    : parseFloat(data.maxSyxIn)
-                : parseFloat(data.maxErc20In) > parseFloat(data.erc20Balance)
-                ? parseFloat(data.erc20Balance)
-                : parseFloat(data.maxErc20In)
+  const amountChange = async (event) => {
+    const { name, value } = event.target;
+    const amount = parseFloat(value) || "";
+    switch (name) {
+      case "sellToken":
+        setSellAmount(amount);
+        fetchTradePrice(sellToken, buyToken, amount, "sell", (price) =>
+          setBuyAmount(amount * parseFloat(price) || "")
         );
+        break;
+      case "buyToken":
+        setBuyAmount(amount);
+        fetchTradePrice(sellToken, buyToken, amount, "buy", (price) =>
+          setBuyAmount((amount * 1) / parseFloat(price) || "")
+        );
+        break;
+      default:
+    }
+  };
 
-        return (
-            <Dialog
-                onClose={closeModal}
-                aria-labelledby="customized-dialog-title"
-                open={modalOpen}
-                fullWidth={true}
-                fullScreen={fullScreen}
+  const max = () => {
+    const amount = parseFloat(tradableAmount[sellToken.symbol]) || "";
+    setSellAmount(amount);
+    setBuyAmount(amount * price || "");
+  };
+
+  const confirm = () => {};
+
+  return (
+    <Dialog
+      onClose={closeModal}
+      aria-labelledby="customized-dialog-title"
+      open={modalOpen}
+      fullWidth={true}
+      fullScreen={fullScreen}
+    >
+      <DialogTitle id="customized-dialog-title" onClose={closeModal}>
+        <FormattedMessage id="POPUP_TITLE_SWAP" />
+      </DialogTitle>
+      <DialogContent>
+        <Typography gutterBottom align="right">
+          <span style={{ float: "left" }}>
+            <FormattedMessage id="POPUP_LABEL_FROM" />
+          </span>
+          <span className={classes.textPrimy}>
+            <img
+              className={classes.icon}
+              src={"/" + sellToken.name + ".png"}
+              alt=""
+            />
+            <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
+            {": "}
+            <NumberFormat
+              value={tradableAmount[sellToken.symbol]}
+              defaultValue={"-"}
+              displayType={"text"}
+              thousandSeparator={true}
+              isNumericString={true}
+              suffix={sellToken.name}
+              decimalScale={4}
+              fixedDecimalScale={true}
+            />
+          </span>
+        </Typography>
+        <div className={classes.formContent}>
+          <FormControl variant="outlined" style={{ flex: "4" }}>
+            <OutlinedInput
+              error={false}
+              className={classes.customInput}
+              id="outlined-adornment-password"
+              type={"text"}
+              name={"sellToken"}
+              value={sellAmount}
+              onChange={amountChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <Button
+                    className={classes.maxBtn}
+                    disabled={loading || txLoading || calcPriceLoading}
+                    onClick={max}
+                  >
+                    <FormattedMessage id="POPUP_INPUT_MAX" />
+                  </Button>
+                </InputAdornment>
+              }
+            />
+            {false ? (
+              <span style={{ color: "red" }}>
+                <FormattedMessage id="TRADE_ERROR_BALANCE" />
+              </span>
+            ) : (
+              <></>
+            )}
+          </FormControl>
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            style={{ flex: "1" }}
+          >
+            <Select
+              className={classes.select}
+              value={sellToken}
+              onChange={handleChange}
+              inputProps={{
+                name: "sellToken",
+                id: "outlined-token",
+              }}
             >
-                <DialogTitle id="customized-dialog-title" onClose={closeModal}>
-                    <FormattedMessage id="POPUP_TITLE_SWAP" />
-                </DialogTitle>
-                <DialogContent>
-                    <Typography gutterBottom align="right">
-                        <span style={{float: "left"}}>
-                            <FormattedMessage id="POPUP_LABEL_FROM" />
-                        </span>
-                        <span className={classes.textPrimy}>
-                            {this.state.token === "SYX" ? (
-                                <img
-                                    className={classes.icon}
-                                    src={"/" + tokensName["syx"] + ".png"}
-                                    alt=""
-                                />
-                            ) : (
-                                <img
-                                    className={classes.icon}
-                                    src={"/" + tokensName[data.name.toLowerCase()] + ".png"}
-                                    alt=""
-                                />
-                            )}
-                            <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
-                            {": "}
-                            {this.state.token === data.tokens[0]
-                                ? parseFloat(data.maxSyxIn) >
-                                  parseFloat(data.erc20Balance2)
-                                    ? <NumberFormat value={data.erc20Balance2} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[0].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                    : <NumberFormat value={data.maxSyxIn} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[0].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                : parseFloat(data.maxErc20In) >
-                                  parseFloat(data.erc20Balance)
-                                ? <NumberFormat value={data.erc20Balance} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[1].toLowerCase]} decimalScale={4} fixedDecimalScale={true} />
-                                : <NumberFormat value={data.maxErc20In} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[1].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                  }
-                        </span>
-                    </Typography>
-                    <div className={classes.formContent}>
-                        <FormControl variant="outlined" style={{flex: "4"}}>
-                            <OutlinedInput
-                                error={
-                                    parseFloat(this.state.amount) >
-                                    availableAmount
-                                }
-                                className={classes.customInput}
-                                id="outlined-adornment-password"
-                                type={"text"}
-                                value={this.state.amount}
-                                onChange={this.amountChange}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <Button
-                                            className={classes.maxBtn}
-                                            style={{
-                                                opacity:
-                                                    parseFloat(
-                                                        this.state.amount
-                                                    ).toFixed(4) ===
-                                                    this.getMaxAmount().toFixed(
-                                                        4
-                                                    )
-                                                        ? "0.6"
-                                                        : "1"
-                                            }}
-                                            disabled={loading}
-                                            onClick={this.max}
-                                        >
-                                            <FormattedMessage id="POPUP_INPUT_MAX" />
-                                        </Button>
-                                    </InputAdornment>
-                                }
-                            />
-                            {parseFloat(this.state.amount) > availableAmount ? (
-                                <span style={{color: "red"}}>
-                                    <FormattedMessage id="TRADE_ERROR_BALANCE" />
-                                </span>
-                            ) : (
-                                <></>
-                            )}
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            className={classes.formControl}
-                            style={{flex: "1"}}
-                        >
-                            <Select
-                                className={classes.select}
-                                value={this.state.token}
-                                onChange={this.handleChange.bind(this)}
-                                inputProps={{
-                                    name: "token",
-                                    id: "outlined-token"
-                                }}
-                            >
-                                {data.tokens.map((v, i) => (
-                                    <MenuItem value={v} key={i}>
-                                        <img
-                                            className={classes.icon}
-                                            src={"/" + tokensName[v.toLowerCase()] + ".png"}
-                                            alt=""
-                                        />
-                                        {tokensName[v.toLowerCase()]}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <div style={{textAlign: "center", marginBottom: "16px"}}>
-                        <img
-                            className={classes.icon}
-                            style={{
-                                width: "20px"
-                            }}
-                            src={"/down2.svg"}
-                            alt=""
-                        />
-                    </div>
-                    <Typography gutterBottom align="right">
-                        <span style={{float: "left"}}>
-                            <FormattedMessage id="POPUP_LABEL_TO" />
-                        </span>{" "}
-                        <span className={classes.textPrimy}>
-                            {this.state.buyToken === "SYX" ? (
-                                <img
-                                    className={classes.icon}
-                                    src={"/" + tokensName["syx"] + ".png"}
-                                    alt=""
-                                />
-                            ) : (
-                                <img
-                                    className={classes.icon}
-                                    src={"/" + tokensName[data.name.toLowerCase()] + ".png"}
-                                    alt=""
-                                />
-                            )}
-                            <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
-                            {": "}
-                            {this.state.token === data.tokens[1]
-                                ? parseFloat(data.maxSyxIn) >
-                                  parseFloat(data.erc20Balance2)
-                                    ? <NumberFormat value={data.erc20Balance2} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[0].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                    : <NumberFormat value={data.maxSyxIn} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[0].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                : parseFloat(data.maxErc20In) >
-                                  parseFloat(data.erc20Balance)
-                                ? <NumberFormat value={data.erc20Balance} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[1].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />
-                                : <NumberFormat value={data.maxErc20In} defaultValue={'-'} displayType={'text'} thousandSeparator={true} isNumericString={true} suffix={tokensName[data.tokens[1].toLowerCase()]} decimalScale={4} fixedDecimalScale={true} />}
-                        </span>
-                    </Typography>
-                    <div className={classes.formContent}>
-                        <FormControl variant="outlined" style={{flex: "4"}}>
-                            <OutlinedInput
-                                className={classes.customInput}
-                                id="outlined-adornment-password"
-                                type={"text"}
-                                value={this.state.buyAmount}
-                                onChange={this.buyAmountChange}
-                            />
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            className={classes.formControl}
-                            style={{flex: "1"}}
-                        >
-                            <Select
-                                className={classes.select}
-                                value={this.state.buyToken}
-                                onChange={this.buyHandleChange.bind(this)}
-                                inputProps={{
-                                    name: "buyToken",
-                                    id: "outlined-token"
-                                }}
-                            >
-                                {data.tokens.map((v, i) => (
-                                    <MenuItem value={v} key={i}>
-                                        <img
-                                            className={classes.icon}
-                                            src={"/" + tokensName[v.toLowerCase()] + ".png"}
-                                            alt=""
-                                        />
-                                        {tokensName[v.toLowerCase()]}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </div>
-                    <Typography gutterBottom>
-                        <span className={classes.text}>
-                            <FormattedMessage id="UNIT_PRICE" />
-                        </span>
-                        <span className={classes.rightText}>
-                            <FormattedMessage
-                                id="POPUP_LABEL_SWAP_RATE"
-                                values={{
-                                    tokenFrom: tokensName[this.state.token.toLowerCase()],
-                                    tokenTo: tokensName[this.state.buyToken.toLowerCase()],
-                                    rate: parseFloat(this.state.price).toFixed(
-                                        4
-                                    )
-                                }}
-                            />
-                        </span>
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        autoFocus
-                        disabled={loading}
-                        onClick={this.confirm}
-                        className={classes.button}
-                        fullWidth={true}
-                    >
-                        {loading ? (
-                            <CircularProgress></CircularProgress>
-                        ) : (
-                            <FormattedMessage id="POPUP_ACTION_CONFIRM" />
-                        )}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        );
-    }
-}
+              {pool.supportTokens.map((v, i) => (
+                <MenuItem value={v} key={i}>
+                  <img
+                    className={classes.icon}
+                    src={"/" + v.name + ".png"}
+                    alt=""
+                  />
+                  {v.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <img
+            className={classes.icon}
+            style={{
+              width: "20px",
+            }}
+            src={"/down2.svg"}
+            alt=""
+          />
+        </div>
+        <Typography gutterBottom align="right">
+          <span style={{ float: "left" }}>
+            <FormattedMessage id="POPUP_LABEL_TO" />
+          </span>{" "}
+          <span className={classes.textPrimy}>
+            <img
+              className={classes.icon}
+              src={"/" + buyToken.name + ".png"}
+              alt=""
+            />
+            <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
+            {": "}
+            <NumberFormat
+              value={tradableAmount[buyToken.symbol]}
+              defaultValue={"-"}
+              displayType={"text"}
+              thousandSeparator={true}
+              isNumericString={true}
+              suffix={buyToken.name}
+              decimalScale={4}
+              fixedDecimalScale={true}
+            />
+          </span>
+        </Typography>
+        <div className={classes.formContent}>
+          <FormControl variant="outlined" style={{ flex: "4" }}>
+            <OutlinedInput
+              className={classes.customInput}
+              id="outlined-adornment-password"
+              type={"text"}
+              name="buyToken"
+              value={buyAmount}
+              onChange={amountChange}
+            />
+          </FormControl>
+          <FormControl
+            variant="outlined"
+            className={classes.formControl}
+            style={{ flex: "1" }}
+          >
+            <Select
+              className={classes.select}
+              value={buyToken}
+              onChange={handleChange}
+              inputProps={{
+                name: "buyToken",
+                id: "outlined-token",
+              }}
+            >
+              {pool.supportTokens.map((v, i) => (
+                <MenuItem value={v} key={i}>
+                  <img
+                    className={classes.icon}
+                    src={"/" + v.name + ".png"}
+                    alt=""
+                  />
+                  {v.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <Typography gutterBottom>
+          <span className={classes.text}>
+            <FormattedMessage id="UNIT_PRICE" />
+          </span>
+          <span className={classes.rightText}>
+            <FormattedMessage
+              id="POPUP_LABEL_SWAP_RATE"
+              values={{
+                tokenFrom: sellToken.name,
+                tokenTo: buyToken.name,
+                rate: price,
+              }}
+            />
+          </span>
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          autoFocus
+          disabled={loading || txLoading || calcPriceLoading}
+          onClick={confirm}
+          className={classes.button}
+          fullWidth={true}
+        >
+          {loading || txLoading || calcPriceLoading ? (
+            <CircularProgress></CircularProgress>
+          ) : (
+            <FormattedMessage id="POPUP_ACTION_CONFIRM" />
+          )}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 export default withStyles(styles)(TransactionModal);
