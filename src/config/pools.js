@@ -386,17 +386,17 @@ let ethSyxPool2 = {
   //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
   supportTokens: [
     {
-      symbol: "ETH",
-      name: "ETH",
-      address: config.weth,
-      abi: config.erc20ABI,
-      decimals: 18,
-    },
-    {
       symbol: "SYX",
       name: "SYX2",
       address: config.syx,
       abi: config.syxABI,
+      decimals: 18,
+    },
+    {
+      symbol: "ETH",
+      name: "ETH",
+      address: config.weth,
+      abi: config.erc20ABI,
       decimals: 18,
     },
   ],
