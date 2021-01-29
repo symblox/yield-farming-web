@@ -251,7 +251,7 @@ const TransactionModal = (props) => {
 
   const confirm = async () => {
     const maxPrice = parseUnits(
-      parseFloat(price) * (1 + slippageTolerance / 100) + "",
+      (1 / parseFloat(price)) * (1 + slippageTolerance / 100) + "",
       buyToken.decimals
     );
     const minAmountOut = parseUnits(
