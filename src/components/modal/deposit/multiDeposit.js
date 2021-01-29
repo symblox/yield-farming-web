@@ -238,14 +238,10 @@ const MultiDepositModal = (props) => {
       }
     });
 
-    const maxAmountsIn = amounts.map((v, i) =>
-      parseUnits(
-        parseInt(v * 10 ** pool.supportTokens[i].decimals) /
-          10 ** pool.supportTokens[i].decimals +
-          "",
-        pool.supportTokens[i].decimals
-      )
-    );
+    const maxAmountsIn = amounts.map((v, i) => {
+      return parseUnits(v + "", pool.supportTokens[i].decimals);
+    });
+
     const params = [
       poolAmountOut,
       tokensIn,
