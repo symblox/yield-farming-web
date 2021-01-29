@@ -183,6 +183,8 @@ const MultiDepositModal = (props) => {
         let amount = ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
         const minAmount = 0.000001;
         if (amount < minAmount) amount = 0;
+
+        amount = parseInt(amount * 100000000) / 100000000;
         amounts.push(Number.isNaN(ratio) ? "" : amount + "");
       }
     });
