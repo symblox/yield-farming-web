@@ -96,5 +96,7 @@ const zh_CN = {
   DAPP_PVLX: "pVLX 无损挖矿",
   V1: "V1",
   LANGUAGE: "语言",
+  SLIPPAGE_TOLERANCE: "滑移公差",
+  MIN_RECEIVED: "最低收到",
 };
 export default zh_CN;

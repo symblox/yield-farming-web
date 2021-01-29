@@ -99,5 +99,7 @@ const en_US = {
   DAPP_CROSS_CHAIN: "Cross-Chain",
   V1: "V1",
   LANGUAGE: "Language",
+  SLIPPAGE_TOLERANCE: "Slippage tolerance",
+  MIN_RECEIVED: "Minimum received",
 };
 export default en_US;

@@ -1,10 +1,20 @@
 import { useCallback, useContext } from "react";
 import { Contract } from "ethers";
-import { MaxUint256 } from "@ethersproject/constants";
+import { MaxUint256, AddressZero } from "@ethersproject/constants";
 import { Web3Context } from "../../contexts/Web3Context";
+import config from "../../config";
 
 export default function useMultiDeposit() {
   const { account, signer } = useContext(Web3Context);
+
+  const approve = async (tokenAddress, targetAddress, amount) => {
+    const erc20Contract = new Contract(tokenAddress, config.erc20ABI, signer);
+    const allowance = await erc20Contract.allowance(account, targetAddress);
+    if (allowance.lt(amount)) {
+      const tx = await erc20Contract.approve(targetAddress, MaxUint256);
+      await tx.wait();
+    }
+  };
 
   return useCallback(
     async (pool, params) => {
@@ -23,26 +33,10 @@ export default function useMultiDeposit() {
       const [, tokensIn, maxAmountsIn] = params;
       if (Array.isArray(tokensIn)) {
         for (let i = 0; i < tokensIn.length; i++) {
-          if (tokensIn[i] === "0x0000000000000000000000000000000000000000") {
+          if (tokensIn[i] === AddressZero) {
             value = maxAmountsIn[i];
           } else {
-            const erc20Contract = new Contract(
-              tokensIn[i],
-              pool.erc20ABI,
-              signer
-            );
-
-            const allowance = await erc20Contract.allowance(
-              account,
-              connectorAddress
-            );
-            if (allowance.lt(maxAmountsIn[i])) {
-              const tx = await erc20Contract.approve(
-                connectorAddress,
-                MaxUint256
-              );
-              await tx.wait();
-            }
+            await approve(tokensIn[i], connectorAddress, maxAmountsIn[i]);
           }
         }
       }

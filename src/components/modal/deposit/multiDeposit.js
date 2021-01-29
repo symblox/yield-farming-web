@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseUnits, parseEther } from "@ethersproject/units";
+import { AddressZero } from "@ethersproject/constants";
 import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -220,10 +221,9 @@ const MultiDepositModal = (props) => {
       parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
     ).sub(buffer);
 
-    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const tokensIn = pool.supportTokens.map((v) => {
       if (v.symbol === "VLX") {
-        return ZERO_ADDRESS;
+        return AddressZero;
       } else {
         return v.address;
       }
@@ -235,7 +235,7 @@ const MultiDepositModal = (props) => {
       poolAmountOut,
       tokensIn,
       maxAmountsIn,
-      referral || ZERO_ADDRESS,
+      referral || AddressZero,
     ];
     setTxLoading(true);
     try {

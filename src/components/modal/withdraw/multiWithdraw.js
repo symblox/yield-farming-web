@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseEther } from "@ethersproject/units";
+import { AddressZero } from "@ethersproject/constants";
 import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -180,10 +181,9 @@ const MultiWithdrawModal = (props) => {
       parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
     ).sub(buffer);
 
-    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const tokensOut = pool.supportTokens.map((v) => {
       if (v.symbol === "VLX") {
-        return ZERO_ADDRESS;
+        return AddressZero;
       } else {
         return v.address;
       }

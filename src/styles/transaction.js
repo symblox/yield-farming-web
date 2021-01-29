@@ -101,6 +101,9 @@ const styles = (theme) => ({
   maxBtn: {
     padding: "10px 18px",
   },
+  textAlignRight: {
+    textAlign: "right !important",
+  },
 });
 
 export default styles;

@@ -641,6 +641,8 @@ class Home extends Component {
         loading={this.state.loading || this.state.txLoading}
         closeModal={this.closeTransactionModal}
         modalOpen={this.state.transactionModalOpen}
+        showHash={this.showHash}
+        errorReturned={this.errorReturned}
       />
     );
   };

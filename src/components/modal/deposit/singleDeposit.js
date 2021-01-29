@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseUnits, formatUnits } from "@ethersproject/units";
+import { AddressZero } from "@ethersproject/constants";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -209,8 +210,7 @@ const SingleDepositModal = (props) => {
       params.push("0");
     }
     if (pool.referral) {
-      const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-      params.push(referral || ZERO_ADDRESS);
+      params.push(referral || AddressZero);
     }
 
     setTxLoading(true);

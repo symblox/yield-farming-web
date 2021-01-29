@@ -2,11 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseUnits, formatUnits } from "@ethersproject/units";
+import { AddressZero } from "@ethersproject/constants";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Dialog from "@material-ui/core/Dialog";
+import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -27,6 +29,7 @@ import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../hooks/usePoolTokenBalance";
 import useCalcTradePrice from "../../hooks/useCalcTradePrice";
+import useTrade from "../../hooks/payables/useTrade";
 import config from "../../config";
 import { debounce } from "../../utils/debounce.js";
 
@@ -118,12 +121,14 @@ const TransactionModal = (props) => {
   });
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const calcTradePrice = useCalcTradePrice();
+  const trade = useTrade();
   const [txLoading, setTxLoading] = useState(false);
   const [sellToken, setSellToken] = useState({});
   const [buyToken, setBuyToken] = useState({});
   const [sellAmount, setSellAmount] = useState("");
   const [buyAmount, setBuyAmount] = useState("");
   const [price, setPrice] = useState("-");
+  const [slippageTolerance, setSlippageTolerance] = useState(1); //%
   const [calcPriceLoading, setCalcPriceLoading] = useState(false);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
@@ -209,20 +214,24 @@ const TransactionModal = (props) => {
 
   const amountChange = async (event) => {
     const { name, value } = event.target;
-    const amount = parseFloat(value) || "";
+    let amount;
     switch (name) {
       case "sellToken":
-        setSellAmount(amount);
+        setSellAmount(value);
+        amount = parseFloat(value) || "";
         fetchTradePrice(sellToken, buyToken, amount, "sell", (price) =>
           setBuyAmount(amount * parseFloat(price) || "")
         );
         break;
       case "buyToken":
-        setBuyAmount(amount);
+        setBuyAmount(value);
+        amount = parseFloat(value) || "";
         fetchTradePrice(sellToken, buyToken, amount, "buy", (price) =>
           setSellAmount((amount * 1) / parseFloat(price) || "")
         );
         break;
+      case "slippage":
+        setSlippageTolerance(value);
       default:
     }
   };
@@ -233,17 +242,53 @@ const TransactionModal = (props) => {
     setBuyAmount(amount * price || "");
   };
 
-  const confirm = () => {};
+  const closeAndInitModal = () => {
+    setPoolTokenBalance({});
+    setTokenBalances({});
+    setPrice("-");
+    closeModal();
+  };
+
+  const confirm = async () => {
+    const maxPrice = parseUnits(
+      parseFloat(price) * (1 + slippageTolerance / 100) + "",
+      buyToken.decimals
+    );
+    const minAmountOut = parseUnits(
+      buyAmount / (1 + slippageTolerance / 100) + "",
+      sellToken.decimals
+    );
+    const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
+
+    setTxLoading(true);
+    try {
+      const tx = await trade(
+        pool,
+        sellToken.symbol === "VLX" ? AddressZero : sellToken.address,
+        buyToken.symbol === "VLX" ? AddressZero : buyToken.address,
+        minAmountOut,
+        maxPrice,
+        tokenAmountIn
+      );
+      showHash(tx.hash);
+      //await tx.wait();
+    } catch (error) {
+      console.log(error);
+      errorReturned(JSON.stringify(error));
+    }
+    setTxLoading(false);
+    closeAndInitModal();
+  };
 
   return (
     <Dialog
-      onClose={closeModal}
+      onClose={closeAndInitModal}
       aria-labelledby="customized-dialog-title"
       open={modalOpen}
       fullWidth={true}
       fullScreen={fullScreen}
     >
-      <DialogTitle id="customized-dialog-title" onClose={closeModal}>
+      <DialogTitle id="customized-dialog-title" onClose={closeAndInitModal}>
         <FormattedMessage id="POPUP_TITLE_SWAP" />
       </DialogTitle>
       <DialogContent>
@@ -400,7 +445,7 @@ const TransactionModal = (props) => {
             </Select>
           </FormControl>
         </div>
-        <Typography gutterBottom>
+        <div>
           <span className={classes.text}>
             <FormattedMessage id="UNIT_PRICE" />
           </span>
@@ -414,7 +459,39 @@ const TransactionModal = (props) => {
               }}
             />
           </span>
-        </Typography>
+        </div>
+        <div>
+          <span className={classes.text}>
+            <FormattedMessage id="MIN_RECEIVED" />
+          </span>
+          <span className={classes.rightText}>
+            <NumberFormat
+              value={buyAmount / (1 + slippageTolerance / 100)}
+              defaultValue={"-"}
+              displayType={"text"}
+              thousandSeparator={true}
+              isNumericString={true}
+              suffix={buyToken.name}
+              decimalScale={4}
+              fixedDecimalScale={true}
+            />
+          </span>
+        </div>
+        <div>
+          <span className={classes.text}>
+            <FormattedMessage id="SLIPPAGE_TOLERANCE" />
+          </span>
+          <span className={classes.rightText}>
+            <Input
+              id="slippage-tolerance"
+              name="slippage"
+              classes={{ input: classes.textAlignRight }}
+              value={slippageTolerance}
+              onChange={amountChange}
+              endAdornment={<InputAdornment position="end">%</InputAdornment>}
+            />
+          </span>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button
