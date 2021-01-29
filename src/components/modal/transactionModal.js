@@ -220,7 +220,7 @@ const TransactionModal = (props) => {
       case "buyToken":
         setBuyAmount(amount);
         fetchTradePrice(sellToken, buyToken, amount, "buy", (price) =>
-          setBuyAmount((amount * 1) / parseFloat(price) || "")
+          setSellAmount((amount * 1) / parseFloat(price) || "")
         );
         break;
       default:
