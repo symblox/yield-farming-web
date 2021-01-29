@@ -240,7 +240,7 @@ const MultiDepositModal = (props) => {
 
     const maxAmountsIn = amounts.map((v, i) =>
       parseUnits(
-        Math.ceil(v * 10 ** pool.supportTokens[i].decimals) /
+        parseInt(v * 10 ** pool.supportTokens[i].decimals) /
           10 ** pool.supportTokens[i].decimals +
           "",
         pool.supportTokens[i].decimals
