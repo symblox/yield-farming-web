@@ -212,7 +212,7 @@ const MultiDepositModal = (props) => {
 
   const confirm = async () => {
     // @TODO - fix calcs so no buffer is needed
-    const buffer = BigNumber.from("10000000000");
+    const buffer = 0.995;
     //All token ratios are the same, so just use the first one
     const ratio =
       parseFloat(amounts[0]) /
@@ -220,8 +220,8 @@ const MultiDepositModal = (props) => {
 
     const bptAmount = parseFloat(pool.totalSupply) * parseFloat(ratio);
     const poolAmountOut = parseEther(
-      parseInt(bptAmount * 100000000000) / 100000000000 + ""
-    ).sub(buffer);
+      parseInt(bptAmount * 100000000000 * buffer) / 100000000000 + ""
+    );
     // console.log({
     //   ratio,
     //   bptAmount,
@@ -238,14 +238,10 @@ const MultiDepositModal = (props) => {
       }
     });
 
-    const maxAmountsIn = amounts.map((v, i) =>
-      parseUnits(
-        Math.ceil(v * 10 ** pool.supportTokens[i].decimals) /
-          10 ** pool.supportTokens[i].decimals +
-          "",
-        pool.supportTokens[i].decimals
-      )
-    );
+    const maxAmountsIn = amounts.map((v, i) => {
+      return parseUnits(v + "", pool.supportTokens[i].decimals);
+    });
+
     const params = [
       poolAmountOut,
       tokensIn,
