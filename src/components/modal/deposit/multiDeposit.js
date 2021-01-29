@@ -136,7 +136,6 @@ const MultiDepositModal = (props) => {
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
-
   useEffect(() => {
     setReferral(getUrlParams()["referral"]);
     if (!ethersProvider || !pool) return;
@@ -182,9 +181,10 @@ const MultiDepositModal = (props) => {
       } else {
         let amount = ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
         const minAmount = 0.000001;
-        if (amount < minAmount) amount = 0;
-
         amount = parseInt(amount * 100000000) / 100000000;
+        if (amount < minAmount)
+          amount = amount.toLocaleString("fullwide", { useGrouping: false });
+
         amounts.push(Number.isNaN(ratio) ? "" : amount + "");
       }
     });
@@ -198,7 +198,7 @@ const MultiDepositModal = (props) => {
     amountChange({
       target: {
         name: key,
-        value: amount + "",
+        value: parseInt(amount * 100000000) / 100000000 + "",
       },
     });
   };
@@ -218,9 +218,16 @@ const MultiDepositModal = (props) => {
       parseFloat(amounts[0]) /
       parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
 
+    const bptAmount = parseFloat(pool.totalSupply) * parseFloat(ratio);
     const poolAmountOut = parseEther(
-      parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
+      parseInt(bptAmount * 100000000000) / 100000000000 + ""
     ).sub(buffer);
+    // console.log({
+    //   ratio,
+    //   bptAmount,
+    //   totalSupply: pool.totalSupply,
+    //   poolAmountOut,
+    // });
 
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const tokensIn = pool.supportTokens.map((v) => {
@@ -230,8 +237,14 @@ const MultiDepositModal = (props) => {
         return v.address;
       }
     });
+
     const maxAmountsIn = amounts.map((v, i) =>
-      parseUnits(v, pool.supportTokens[i].decimals)
+      parseUnits(
+        Math.ceil(v * 10 ** pool.supportTokens[i].decimals) /
+          10 ** pool.supportTokens[i].decimals +
+          "",
+        pool.supportTokens[i].decimals
+      )
     );
     const params = [
       poolAmountOut,
@@ -239,6 +252,7 @@ const MultiDepositModal = (props) => {
       maxAmountsIn,
       referral || ZERO_ADDRESS,
     ];
+    console.log(params);
     setTxLoading(true);
     try {
       const tx = await multiDeposit(pool, params);
