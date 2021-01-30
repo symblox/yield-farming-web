@@ -181,7 +181,7 @@ const MultiDepositModal = (props) => {
       } else {
         let amount = ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
         const minAmount = 0.000001;
-        amount = parseInt(amount * 100000000) / 100000000;
+        amount = parseInt(amount * 1000000) / 1000000;
         if (amount < minAmount)
           amount = amount.toLocaleString("fullwide", { useGrouping: false });
 
@@ -198,7 +198,7 @@ const MultiDepositModal = (props) => {
     amountChange({
       target: {
         name: key,
-        value: parseInt(amount * 100000000) / 100000000 + "",
+        value: parseInt(amount * 1000000) / 1000000 + "",
       },
     });
   };
@@ -239,6 +239,7 @@ const MultiDepositModal = (props) => {
     });
 
     const maxAmountsIn = amounts.map((v, i) => {
+      console.log(v, pool.supportTokens[i].decimals);
       return parseUnits(v + "", pool.supportTokens[i].decimals);
     });
 
