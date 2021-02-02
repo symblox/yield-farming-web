@@ -27,7 +27,7 @@ import poolTokenBalanceAtom, {
 } from "../../../hooks/usePoolTokenBalance";
 import useSingleWithdraw from "../../../hooks/payables/useSingleWithdraw";
 import useCalcPoolInGivenSingleOut from "../../../hooks/useCalcPoolInGivenSingleOut";
-
+import { bnum } from "../../../utils/bignumber";
 import styles from "../../../styles/withdraw";
 
 const DialogTitle = withStyles(styles)((props) => {
@@ -73,15 +73,16 @@ const SingleWithdrawModal = (props) => {
   const poolAtom = atom(pool);
   const maxTokenWithdrawAmountAtom = atom((get) => {
     const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const poolTokenBalances = get(poolTokenBalanceAtom);
     const availableAmounts = get(singleAvailableAmountAtom);
     let maxTokenWithdrawAmount = {};
     for (let i = 0; i < availableAmounts.length; i++) {
+      const availableAmount = bnum(availableAmounts[i].amount);
       const key = availableAmounts[i].name;
-      const tokenMaxOut = poolTokenBalance[key] * pool.maxOut;
+      const tokenMaxOut = bnum(poolTokenBalances[key]).times(bnum(pool.maxOut));
       let maxAmount;
-      if (tokenMaxOut > availableAmounts[i].amount) {
-        maxAmount = availableAmounts[i].amount;
+      if (tokenMaxOut.gt(availableAmount)) {
+        maxAmount = availableAmount;
       } else {
         maxAmount = tokenMaxOut;
       }
@@ -94,7 +95,7 @@ const SingleWithdrawModal = (props) => {
 
   const singleWithdraw = useSingleWithdraw();
   const calcPoolInGivenSingleOut = useCalcPoolInGivenSingleOut();
-  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const { ethersProvider, providerNetwork } = useContext(Web3Context);
   const [amount, setAmount] = useState("");
   const [selected, setSelected] = useState({});
   const [txLoading, setTxLoading] = useState(false);
@@ -135,12 +136,9 @@ const SingleWithdrawModal = (props) => {
   };
 
   const max = (token) => {
-    let amount = parseFloat(maxTokenWithdrawAmount[token.symbol]) || 0;
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
-        value: amount + "",
+        value: maxTokenWithdrawAmount[token.symbol],
       },
     });
   };
@@ -156,7 +154,7 @@ const SingleWithdrawModal = (props) => {
     const tokenAmountOut = await calcPoolInGivenSingleOut(
       pool,
       selected.address,
-      parseUnits(amount, selected.decimals)
+      parseUnits(bnum(amount).toFixed(selected.decimals, 1), selected.decimals)
     );
     let params = [];
     if (selected.symbol !== "VLX") {

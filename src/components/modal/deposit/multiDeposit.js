@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseUnits, parseEther } from "@ethersproject/units";
 import { AddressZero } from "@ethersproject/constants";
-import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -29,7 +28,7 @@ import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../../hooks/usePoolTokenBalance";
 import useMultiDeposit from "../../../hooks/payables/useMultiDeposit";
-
+import { bnum } from "../../../utils/bignumber";
 import styles from "../../../styles/deposit";
 import config from "../../../config";
 
@@ -91,38 +90,39 @@ const MultiDepositModal = (props) => {
   const poolAtom = atom(pool);
   const maxTokenDepositAmountAtom = atom((get) => {
     const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const poolTokenBalances = get(poolTokenBalanceAtom);
     const tokenBalances = get(tokenBalanceAtom);
     let maxTokenDepositAmount = {},
-      minRatio = -1;
+      minRatio = bnum("Infinity");
     for (let key in tokenBalances) {
+      let tokenBalance = bnum(tokenBalances[key]);
+      const poolTokenBalance = bnum(poolTokenBalances[key]);
       if (key === "VLX") {
-        tokenBalances[key] =
-          tokenBalances[key] > config.minReservedAmount
-            ? tokenBalances[key] - config.minReservedAmount
-            : 0;
+        const minReservedAmount = bnum(config.minReservedAmount);
+        tokenBalance = tokenBalance.gt(minReservedAmount)
+          ? tokenBalance.minus(minReservedAmount)
+          : 0;
       }
-
-      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
+      const tokenMaxIn = poolTokenBalance.times(bnum(pool.maxIn));
       let maxAmount;
-      if (tokenMaxIn > tokenBalances[key]) {
-        maxAmount = tokenBalances[key];
+      if (tokenMaxIn.gt(tokenBalance)) {
+        maxAmount = tokenBalance;
       } else {
         maxAmount = tokenMaxIn;
       }
-      const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio != -1) {
-        if (ratio < minRatio) {
-          minRatio = ratio;
-        }
-      } else {
+      const ratio = maxAmount.div(poolTokenBalance);
+
+      if (minRatio.isNaN() || ratio.lt(minRatio)) {
         minRatio = ratio;
       }
 
-      maxTokenDepositAmount[key] = poolTokenBalance[key];
+      maxTokenDepositAmount[key] = poolTokenBalance;
     }
     for (let key in maxTokenDepositAmount) {
-      maxTokenDepositAmount[key] = maxTokenDepositAmount[key] * minRatio;
+      maxTokenDepositAmount[key] = maxTokenDepositAmount[key].times(minRatio);
+      if (maxTokenDepositAmount[key].isNaN()) {
+        maxTokenDepositAmount[key] = "-";
+      }
     }
 
     return maxTokenDepositAmount;
@@ -170,34 +170,27 @@ const MultiDepositModal = (props) => {
 
   const amountChange = (event) => {
     const { name, value } = event.target;
-    const ratio =
-      parseFloat(value) /
-      parseFloat(
-        maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol]
-      );
+    const ratio = bnum(value).div(
+      bnum(maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol])
+    );
 
     let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
         amounts.push(value);
       } else {
-        let amount = ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
-        const minAmount = 0.000001;
-        if (amount < minAmount) amount = 0;
-        amounts.push(Number.isNaN(ratio) ? "" : amount + "");
+        const amount = ratio.times(bnum(maxTokenDepositAmount[token.symbol]));
+        amounts.push(amount.toFixed(token.decimals, 0));
       }
     });
     setAmounts(amounts);
   };
 
   const max = (token, key) => {
-    let amount = parseFloat(maxTokenDepositAmount[token.symbol]) || 0;
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
         name: key,
-        value: amount + "",
+        value: maxTokenDepositAmount[token.symbol],
       },
     });
   };
@@ -211,15 +204,17 @@ const MultiDepositModal = (props) => {
 
   const confirm = async () => {
     // @TODO - fix calcs so no buffer is needed
-    const buffer = BigNumber.from("10000000000");
+    const buffer = bnum("0.995"); //0.5%
     //All token ratios are the same, so just use the first one
-    const ratio =
-      parseFloat(amounts[0]) /
-      parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
-
+    const ratio = bnum(amounts[0]).div(
+      bnum(poolTokenBalance[pool.supportTokens[0].symbol])
+    );
     const poolAmountOut = parseEther(
-      parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
-    ).sub(buffer);
+      bnum(pool.totalSupply)
+        .times(ratio)
+        .times(buffer)
+        .toFixed(pool.decimals, 1)
+    );
 
     const tokensIn = pool.supportTokens.map((v) => {
       if (v.symbol === "VLX") {
@@ -228,15 +223,21 @@ const MultiDepositModal = (props) => {
         return v.address;
       }
     });
-    const maxAmountsIn = amounts.map((v, i) =>
-      parseUnits(v, pool.supportTokens[i].decimals)
-    );
+
+    const maxAmountsIn = amounts.map((v, i) => {
+      return parseUnits(
+        bnum(v).toFixed(pool.supportTokens[i].decimals, 1),
+        pool.supportTokens[i].decimals
+      );
+    });
+
     const params = [
       poolAmountOut,
       tokensIn,
       maxAmountsIn,
       referral || AddressZero,
     ];
+
     setTxLoading(true);
     try {
       const tx = await multiDeposit(pool, params);
@@ -341,7 +342,7 @@ const MultiDepositModal = (props) => {
             {": "}
           </span>
           <span className={classes.rightText}>
-            {Array.isArray(availableAmounts) ? (
+            {Array.isArray(availableAmounts) && availableAmounts.length > 0 ? (
               availableAmounts.map((v, i) => (
                 <span key={i}>
                   <NumberFormat

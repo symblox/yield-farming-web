@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
 import { parseEther } from "@ethersproject/units";
 import { AddressZero } from "@ethersproject/constants";
-import { BigNumber } from "@ethersproject/bignumber";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -26,7 +25,7 @@ import poolTokenBalanceAtom, {
   fetchPoolTokenBalance,
 } from "../../../hooks/usePoolTokenBalance";
 import useMultiWithdraw from "../../../hooks/payables/useMultiWithdraw";
-
+import { bnum } from "../../../utils/bignumber";
 import styles from "../../../styles/withdraw";
 
 const DialogTitle = withStyles(styles)((props) => {
@@ -72,33 +71,32 @@ const MultiWithdrawModal = (props) => {
   const poolAtom = atom(pool);
   const maxTokenWithdrawAmountAtom = atom((get) => {
     const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const poolTokenBalances = get(poolTokenBalanceAtom);
     const availableAmounts = get(availableAmountAtom);
     let maxTokenWithdrawAmount = {},
-      minRatio = -1;
+      minRatio = bnum("Infinity");
     for (let i = 0; i < availableAmounts.length; i++) {
       const key = availableAmounts[i].name;
-      const tokenMaxOut = poolTokenBalance[key] * pool.maxOut;
+      const availableAmount = bnum(availableAmounts[i].amount);
+      const poolTokenBalance = bnum(poolTokenBalances[key]);
+
+      const tokenMaxOut = poolTokenBalance.times(bnum(pool.maxOut));
       let maxAmount;
-      if (tokenMaxOut > availableAmounts[i].amount) {
-        maxAmount = availableAmounts[i].amount;
+      if (tokenMaxOut.gt(availableAmount)) {
+        maxAmount = availableAmount;
       } else {
         maxAmount = tokenMaxOut;
       }
 
-      const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio != -1) {
-        if (ratio < minRatio) {
-          minRatio = ratio;
-        }
-      } else {
+      const ratio = maxAmount.div(poolTokenBalance);
+      if (minRatio.isNaN() || ratio.lt(minRatio)) {
         minRatio = ratio;
       }
-      maxTokenWithdrawAmount[key] = poolTokenBalance[key];
+      maxTokenWithdrawAmount[key] = poolTokenBalance;
     }
 
     for (let key in maxTokenWithdrawAmount) {
-      maxTokenWithdrawAmount[key] = maxTokenWithdrawAmount[key] * minRatio;
+      maxTokenWithdrawAmount[key] = maxTokenWithdrawAmount[key].times(minRatio);
     }
 
     return maxTokenWithdrawAmount;
@@ -130,34 +128,27 @@ const MultiWithdrawModal = (props) => {
 
   const amountChange = (event) => {
     const { name, value } = event.target;
-    const ratio =
-      parseFloat(value) /
-      parseFloat(
-        maxTokenWithdrawAmount[pool.supportTokens[parseInt(name)].symbol]
-      );
+    const ratio = bnum(value).div(
+      bnum(maxTokenWithdrawAmount[pool.supportTokens[parseInt(name)].symbol])
+    );
 
     let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
         amounts.push(value);
       } else {
-        let amount = ratio * parseFloat(maxTokenWithdrawAmount[token.symbol]);
-        const minAmount = 0.000001;
-        if (amount < minAmount) amount = 0;
-        amounts.push(Number.isNaN(ratio) ? "" : amount + "");
+        const amount = ratio.times(bnum(maxTokenWithdrawAmount[token.symbol]));
+        amounts.push(amount.toFixed(token.decimals, 1));
       }
     });
     setAmounts(amounts);
   };
 
   const max = (token, key) => {
-    let amount = parseFloat(maxTokenWithdrawAmount[token.symbol]) || 0;
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
         name: key,
-        value: amount + "",
+        value: maxTokenWithdrawAmount[token.symbol],
       },
     });
   };
@@ -170,16 +161,14 @@ const MultiWithdrawModal = (props) => {
 
   const confirm = async () => {
     if (parseFloat(amounts[0]) <= 0) return;
-
-    // @TODO - fix calcs so no buffer is needed
-    const buffer = BigNumber.from("1000000");
     //All token ratios are the same, so just use the first one
-    const ratio =
-      parseFloat(amounts[0]) /
-      parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
+    const ratio = bnum(amounts[0]).div(
+      bnum(poolTokenBalance[pool.supportTokens[0].symbol])
+    );
+
     const poolAmountIn = parseEther(
-      parseFloat(pool.totalSupply) * parseFloat(ratio) + ""
-    ).sub(buffer);
+      bnum(pool.totalSupply).times(ratio).toFixed(pool.decimals, 1)
+    );
 
     const tokensOut = pool.supportTokens.map((v) => {
       if (v.symbol === "VLX") {

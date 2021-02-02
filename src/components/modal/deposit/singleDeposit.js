@@ -30,6 +30,7 @@ import useSingleDeposit from "../../../hooks/payables/useSingleDeposit";
 import useCalcSingleOutGivenPoolIn from "../../../hooks/useCalcSingleOutGivenPoolIn";
 import styles from "../../../styles/deposit";
 import config from "../../../config";
+import { bnum } from "../../../utils/bignumber";
 
 const DialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props;
@@ -87,21 +88,22 @@ const SingleDepositModal = (props) => {
   const poolAtom = atom(pool);
   const maxTokenDepositAmountAtom = atom((get) => {
     const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const poolTokenBalances = get(poolTokenBalanceAtom);
     const tokenBalances = get(tokenBalanceAtom);
     let maxTokenDepositAmount = {};
     for (let key in tokenBalances) {
+      let tokenBalance = bnum(tokenBalances[key]);
+      const poolTokenBalance = bnum(poolTokenBalances[key]);
       if (key === "VLX") {
-        tokenBalances[key] =
-          tokenBalances[key] > config.minReservedAmount
-            ? tokenBalances[key] - config.minReservedAmount
-            : 0;
+        const minReservedAmount = bnum(config.minReservedAmount);
+        tokenBalance = tokenBalance.gt(minReservedAmount)
+          ? tokenBalance.minus(minReservedAmount)
+          : 0;
       }
-
-      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
+      const tokenMaxIn = poolTokenBalance.times(bnum(pool.maxIn));
       let maxAmount;
-      if (tokenMaxIn > tokenBalances[key]) {
-        maxAmount = tokenBalances[key];
+      if (tokenMaxIn.gt(tokenBalance)) {
+        maxAmount = tokenBalance;
       } else {
         maxAmount = tokenMaxIn;
       }
@@ -157,8 +159,6 @@ const SingleDepositModal = (props) => {
         parseUnits(pool.stakeAmount, pool.decimals)
       );
       amount = formatUnits(amount, v.decimals);
-      const minAmount = 0.000001;
-      if (parseFloat(amount) < minAmount) amount = 0;
       staked[v.symbol] = amount;
     });
     await Promise.all(promises);
@@ -183,12 +183,9 @@ const SingleDepositModal = (props) => {
   };
 
   const max = (token) => {
-    let amount = parseFloat(maxTokenDepositAmount[token.symbol]) || 0;
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
-        value: amount + "",
+        value: maxTokenDepositAmount[token.symbol],
       },
     });
   };
@@ -200,7 +197,10 @@ const SingleDepositModal = (props) => {
   };
 
   const confirm = async () => {
-    const tokenAmountIn = parseUnits(amount, selected.decimals);
+    const tokenAmountIn = parseUnits(
+      bnum(amount).toFixed(selected.decimals, 1),
+      selected.decimals
+    );
     let params = [];
     if (selected.symbol === "VLX") {
       params.push("0");
@@ -225,21 +225,6 @@ const SingleDepositModal = (props) => {
     setTxLoading(false);
     closeAndInitModal();
   };
-
-  // const getAvailableAmount = () => {
-  //   let amount = "-";
-  //   if (Array.isArray(availableAmounts)) {
-  //     for (let i = 0; i < availableAmounts.length; i++) {
-  //       if (availableAmounts[i].name === selected.symbol) {
-  //         amount =
-  //           parseFloat(availableAmounts[i].amount) * pool.supportTokens.length;
-  //       }
-  //     }
-  //   }
-  //   const minAmount = 0.000001;
-  //   if (amount < minAmount) amount = 0;
-  //   return amount;
-  // };
 
   return (
     <Dialog

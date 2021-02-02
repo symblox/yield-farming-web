@@ -24,14 +24,12 @@ import { Header } from "../header";
 import Footer from "../footer";
 import Pool from "../pool";
 import Balance from "../balance";
-import DepositModal from "../modal/depositModal";
 import MultiDepositModal from "../modal/deposit/multiDeposit";
 import MultiWithdrawModal from "../modal/withdraw/multiWithdraw";
 import SingleDepositModal from "../modal/deposit/singleDeposit";
 import SingleWithdrawModal from "../modal/withdraw/singleWithdraw";
 import TransactionModal from "../modal/transactionModal";
 import WithdrawRewardsModal from "../modal/withdrawRewardsModal";
-import WithdrawModal from "../modal/withdrawModal";
 import NetworkErrModal from "../modal/networkErrModal";
 
 import Loader from "../loader";
@@ -277,13 +275,11 @@ class Home extends Component {
       rewardPools,
       loading: true,
       txLoading: false,
-      depositModalOpen: false,
       multiDepositModalOpen: false,
       singleDepositModalOpen: false,
       multiWithdrawModalOpen: false,
       singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
-      withdrawModalOpen: false,
       transactionModalOpen: false,
     };
   }
@@ -352,13 +348,11 @@ class Home extends Component {
     this.setState({
       snackbarMessage: null,
       snackbarType: null,
-      depositModalOpen: false,
       multiDepositModalOpen: false,
       singleDepositModalOpen: false,
       multiWithdrawModalOpen: false,
       singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
-      withdrawModalOpen: false,
       transactionModalOpen: false,
       txLoading: true,
     });
@@ -414,13 +408,11 @@ class Home extends Component {
       const snackbarObj = {
         snackbarMessage: error.toString(),
         snackbarType: "Error",
-        depositModalOpen: false,
         multiDepositModalOpen: false,
         singleDepositModalOpen: false,
         multiWithdrawModalOpen: false,
         singleWithdrawModalOpen: false,
         withdrawRewardsModalOpen: false,
-        withdrawModalOpen: false,
         transactionModalOpen: false,
       };
       that.setState(snackbarObj);
@@ -454,7 +446,6 @@ class Home extends Component {
         key = "singleDepositModalOpen";
         break;
       default:
-        key = "depositModalOpen";
         break;
     }
     this.setState({
@@ -474,16 +465,10 @@ class Home extends Component {
           key = "singleWithdrawModalOpen";
           break;
         default:
-          key = "withdrawModalOpen";
           break;
       }
       this.setState({
         [key]: true,
-        withdrawData: data,
-      });
-    } else {
-      this.setState({
-        withdrawModalOpen: true,
         withdrawData: data,
       });
     }
@@ -510,10 +495,6 @@ class Home extends Component {
     }
   };
 
-  closeDepositModal = () => {
-    this.setState({ depositModalOpen: false });
-  };
-
   closeMultiDepositModal = () => {
     this.setState({ multiDepositModalOpen: false });
   };
@@ -534,10 +515,6 @@ class Home extends Component {
     this.setState({ withdrawRewardsModalOpen: false });
   };
 
-  closeWithdrawModal = () => {
-    this.setState({ withdrawModalOpen: false });
-  };
-
   closeTransactionModal = () => {
     this.setState({ transactionModalOpen: false });
   };
@@ -546,17 +523,6 @@ class Home extends Component {
     var { snackbarType, snackbarMessage } = this.state;
     return (
       <Snackbar type={snackbarType} message={snackbarMessage} open={true} />
-    );
-  };
-
-  renderDepositModal = (data) => {
-    return (
-      <DepositModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeDepositModal}
-        modalOpen={this.state.depositModalOpen}
-      />
     );
   };
 
@@ -623,17 +589,6 @@ class Home extends Component {
     );
   };
 
-  renderWithdrawModal = (data) => {
-    return (
-      <WithdrawModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeWithdrawModal}
-        modalOpen={this.state.withdrawModalOpen}
-      />
-    );
-  };
-
   renderTransactionModal = (data) => {
     return (
       <TransactionModal
@@ -654,13 +609,11 @@ class Home extends Component {
   render() {
     const { classes } = this.props;
     const {
-      depositModalOpen,
       multiDepositModalOpen,
       singleDepositModalOpen,
       multiWithdrawModalOpen,
       singleWithdrawModalOpen,
       withdrawRewardsModalOpen,
-      withdrawModalOpen,
       transactionModalOpen,
       rewardPools,
       snackbarMessage,
@@ -1314,8 +1267,6 @@ class Home extends Component {
             </div>
           </div>
         </Container>
-        {/* {modalOpen && this.renderModal()} */}
-        {depositModalOpen && this.renderDepositModal(this.state.depositData)}
         {multiDepositModalOpen &&
           this.renderMultiDepositModal(this.state.depositData)}
         {singleDepositModalOpen &&
@@ -1326,7 +1277,6 @@ class Home extends Component {
           this.renderSingleWithdrawModal(this.state.withdrawData)}
         {withdrawRewardsModalOpen &&
           this.renderWithdrawRewardsModal(this.state.rewardPools)}
-        {withdrawModalOpen && this.renderWithdrawModal(this.state.withdrawData)}
         {transactionModalOpen &&
           this.renderTransactionModal(this.state.tradeData)}
         {this.state.networkId &&
