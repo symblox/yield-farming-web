@@ -262,7 +262,7 @@ class Store {
             pool.rewardsAvailable = data[1];
             pool.price = data[2];
             pool.erc20Balance = data[3].erc20Balance;
-            if (pool.erc20Address2 === pool.rewardsAddress) {
+            if (pool.erc20Address2 === pool.rewardToken.address) {
               pool.erc20Balance2 = pool.rewardsBalance;
             } else {
               pool.erc20Balance2 = data[3].erc20Balance2;
@@ -443,7 +443,7 @@ class Store {
     } else if (asset.type === "swap-native") {
       try {
         let balance = await web3.eth.getBalance(account.address);
-        if (asset.erc20Address2 === asset.rewardsAddress) {
+        if (asset.erc20Address2 === asset.rewardToken.address) {
           callback(null, {
             erc20Balance: toStringDecimals(balance, asset.decimals),
           });

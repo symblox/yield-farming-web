@@ -19,8 +19,8 @@ export default function useMultiDeposit() {
   return useCallback(
     async (pool, params) => {
       const connectorFactoryContract = new Contract(
-        pool.entryContractFactoryAddress,
-        pool.entryContractFactoryABI,
+        config.connectorFactory,
+        config.connectorFactoryABI,
         signer
       );
       const connectorAddress = await connectorFactoryContract.connectors(

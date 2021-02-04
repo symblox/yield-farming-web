@@ -453,7 +453,9 @@ class WithdrawRewardsModal extends Component {
                   className={classes.icon}
                   src={
                     "/" +
-                    tokensName[this.state.pool.rewardsSymbol.toLowerCase()] +
+                    tokensName[
+                      this.state.pool.rewardToken.symbol.toLowerCase()
+                    ] +
                     ".png"
                   }
                   alt=""
@@ -465,7 +467,7 @@ class WithdrawRewardsModal extends Component {
                   thousandSeparator={true}
                   isNumericString={true}
                   suffix={
-                    tokensName[this.state.pool.rewardsSymbol.toLowerCase()]
+                    tokensName[this.state.pool.rewardToken.symbol.toLowerCase()]
                   }
                   decimalScale={4}
                   fixedDecimalScale={true}

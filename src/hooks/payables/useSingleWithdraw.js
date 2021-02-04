@@ -1,7 +1,7 @@
 import { useCallback, useContext } from "react";
 import { Contract } from "ethers";
-import { MaxUint256 } from "@ethersproject/constants";
 import { Web3Context } from "../../contexts/Web3Context";
+import config from "../../config";
 
 export default function useSingleWithdraw() {
   const { account, signer } = useContext(Web3Context);
@@ -9,8 +9,8 @@ export default function useSingleWithdraw() {
   return useCallback(
     async (pool, params) => {
       const connectorFactoryContract = new Contract(
-        pool.entryContractFactoryAddress,
-        pool.entryContractFactoryABI,
+        config.connectorFactoryABI,
+        config.connectorFactoryABI,
         signer
       );
       const connectorAddress = await connectorFactoryContract.connectors(

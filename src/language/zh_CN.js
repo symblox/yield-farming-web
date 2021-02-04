@@ -13,7 +13,6 @@ const zh_CN = {
   LP_SWAP: "交易",
   RP_LIST_TITLE: "奖励池",
   RP_TYPE: "名称",
-  RP_ROI: "年收益率 (APR)",
   RP_MY_REWARDS: "我的奖励",
   RP_MY_STAKES: "已抵押",
   RP_STAKE: "抵押",

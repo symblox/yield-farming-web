@@ -2,14 +2,16 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import {
+  Box,
   Button,
   Grid,
   Paper,
+  Tab,
+  Tabs,
   Typography,
   Divider,
   Container,
   Hidden,
-  Collapse,
   Card,
   CardActions,
   CardContent,
@@ -18,7 +20,7 @@ import {
 import { FormattedMessage } from "react-intl";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../contexts/Web3Context";
-import config, { tokensName } from "../../config";
+import config from "../../config";
 import Snackbar from "../snackbar";
 import { Header } from "../header";
 import Footer from "../footer";
@@ -28,9 +30,9 @@ import MultiDepositModal from "../modal/deposit/multiDeposit";
 import MultiWithdrawModal from "../modal/withdraw/multiWithdraw";
 import SingleDepositModal from "../modal/deposit/singleDeposit";
 import SingleWithdrawModal from "../modal/withdraw/singleWithdraw";
-import TransactionModal from "../modal/transactionModal";
 import WithdrawRewardsModal from "../modal/withdrawRewardsModal";
 import NetworkErrModal from "../modal/networkErrModal";
+import Transaction from "../transaction";
 
 import Loader from "../loader";
 import Store from "../../stores";
@@ -49,221 +51,27 @@ import {
   CREATE_ENTRY_CONTRACT,
   CREATE_ENTRY_CONTRACT_RETURNED,
 } from "../../constants";
+import styles from "../../styles/home";
 
 const emitter = Store.emitter;
 const dispatcher = Store.dispatcher;
 const store = Store.store;
 
-const styles = (theme) => ({
-  root: {
-    width: "100%",
-    background: "#FFFFFF",
-    borderRadius: "12px",
-    boxShadow: "0px 0px 35px 0px rgba(94, 85, 126, 0.15)",
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
 
-    "& Button": {
-      minWidth: "237px",
-    },
-  },
-  title: {
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: "32px",
-    lineHeight: "45px",
-    textAlign: "center",
-    color: "#1E304B",
-    margin: "45px auto",
-  },
-  headerTitle: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: "60px",
-    lineHeight: "70px",
-    textAlign: "center",
-    color: "#FFFFFF",
-  },
-  headerTitleSecondary: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: "24px",
-    lineHeight: "29px",
-    textAlign: "center",
-    color: "#FFFFFF",
-    mixBlendMode: "normal",
-    opacity: 0.6,
-    margin: "20px auto 80px auto",
-  },
-  tableHeader: {
-    height: "80px",
-    "& td": {
-      // fontFamily: "Noto Sans SC",
-      fontStyle: "normal",
-      fontWeight: "300 !important",
-      fontSize: "20px",
-      lineHeight: "28px",
-      color: "#ACAEBC",
-      padding: "26px 25px",
-    },
-  },
-  tableBody: {
-    height: "100px",
-    "& td": {
-      // fontFamily: "Noto Sans SC",
-      fontStyle: "normal",
-      fontSize: "20px",
-      lineHeight: "24px",
-      padding: "38px 25px",
-    },
-  },
-  icon: {
-    width: "36px",
-    height: "36px",
-    position: "relative",
-    marginTop: "-6px",
-    marginRight: "8px",
-    display: "inline-block",
-    verticalAlign: "middle",
-  },
-  walletIcon: {
-    width: "24px",
-    height: "24px",
-    marginRight: "8px",
-  },
-  iconSecondary: {
-    width: "51px",
-    height: "24px",
-    marginLeft: "8px",
-  },
-  button: {
-    background: "linear-gradient(135deg, #42D9FE 0%, #2872FA 100%, #42D9FE)",
-    borderRadius: "26px",
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "20px",
-    color: "#FFFFFF",
-    minWidth: "115px",
-    marginTop: "-15px",
-    "&:hover": {
-      background: "linear-gradient(315deg, #4DB5FF 0%, #57E2FF 100%, #4DB5FF)",
-    },
-    "&.Mui-disabled": {
-      background:
-        "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
-      color: "#FFFFFF",
-    },
-  },
-  buttonSecondary: {
-    background: "linear-gradient(135deg, #FF3A33 0%, #FC06C6 100%, #FF3A33)",
-    borderRadius: "26px",
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "20px",
-    color: "#FFFFFF",
-    minWidth: "115px",
-    marginTop: "-15px",
-    "&:hover": {
-      background: "linear-gradient(315deg, #FF78E1 0%, #FF736E 100%, #FF78E1)",
-    },
-    "&.Mui-disabled": {
-      background:
-        "linear-gradient(135deg, rgb(255, 58, 51, 0.12) 0%, rgb(252, 6, 198, 0.12) 100%, rgb(255, 58, 51, 0.12))",
-      color: "#FFFFFF",
-    },
-  },
-  paper: {
-    padding: theme.spacing(2),
-    textAlign: "center",
-    color: theme.palette.text.secondary,
-    height: "100%",
-  },
-  actions: {
-    height: "79px",
-    padding: "46px 36px",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "18px",
-    lineHeight: "25px",
-    color: "#C0C1CE",
-    overflowX: "scroll",
-    overflowY: "hidden",
-  },
-  actionsSm: {
-    textAlign: "left",
-    color: "#1E304B",
-    fontFamily: "Oswald",
-    fontSize: "24px",
-    fontWeight: 300,
-    display: "block",
-    padding: "13px 32px",
-    "& span": {
-      float: "right",
-    },
-  },
-  paperTitle: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: "20px",
-    lineHeight: "28px",
-    color: "#ACAEBC",
-  },
-  paperTitleSecondary: {
-    fontFamily: "Oswald",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "46px",
-    lineHeight: "56px",
-    color: "#1E304B",
-    paddingTop: "18px",
-
-    "& .small-text": {
-      fontSize: "20px",
-      lineHeight: "28px",
-      color: "#454862",
-    },
-  },
-  paperTip: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "300",
-    fontSize: "16px",
-    lineHeight: "22px",
-    textAlign: "center",
-    color: "#ACAEBC",
-    margin: "24px auto 0px auto",
-  },
-  divider: {
-    position: "absolute",
-    height: "50%",
-    left: "50%",
-    top: "25%",
-  },
-  balanceBar: {
-    textAlign: "left",
-    color: "white",
-    fontSize: "24px",
-    "& div": {
-      display: "flex",
-    },
-  },
-  collapse: {
-    background: "#EEF6FF",
-    padding: "10px 22px",
-    textAlign: "left",
-    fontSize: "18px",
-    color: "#C0C1CE",
-    position: "relative",
-  },
-  customAlert: {
-    "& .MuiAlert-message": {
-      width: "100%",
-      textAlign: "center",
-    },
-  },
-});
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
 
 class Home extends Component {
   static contextType = Web3Context;
@@ -272,6 +80,7 @@ class Home extends Component {
 
     const rewardPools = store.getStore("rewardPools");
     this.state = {
+      tabValue: 0,
       rewardPools,
       loading: true,
       txLoading: false,
@@ -280,7 +89,6 @@ class Home extends Component {
       multiWithdrawModalOpen: false,
       singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
-      transactionModalOpen: false,
     };
   }
 
@@ -353,7 +161,6 @@ class Home extends Component {
       multiWithdrawModalOpen: false,
       singleWithdrawModalOpen: false,
       withdrawRewardsModalOpen: false,
-      transactionModalOpen: false,
       txLoading: true,
     });
     const that = this;
@@ -413,7 +220,6 @@ class Home extends Component {
         multiWithdrawModalOpen: false,
         singleWithdrawModalOpen: false,
         withdrawRewardsModalOpen: false,
-        transactionModalOpen: false,
       };
       that.setState(snackbarObj);
     });
@@ -480,21 +286,6 @@ class Home extends Component {
     });
   };
 
-  openTransactionModal = (data) => {
-    const { account } = this.state;
-    if (
-      !Object.getOwnPropertyNames(account).length ||
-      account.address === undefined
-    ) {
-      this.context.connectWeb3();
-    } else {
-      this.setState({
-        transactionModalOpen: true,
-        tradeData: data,
-      });
-    }
-  };
-
   closeMultiDepositModal = () => {
     this.setState({ multiDepositModalOpen: false });
   };
@@ -513,10 +304,6 @@ class Home extends Component {
 
   closeWithdrawRewardsModal = () => {
     this.setState({ withdrawRewardsModalOpen: false });
-  };
-
-  closeTransactionModal = () => {
-    this.setState({ transactionModalOpen: false });
   };
 
   renderSnackbar = () => {
@@ -589,21 +376,13 @@ class Home extends Component {
     );
   };
 
-  renderTransactionModal = (data) => {
-    return (
-      <TransactionModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeTransactionModal}
-        modalOpen={this.state.transactionModalOpen}
-        showHash={this.showHash}
-        errorReturned={this.errorReturned}
-      />
-    );
-  };
-
   renderNetworkErrModal = () => {
     return <NetworkErrModal />;
+  };
+
+  handleChange = (event, newValue) => {
+    console.log(newValue);
+    this.setState({ tabValue: newValue });
   };
 
   render() {
@@ -614,7 +393,6 @@ class Home extends Component {
       multiWithdrawModalOpen,
       singleWithdrawModalOpen,
       withdrawRewardsModalOpen,
-      transactionModalOpen,
       rewardPools,
       snackbarMessage,
       loading,
@@ -688,7 +466,9 @@ class Home extends Component {
                 {rewardPools.length > 0 ? (
                   <Balance
                     outline={true}
-                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
+                    name={
+                      rewardPools[0] ? rewardPools[0].rewardToken.symbol : ""
+                    }
                     balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
                   />
                 ) : (
@@ -716,7 +496,9 @@ class Home extends Component {
                 <FormattedMessage id="WALLET_BALANCE" />
                 {rewardPools.length > 0 ? (
                   <Balance
-                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
+                    name={
+                      rewardPools[0] ? rewardPools[0].rewardToken.symbol : ""
+                    }
                     balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
                   />
                 ) : (
@@ -862,410 +644,44 @@ class Home extends Component {
               </CardContent>
             </Card>
           </Hidden>
-          <div className={classes.title}>
-            <FormattedMessage id="RP_LIST_TITLE" />
-          </div>
-          <Grid container spacing={3}>
-            {rewardPools.map((data, i) => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <Pool
-                  data={data}
-                  loading={loading || txLoading}
-                  onDeposit={() => this.openDepositModal(data)}
-                  onWithdraw={() => this.openWithdrawModal(data)}
-                  onJoin={() => this.createEntryContract(data)}
-                />
+          <Paper className={classes.container}>
+            <Tabs
+              value={this.state.tabValue}
+              onChange={this.handleChange}
+              indicatorColor="primary"
+              textColor="primary"
+              centered
+            >
+              <Tab label={<FormattedMessage id="RP_LIST_TITLE" />} />
+              <Tab label={<FormattedMessage id="EXCHANGE" />} />
+            </Tabs>
+            <TabPanel
+              value={this.state.tabValue}
+              index={0}
+              className={classes.container}
+            >
+              <Grid container spacing={3}>
+                {rewardPools.map((data, i) => (
+                  <Grid item xs={12} sm={6} md={4} key={i}>
+                    <Pool
+                      data={data}
+                      loading={loading || txLoading}
+                      onDeposit={() => this.openDepositModal(data)}
+                      onWithdraw={() => this.openWithdrawModal(data)}
+                      onJoin={() => this.createEntryContract(data)}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-          <div className={"exchange-table"}>
-            <div className={classes.title}>
-              <FormattedMessage id="LP_LIST_TITLE" />
-            </div>
-            <div className="table-wrap">
-              <Hidden xsDown>
-                <table>
-                  <thead className="table-head">
-                    <tr className={classes.tableHeader}>
-                      <td>
-                        <FormattedMessage id="LP_TRADING_PAIR" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_SYX_PRICE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_MY_SHARE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="RATIO" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="ACTION" />
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {this.state.rewardPools ? (
-                      this.state.rewardPools.map((pool, i) => {
-                        if (pool.type !== "seed") {
-                          return (
-                            <tr key={i} className={classes.tableBody}>
-                              <td>
-                                <img
-                                  className={classes.icon}
-                                  src={
-                                    "/" +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? tokensName[pool.tokens[1].toLowerCase()]
-                                      : tokensName[
-                                          pool.tokens[0].toLowerCase()
-                                        ]) +
-                                    ".png"
-                                  }
-                                  style={{
-                                    marginRight: "-4px",
-                                    zIndex: 2,
-                                  }}
-                                  alt=""
-                                />
-                                <img
-                                  className={classes.icon}
-                                  src={
-                                    "/" +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? tokensName[pool.tokens[0].toLowerCase()]
-                                      : tokensName[
-                                          pool.tokens[1].toLowerCase()
-                                        ]) +
-                                    ".png"
-                                  }
-                                  alt=""
-                                />
-                                {pool.id == "ETH/VLX"
-                                  ? "VLX/ETH"
-                                  : pool.id == "USDT/VLX"
-                                  ? "VLX/USDT"
-                                  : pool.id}
-                              </td>
-                              <td>
-                                <NumberFormat
-                                  value={
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? 1 / pool.price
-                                      : pool.price) || 0
-                                  }
-                                  defaultValue={"-"}
-                                  displayType={"text"}
-                                  thousandSeparator={true}
-                                  isNumericString={true}
-                                  suffix={
-                                    " " +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? pool.tokens[0]
-                                      : pool.tokens[1])
-                                  }
-                                  decimalScale={pool.id == "ETH/VLX" ? 6 : 4}
-                                  fixedDecimalScale={true}
-                                />
-                              </td>
-                              <td>
-                                {pool.totalSupply > 0 ? (
-                                  <NumberFormat
-                                    value={(
-                                      (parseFloat(pool.stakeAmount) /
-                                        parseFloat(pool.totalSupply)) *
-                                      100
-                                    ).toLocaleString(undefined, {
-                                      maximumFractionDigits: 10,
-                                    })}
-                                    defaultValue={"-"}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    isNumericString={true}
-                                    suffix={"%"}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                  />
-                                ) : (
-                                  "0.00 %"
-                                )}
-                              </td>
-                              <td>
-                                <div>
-                                  {(pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX") &&
-                                  pool.weight
-                                    ? pool.weight.split(":")[1] +
-                                      ":" +
-                                      pool.weight.split(":")[0]
-                                    : pool.weight}
-                                </div>
-                              </td>
-                              <td>
-                                <Button
-                                  className={classes.button}
-                                  size="small"
-                                  variant="contained"
-                                  onClick={() => {
-                                    this.openTransactionModal(pool);
-                                  }}
-                                  disabled={loading || txLoading}
-                                >
-                                  <FormattedMessage id="LP_SWAP" />
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        } else {
-                          return <React.Fragment key={i}></React.Fragment>;
-                        }
-                      })
-                    ) : (
-                      <></>
-                    )}
-                  </tbody>
-                </table>
-              </Hidden>
-              <Hidden smUp>
-                <table>
-                  <thead className="table-head">
-                    <tr className={classes.tableHeader}>
-                      <td>
-                        <FormattedMessage id="LP_TRADING_PAIR" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_SYX_PRICE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="ACTION" />
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {this.state.rewardPools ? (
-                      this.state.rewardPools.map((pool, i) => {
-                        if (pool.type !== "seed") {
-                          return (
-                            <React.Fragment key={i}>
-                              <tr
-                                className={classes.tableBody}
-                                onClick={() =>
-                                  this.setState({
-                                    ["open" + i]: !this.state["open" + i],
-                                  })
-                                }
-                              >
-                                <td>
-                                  <img
-                                    className={classes.icon}
-                                    src={
-                                      "/" +
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? tokensName[
-                                            pool.tokens[1].toLowerCase()
-                                          ]
-                                        : tokensName[
-                                            pool.tokens[0].toLowerCase()
-                                          ]) +
-                                      ".png"
-                                    }
-                                    style={{
-                                      marginRight: "-4px",
-                                      zIndex: 2,
-                                    }}
-                                    alt=""
-                                  />
-                                  <img
-                                    className={classes.icon}
-                                    src={
-                                      "/" +
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? tokensName[
-                                            pool.tokens[0].toLowerCase()
-                                          ]
-                                        : tokensName[
-                                            pool.tokens[1].toLowerCase()
-                                          ]) +
-                                      ".png"
-                                    }
-                                    alt=""
-                                  />
-
-                                  <span
-                                    style={{
-                                      paddingLeft: "5px",
-                                    }}
-                                  >
-                                    {pool.id == "ETH/VLX"
-                                      ? "VLX/ETH"
-                                      : pool.id == "USDT/VLX"
-                                      ? "VLX/USDT"
-                                      : pool.id}
-                                  </span>
-                                </td>
-                                <td>
-                                  <NumberFormat
-                                    value={
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? 1 / pool.price
-                                        : pool.price) || 0
-                                    }
-                                    defaultValue={"-"}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    isNumericString={true}
-                                    decimalScale={pool.id == "ETH/VLX" ? 6 : 4}
-                                    fixedDecimalScale={true}
-                                  />
-                                  <div
-                                    style={{
-                                      color: "#a4a7be",
-                                    }}
-                                  >
-                                    {pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? pool.tokens[0]
-                                      : pool.tokens[1]}
-                                  </div>
-                                </td>
-                                <td>
-                                  <Button
-                                    className={classes.button}
-                                    size="small"
-                                    variant="contained"
-                                    onClick={() => {
-                                      this.openTransactionModal(pool);
-                                    }}
-                                    disabled={loading || txLoading}
-                                  >
-                                    <FormattedMessage id="LP_SWAP" />
-                                  </Button>
-                                </td>
-                              </tr>
-                              <Collapse
-                                in={this.state["open" + i]}
-                                timeout="auto"
-                                unmountOnExit
-                                className={classes.collapse}
-                              >
-                                <div className="triangle-up"></div>
-                                <Grid container spacing={3}>
-                                  <Grid item xs={6}>
-                                    {tokensName[pool.tokens[1].toLowerCase()]}
-                                    :
-                                    <NumberFormat
-                                      value={pool.bptVlxBalance || 0}
-                                      defaultValue={"-"}
-                                      displayType={"text"}
-                                      thousandSeparator={true}
-                                      isNumericString={true}
-                                      decimalScale={4}
-                                      fixedDecimalScale={true}
-                                      renderText={(value) => (
-                                        <span
-                                          style={{
-                                            color: "#1E304B",
-                                            paddingLeft: "5px",
-                                          }}
-                                        >
-                                          {value}
-                                        </span>
-                                      )}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <FormattedMessage id="LP_MY_SHARE" />:
-                                    <span
-                                      style={{
-                                        color: "#1E304B",
-                                        paddingLeft: "5px",
-                                      }}
-                                    >
-                                      {pool.totalSupply > 0 ? (
-                                        <NumberFormat
-                                          value={(
-                                            (parseFloat(pool.stakeAmount) /
-                                              parseFloat(pool.totalSupply)) *
-                                            100
-                                          ).toLocaleString(undefined, {
-                                            maximumFractionDigits: 10,
-                                          })}
-                                          defaultValue={"-"}
-                                          displayType={"text"}
-                                          thousandSeparator={true}
-                                          isNumericString={true}
-                                          suffix={"%"}
-                                          decimalScale={2}
-                                          fixedDecimalScale={true}
-                                        />
-                                      ) : (
-                                        "0.00 %"
-                                      )}
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    {tokensName[pool.tokens[0].toLowerCase()]}
-                                    :
-                                    <NumberFormat
-                                      value={pool.bptSyxBalance || 0}
-                                      defaultValue={"-"}
-                                      displayType={"text"}
-                                      thousandSeparator={true}
-                                      isNumericString={true}
-                                      decimalScale={4}
-                                      fixedDecimalScale={true}
-                                      renderText={(value) => (
-                                        <span
-                                          style={{
-                                            color: "#1E304B",
-                                            paddingLeft: "5px",
-                                          }}
-                                        >
-                                          {value}
-                                        </span>
-                                      )}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <FormattedMessage id="RATIO" />:
-                                    <span
-                                      style={{
-                                        color: "#1E304B",
-                                        paddingLeft: "5px",
-                                      }}
-                                    >
-                                      {(pool.id == "ETH/VLX" ||
-                                        pool.id == "USDT/VLX") &&
-                                      pool.weight
-                                        ? pool.weight.split(":")[1] +
-                                          ":" +
-                                          pool.weight.split(":")[0]
-                                        : pool.weight}
-                                    </span>
-                                  </Grid>
-                                </Grid>
-                              </Collapse>
-                            </React.Fragment>
-                          );
-                        } else {
-                          return <React.Fragment key={i}></React.Fragment>;
-                        }
-                      })
-                    ) : (
-                      <></>
-                    )}
-                  </tbody>
-                </table>
-              </Hidden>
-            </div>
-          </div>
+            </TabPanel>
+            <TabPanel
+              value={this.state.tabValue}
+              index={1}
+              className={classes.container}
+            >
+              <Transaction data={rewardPools[0]} />
+            </TabPanel>
+          </Paper>
         </Container>
         {multiDepositModalOpen &&
           this.renderMultiDepositModal(this.state.depositData)}
@@ -1277,8 +693,6 @@ class Home extends Component {
           this.renderSingleWithdrawModal(this.state.withdrawData)}
         {withdrawRewardsModalOpen &&
           this.renderWithdrawRewardsModal(this.state.rewardPools)}
-        {transactionModalOpen &&
-          this.renderTransactionModal(this.state.tradeData)}
         {this.state.networkId &&
           this.state.networkId.toString() !==
             config.requiredNetworkId.toString() &&

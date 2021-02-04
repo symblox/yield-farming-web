@@ -1,6 +1,7 @@
 import { useCallback, useContext } from "react";
 import { Contract } from "ethers";
 import { Web3Context } from "../../contexts/Web3Context";
+import config from "../../config";
 
 export default function useMultiWithdraw() {
   const { account, signer } = useContext(Web3Context);
@@ -8,8 +9,8 @@ export default function useMultiWithdraw() {
   return useCallback(
     async (pool, params) => {
       const connectorFactoryContract = new Contract(
-        pool.entryContractFactoryAddress,
-        pool.entryContractFactoryABI,
+        config.connectorFactory,
+        config.connectorFactoryABI,
         signer
       );
       const connectorAddress = await connectorFactoryContract.connectors(

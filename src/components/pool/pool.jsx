@@ -245,6 +245,9 @@ export default function Pool(props) {
                   )}
                 </div>
                 <div className={classes.tooltip}>
+                  <FormattedMessage id="RATIO" />: {data.weight}
+                </div>
+                <div className={classes.tooltip}>
                   <FormattedMessage id="REWARD_DISTRIBUTION_RATIO" />:{" "}
                   <NumberFormat
                     value={(
@@ -300,7 +303,7 @@ export default function Pool(props) {
               displayType={"text"}
               thousandSeparator={true}
               isNumericString={true}
-              suffix={" " + tokensName[data.rewardsSymbol.toLowerCase()]}
+              suffix={" " + tokensName[data.rewardToken.symbol.toLowerCase()]}
               decimalScale={4}
               fixedDecimalScale={true}
               renderText={(value) => (

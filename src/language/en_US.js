@@ -13,7 +13,6 @@ const en_US = {
   LP_SWAP: "Swap",
   RP_LIST_TITLE: "Reward Pools",
   RP_TYPE: "Name",
-  RP_ROI: "ROI",
   RP_MY_REWARDS: "My Rewards",
   RP_MY_STAKES: "My Stakes",
   RP_STAKE: "Stake",

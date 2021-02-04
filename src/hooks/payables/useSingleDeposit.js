@@ -19,8 +19,8 @@ export default function useSingleDeposit() {
   return useCallback(
     async (pool, params, tokenAmountIn) => {
       const connectorFactoryContract = new Contract(
-        pool.entryContractFactoryAddress,
-        pool.entryContractFactoryABI,
+        config.connectorFactory,
+        config.connectorFactoryABI,
         signer
       );
       const connectorAddress = await connectorFactoryContract.connectors(

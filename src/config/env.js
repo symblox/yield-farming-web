@@ -55,13 +55,15 @@ function env() {
       requiredNetworkId,
       requiredNetwork: "VELAS Testnet",
       multicall: "0x4fd276206056D994D8F52053679CcaAA1709597e",
+      bRegistry: "0xc84Bccf70c5bCd690EAD8917E832EE94Df4a5690",
+      exchangeProxy: "0x26B0dB27df036f9eA05f4dB565b9b02457757Ab8",
       rpcUrl: rpcUrls[requiredNetworkId],
       browser: browserUrls[requiredNetworkId],
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
       rewardPool: "0x2c140E4561ef42c20B60E600CA52B86147858AC5",
       //connectorFactory: "0x2dE16283FA78149EE21Ff6F29913be7c3C4234a5", //no set governor
       connectorFactory: "0xBB9DE3c9E64ba58FDADE6ac832e08Be03BAc0a39",
-      bptConnector: " 0x5D5170936b988af311e28c404850353b4F34544D", //BptReferralConnector
+      bptConnector: "0x5D5170936b988af311e28c404850353b4F34544D", //BptReferralConnector
       //bptFactory: "0x01365EDf0079d31311e3cc732CD4D2083EE8e3c1",
       wvlx: "0x78f18612775a2c54efc74c2911542aa034fe8d3f",
       svlx: "0x17aCFfF64385FaeB974e618E29E23952775527b2",
