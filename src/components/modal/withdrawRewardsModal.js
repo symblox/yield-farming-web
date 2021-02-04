@@ -13,22 +13,12 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
-import { debounce } from "../../utils/debounce.js";
-import { formatNumberPrecision } from "../../utils/numberFormat.js";
 import Store from "../../stores";
-import {
-  GET_REWARDS,
-  WITHDRAW,
-  CALCULATE_AMOUNT,
-  CALCULATE_AMOUNT_RETURNED,
-  CALCULATE_BPT_AMOUNT,
-  CALCULATE_BPT_AMOUNT_RETURNED,
-} from "../../constants";
+import { GET_REWARDS } from "../../constants";
 
 import { tokensName } from "../../config";
 
 const dispatcher = Store.dispatcher;
-const emitter = Store.emitter;
 
 const styles = (theme) => ({
   root: {
@@ -213,47 +203,11 @@ class WithdrawRewardsModal extends Component {
       pool: curPool,
       token: curPool.tokens[0],
       amount: "0",
-      availableAmount: "0",
       loading: false,
-      availableAmountLoading: true,
     };
   }
 
-  componentDidMount() {
-    this.calculateAmount();
-  }
-
-  componentWillMount() {
-    emitter.on(CALCULATE_AMOUNT_RETURNED, this.setAvailableAmount.bind(this));
-    emitter.on(CALCULATE_BPT_AMOUNT_RETURNED, this.setBptAmount.bind(this));
-  }
-
-  componentWillUnmount() {
-    emitter.removeListener(
-      CALCULATE_AMOUNT_RETURNED,
-      this.setAvailableAmount.bind(this)
-    );
-    emitter.removeListener(
-      CALCULATE_BPT_AMOUNT_RETURNED,
-      this.setBptAmount.bind(this)
-    );
-  }
-
-  handleChange = (event) => {
-    const that = this;
-    const token = event.target.name;
-    this.setState(
-      {
-        [token]: event.target.value,
-      },
-      () => {
-        that.calculateAmount();
-      }
-    );
-  };
-
   poolHandleChange = (event) => {
-    const that = this;
     let selectPool;
     for (let i = 0; i < this.props.data.length; i++) {
       if (
@@ -264,151 +218,10 @@ class WithdrawRewardsModal extends Component {
       }
     }
     if (selectPool)
-      this.setState(
-        {
-          pool: selectPool,
-          token: selectPool.tokens[0],
-        },
-        () => {
-          that.calculateAmount();
-        }
-      );
-  };
-
-  amountChange = (event) => {
-    const that = this;
-    this.setState(
-      {
-        amount: event.target.value,
-      },
-      () => {
-        that.calculateBptAmount();
-      }
-    );
-  };
-
-  getMaxAmount = () => {
-    const pool = this.state.pool;
-
-    return pool.type === "seed"
-      ? formatNumberPrecision(pool.stakeAmount)
-      : this.state.token == pool.tokens[0]
-      ? parseFloat(this.state.availableAmount) > parseFloat(pool.maxSyxOut)
-        ? formatNumberPrecision(pool.maxSyxOut)
-        : formatNumberPrecision(this.state.availableAmount)
-      : parseFloat(this.state.availableAmount) > parseFloat(pool.maxErc20Out)
-      ? formatNumberPrecision(pool.maxErc20Out)
-      : formatNumberPrecision(this.state.availableAmount);
-  };
-
-  max = () => {
-    const that = this;
-    this.setState(
-      {
-        amount: that.getMaxAmount() + "",
-      },
-      () => {
-        that.calculateBptAmount();
-      }
-    );
-  };
-
-  confirm = () => {
-    if (
-      parseFloat(this.state.amount) === 0 ||
-      isNaN(parseFloat(this.state.amount))
-    )
-      return;
-
-    this.setState({
-      loading: true,
-    });
-
-    let amount;
-    if (this.state.pool.type === "seed") {
-      amount = parseFloat(this.state.amount).toString();
-      dispatcher.dispatch({
-        type: WITHDRAW,
-        content: {
-          asset: this.state.pool,
-          amount,
-          token: "",
-        },
+      this.setState({
+        pool: selectPool,
+        token: selectPool.tokens[0],
       });
-    } else {
-      dispatcher.dispatch({
-        type: WITHDRAW,
-        content: {
-          asset: this.state.pool,
-          amount: (parseFloat(this.state.bptAmount) * 0.99999).toString(), //Coverage contract calculation accuracy error,When the token decimals on both sides are inconsistent
-          token:
-            this.state.token === this.state.pool.tokens[1]
-              ? this.state.pool.erc20Address
-              : this.state.pool.erc20Address2,
-        },
-      });
-    }
-  };
-
-  setAvailableAmount(data) {
-    this.setState({
-      availableAmount: data,
-      availableAmountLoading: false,
-    });
-  }
-
-  setBptAmount(data) {
-    this.setState({
-      loading: false,
-      bptAmount: data,
-    });
-  }
-
-  calculateAmount = () => {
-    this.setState({
-      availableAmountLoading: true,
-    });
-    dispatcher.dispatch({
-      type: CALCULATE_AMOUNT,
-      content: {
-        asset: this.state.pool,
-        amount: this.state.pool.stakeAmount,
-        token:
-          this.state.token === this.state.pool.tokens[1]
-            ? this.state.pool.erc20Address
-            : this.state.pool.erc20Address2,
-      },
-    });
-  };
-
-  calculateBptAmount = () => {
-    const that = this;
-    that.setState({
-      loading: true,
-    });
-    debounce(
-      1000,
-      () => {
-        if (!Number.isNaN(parseFloat(that.state.amount))) {
-          dispatcher.dispatch({
-            type: CALCULATE_BPT_AMOUNT,
-            content: {
-              asset: that.state.pool,
-              amount: parseFloat(that.state.amount),
-              token:
-                that.state.token === that.state.pool.tokens[1]
-                  ? that.state.pool.erc20Address
-                  : that.state.pool.erc20Address2,
-            },
-          });
-        } else {
-          that.setState({
-            loading: false,
-          });
-        }
-      },
-      that
-    )();
   };
 
   onClaim = () => {
