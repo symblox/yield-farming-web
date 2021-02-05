@@ -372,6 +372,8 @@ class Home extends Component {
         loading={this.state.loading || this.state.txLoading}
         closeModal={this.closeWithdrawRewardsModal}
         modalOpen={this.state.withdrawRewardsModalOpen}
+        showHash={this.showHash}
+        errorReturned={this.errorReturned}
       />
     );
   };

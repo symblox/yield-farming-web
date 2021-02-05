@@ -7,7 +7,6 @@ import {
   CONFIGURE_RETURNED,
   GET_BALANCES_PERPETUAL,
   GET_BALANCES_PERPETUAL_RETURNED,
-  GET_REWARDS,
   GET_REWARDS_RETURNED,
   CREATE_ENTRY_CONTRACT,
   CREATE_ENTRY_CONTRACT_RETURNED,
@@ -60,9 +59,6 @@ class Store {
             break;
           case GET_BALANCES_PERPETUAL:
             this.getBalancesPerpetual(payload);
-            break;
-          case GET_REWARDS:
-            this.getReward(payload);
             break;
           case CREATE_ENTRY_CONTRACT:
             this.createEntryContract(payload);
@@ -747,82 +743,6 @@ class Store {
           callback(error);
         }
       });
-  };
-
-  getReward = (payload) => {
-    const account = store.getStore("account");
-    const { asset } = payload.content;
-
-    this._callGetReward(asset, account, (err, res) => {
-      if (err) {
-        return emitter.emit(ERROR, err);
-      }
-
-      return emitter.emit(GET_REWARDS_RETURNED, res);
-    });
-  };
-
-  _callGetReward = async (asset, account, callback) => {
-    const web3 = await this.getWeb3();
-    const entryContractAddress = await this.getEntryContract(asset.index);
-    if (!entryContractAddress) {
-      callback("connector not create");
-    } else {
-      const yCurveFiContract = new web3.eth.Contract(
-        asset.entryContractABI,
-        entryContractAddress
-      );
-
-      let gasLimit;
-      try {
-        gasLimit = await yCurveFiContract.methods.getReward().estimateGas({
-          from: account.address,
-          gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-        });
-      } catch (err) {
-        gasLimit = "1000000";
-      }
-
-      yCurveFiContract.methods
-        .getReward()
-        .send({
-          from: account.address,
-          gasPrice: web3.utils.toWei(await this._getGasPrice(), "gwei"),
-          gasLimit,
-        })
-        .on("transactionHash", function (hash) {
-          console.log(hash);
-          callback(null, hash);
-        })
-        .on("confirmation", function (confirmationNumber, receipt) {
-          if (confirmationNumber === 2) {
-            dispatcher.dispatch({
-              type: GET_BALANCES_PERPETUAL,
-              content: {},
-            });
-            emitter.emit(TX_CONFIRM);
-          }
-        })
-        .on("receipt", function (receipt) {
-          console.log(receipt);
-        })
-        .on("error", function (error) {
-          if (!error.toString().includes("-32601")) {
-            if (error.message) {
-              return callback(error.message);
-            }
-            callback(error);
-          }
-        })
-        .catch((error) => {
-          if (!error.toString().includes("-32601")) {
-            if (error.message) {
-              return callback(error.message);
-            }
-            callback(error);
-          }
-        });
-    }
   };
 
   _getGasPrice = async () => {
