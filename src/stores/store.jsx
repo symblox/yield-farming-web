@@ -261,11 +261,11 @@ class Store {
             pool.stakeAmount = data[0];
             pool.rewardsAvailable = data[1];
             pool.price = data[2];
-            pool.erc20Balance = data[3].erc20Balance;
+            pool.erc20Balance = data[3].erc20Balance || 0;
             if (pool.erc20Address2 === pool.rewardsAddress) {
-              pool.erc20Balance2 = pool.rewardsBalance;
+              pool.erc20Balance2 = pool.rewardsBalance || 0;
             } else {
-              pool.erc20Balance2 = data[3].erc20Balance2;
+              pool.erc20Balance2 = data[3].erc20Balance2 || 0;
             }
 
             pool.rewardRate = data[4] * data[5];
@@ -452,7 +452,6 @@ class Store {
             asset.erc20ABI2,
             asset.erc20Address2
           );
-
           let balance2 = await erc20Contract.methods
             .balanceOf(account.address)
             .call();

@@ -80,6 +80,9 @@ const styles = theme => ({
                 "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
             color: "#FFFFFF"
         }
+    },
+    warning: {
+        color: "#FF0000",
     }
 });
 
@@ -186,7 +189,10 @@ const ExchangeSyx = ({classes}) => {
                                             />
                                         )
                                     }}
-                                />
+                                /><br />
+                            </Typography>
+                            <Typography variant="body1" className={classes.warning}>
+                                <FormattedMessage id="EXCHANGE_WARNING" />
                             </Typography>
                         </FormControl>
                         <Button
