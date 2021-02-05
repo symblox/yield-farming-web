@@ -7,7 +7,6 @@ import {
   CONFIGURE_RETURNED,
   GET_BALANCES_PERPETUAL,
   GET_BALANCES_PERPETUAL_RETURNED,
-  GET_REWARDS_RETURNED,
   CREATE_ENTRY_CONTRACT,
   CREATE_ENTRY_CONTRACT_RETURNED,
   TX_CONFIRM,
@@ -255,19 +254,8 @@ class Store {
             ).toFixed(1);
 
             pool.weight = data[7].weight;
-
-            pool.bptVlxBalance = data[7].erc20Balance;
-            pool.bptSyxBalance = data[7].erc20Balance2;
             pool.maxIn = data[7].maxIn;
             pool.maxOut = data[7].maxOut;
-            pool.maxErc20In =
-              parseFloat(data[7].maxIn) * parseFloat(data[7].erc20Balance);
-            pool.maxSyxIn =
-              parseFloat(data[7].maxIn) * parseFloat(data[7].erc20Balance2);
-            pool.maxErc20Out =
-              parseFloat(data[7].maxOut) * parseFloat(data[7].erc20Balance);
-            pool.maxSyxOut =
-              parseFloat(data[7].maxOut) * parseFloat(data[7].erc20Balance2);
             callback(null, pool);
           }
         );
