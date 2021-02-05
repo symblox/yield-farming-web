@@ -89,6 +89,8 @@ const zh_CN = {
   EXCHANGE_RATE: "SYX 兑换比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
+  EXCHANGE_WARNING:
+    "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_OLD: "旧版矿池",
   DAPP_MINING_NEW: "新版矿池",
   SYX_TOKEN_EXCHANGE: "新 SYX 兑换",
