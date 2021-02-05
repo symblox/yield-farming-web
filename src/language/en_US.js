@@ -93,7 +93,7 @@ const en_US = {
   EXCHANGE_TOTAL_SUPPLY: "Max old SYX to new SYX liquidity",
   EXCHANGE_WALLET_BALANCE: "Redeemable balance: {amount}",
   EXCHANGE_WARNING:
-    "DO NOT use the above exchange function if you set the delegation in the voting app, or you will lose your SYX toknes PERMANENTLY",
+    "DO NOT use the above exchange function if you have already set delegation in the voting app, or you will lose your SYX toknes PERMANENTLY",
   DAPP_MINING_OLD: "Yield Farming (V1)",
   DAPP_MINING_NEW: "New Yield Farming",
   DAPP_PVLX: "pVLX No-Loss Mining",
