@@ -51,7 +51,6 @@ export async function fetchPoolTokenBalance(
         );
       }
       setPoolTokenBalance(amounts);
-      return amounts;
     } catch (e) {
       console.log("fetchPoolTokenBalance error");
       console.error(e);

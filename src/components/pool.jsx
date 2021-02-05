@@ -9,9 +9,9 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import NumberFormat from "react-number-format";
-import styles from "../../styles/pool";
-import { fetchPoolTokenBalance } from "../../hooks/usePoolTokenBalance";
-import { Web3Context } from "../../contexts/Web3Context";
+import styles from "../styles/pool";
+import { fetchPoolTokenBalance } from "../hooks/usePoolTokenBalance";
+import { Web3Context } from "../contexts/Web3Context";
 
 const Pool = (props) => {
   const { data: pool, loading, onDeposit, onWithdraw, onJoin, classes } = props;
@@ -45,6 +45,7 @@ const Pool = (props) => {
             {tokenNameList.map((v, i) => {
               return (
                 <img
+                  key={i}
                   className={classes.icon}
                   style={
                     i == tokenNameList.length - 1
