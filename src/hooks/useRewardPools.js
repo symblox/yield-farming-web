@@ -1,6 +1,7 @@
 import { useEffect, useContext } from "react";
 import { atom, useAtom } from "jotai";
-import { formatUnits, parseUnits } from "@ethersproject/units";
+import { formatUnits } from "@ethersproject/units";
+import { AddressZero } from "@ethersproject/constants";
 import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config, { pools } from "../config";
@@ -55,30 +56,28 @@ export async function fetchRewardPoolsValues(
         pool.entryContractAddress = connectorAddress;
 
         const poolContract = new Contract(pool.poolAddress, pool.poolABI);
-        const connectorContract = new Contract(
-          connectorAddress,
-          pool.entryContractABI
-        );
-
         const userInfoCall = poolContract.userInfo(
           pool.index,
           connectorAddress
         );
-        const earnedCall = connectorContract.earned();
         const totalAllocPointCall = poolContract.totalAllocPoint();
         const poolInfoCall = poolContract.poolInfo(pool.index);
+        let calls = [userInfoCall, totalAllocPointCall, poolInfoCall];
+        if (connectorAddress !== AddressZero) {
+          const connectorContract = new Contract(
+            connectorAddress,
+            pool.entryContractABI
+          );
+          const earnedCall = connectorContract.earned();
+          calls.push(earnedCall);
+        }
 
-        const [
-          userInfo,
-          earned,
-          totalAllocPoint,
-          poolInfo,
-        ] = await ethcallProvider.all([
-          userInfoCall,
-          earnedCall,
-          totalAllocPointCall,
-          poolInfoCall,
-        ]);
+        const results = await ethcallProvider.all(calls);
+        const [userInfo, totalAllocPoint, poolInfo] = results;
+        let earned = "0";
+        if (connectorAddress !== AddressZero) {
+          earned = results[3];
+        }
 
         pool.stakeAmount = formatUnits(userInfo.amount, pool.decimals);
         pool.rewardsAvailable = formatUnits(earned, pool.rewardToken.decimals);
@@ -95,19 +94,19 @@ export async function fetchRewardPoolsValues(
             extraCall.push(bptContract.getNormalizedWeight(v.address));
           });
 
-          const results = await ethcallProvider.all([
+          const results2 = await ethcallProvider.all([
             maxInCall,
             maxOutCall,
             totalSupplyCall,
             ...extraCall,
           ]);
 
-          const [maxIn, maxOut, totalSupply] = results;
+          const [maxIn, maxOut, totalSupply] = results2;
 
           let weight = "";
           pool.supportTokens.map((v, i) => {
             weight += (
-              parseFloat(formatUnits(results[i + 3], pool.decimals)) * 100
+              parseFloat(formatUnits(results2[i + 3], pool.decimals)) * 100
             ).toFixed(0);
             if (i !== pool.supportTokens.length - 1) weight += ":";
           });

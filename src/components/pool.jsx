@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { AddressZero } from "@ethersproject/constants";
 import { withStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
@@ -190,7 +191,7 @@ const Pool = (props) => {
           </Typography>
         </CardContent>
         <CardActions className={classes.bar}>
-          {pool.entryContractAddress ? (
+          {pool.entryContractAddress !== AddressZero ? (
             <>
               <Grid container style={{ position: "relative" }}>
                 <Grid item xs={6}>

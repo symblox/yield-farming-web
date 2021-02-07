@@ -42,6 +42,7 @@ import rewardPoolsAtom, {
   fetchRewardPoolsValues,
 } from "../../hooks/useRewardPools";
 import useInterval from "../../hooks/useInterval";
+import useCreateConnector from "../../hooks/payables/useCreateConnector";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -116,6 +117,7 @@ const loadingAtom = atom((get) => {
 
 const Home = (props) => {
   const { classes } = props;
+  const createConnector = useCreateConnector();
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [tabValue, setTabValue] = useState(0);
   const [txLoading, setTxLoading] = useState(false);
@@ -137,7 +139,7 @@ const Home = (props) => {
   const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
   const [loading] = useAtom(loadingAtom);
 
-  useInterval(() => {
+  const loadData = () => {
     if (account && ethersProvider && providerNetwork) {
       fetchUserBalance(
         account,
@@ -153,14 +155,17 @@ const Home = (props) => {
         setRewardPools
       );
     }
-  }, 10000);
+  };
 
-  // useEffect(() => {
-  //   if (!account || !ethersProvider || !providerNetwork) return;
+  useInterval(() => loadData(), 10000);
 
-  // }, [account, ethersProvider, providerNetwork]);
+  useEffect(() => {
+    loadData();
+  }, [account, ethersProvider, providerNetwork]);
 
-  const createEntryContract = (data) => {};
+  const createEntryContract = (pool) => {
+    createConnector(pool);
+  };
 
   const showHash = (txHash) => {};
 
