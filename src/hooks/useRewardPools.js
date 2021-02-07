@@ -5,12 +5,12 @@ import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config, { pools } from "../config";
 
-const rewardPoolsAtom = atom(pools);
+const rewardPoolsAtom = atom({ pools, loaded: false });
 export default rewardPoolsAtom;
 
 export function useRewardPools(pool) {
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
-  const [rewardPools, setRewardPools] = useAtom(rewardPoolsAtom);
+  const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
 
   useEffect(() => {
     if (!account || !ethersProvider || !pool) return;
@@ -22,7 +22,7 @@ export function useRewardPools(pool) {
     );
   }, [account, ethersProvider, pool]);
 
-  return [rewardPools, setRewardPools];
+  return [rewardPool, setRewardPools];
 }
 
 export async function fetchRewardPoolsValues(
@@ -43,7 +43,8 @@ export async function fetchRewardPoolsValues(
       );
       //Use temporary objects to set, otherwise the modification will not take effect
       let newPools = [];
-      const promises = pools.map(async (pool) => {
+      const promises = pools.map(async (pool, i) => {
+        pool.sortIndex = i;
         const connectorAddressCall = connectorFactoryContract.connectors(
           account,
           pool.index
@@ -124,8 +125,14 @@ export async function fetchRewardPoolsValues(
         newPools.push(pool);
       });
       await Promise.all(promises);
-      setRewardPools(newPools);
+      setRewardPools({
+        pools: newPools.sort(function (a, b) {
+          return a.sortIndex - b.sortIndex;
+        }),
+        loaded: true,
+      });
     } catch (e) {
+      setRewardPools({ pools, loaded: false });
       console.log("fetchRewardPoolsValues error");
       console.error(e);
       return;

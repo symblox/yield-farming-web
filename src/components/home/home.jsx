@@ -41,6 +41,7 @@ import userBalanceAtom, { fetchUserBalance } from "../../hooks/useUserBalance";
 import rewardPoolsAtom, {
   fetchRewardPoolsValues,
 } from "../../hooks/useRewardPools";
+import useInterval from "../../hooks/useInterval";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -58,10 +59,10 @@ function TabPanel(props) {
 }
 
 const totalRewardsAvailableAtom = atom((get) => {
-  const rewardPools = get(rewardPoolsAtom);
+  const rewardPool = get(rewardPoolsAtom);
   let totalRewardsAvailable = 0;
-  if (rewardPools) {
-    rewardPools.forEach((pool) => {
+  if (rewardPool.pools) {
+    rewardPool.pools.forEach((pool) => {
       totalRewardsAvailable += parseFloat(pool.rewardsAvailable || 0);
     });
     totalRewardsAvailable = totalRewardsAvailable.toFixed(4);
@@ -70,30 +71,29 @@ const totalRewardsAvailableAtom = atom((get) => {
   return totalRewardsAvailable;
 });
 const totalRewardAprAtom = atom((get) => {
-  const rewardPools = get(rewardPoolsAtom);
+  const rewardPool = get(rewardPoolsAtom);
   let totalRewardApr = 0,
     totalStakeAmount = 0;
-  if (rewardPools) {
-    rewardPools.forEach((pool) => {
-      const toSyxAmount =
-        (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
-        parseFloat(pool.price);
-      totalRewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
-      totalStakeAmount += toSyxAmount;
-    });
 
-    totalRewardApr =
-      totalStakeAmount > 0
-        ? (totalRewardApr / totalStakeAmount).toFixed(1)
-        : "0.0";
-  }
+  rewardPool.pools.forEach((pool) => {
+    const toSyxAmount =
+      (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
+      parseFloat(pool.price);
+    totalRewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
+    totalStakeAmount += toSyxAmount;
+  });
+
+  totalRewardApr =
+    totalStakeAmount > 0
+      ? (totalRewardApr / totalStakeAmount).toFixed(1)
+      : "0.0";
 
   return totalRewardApr;
 });
 const hasJoinedCountAtom = atom((get) => {
-  const rewardPools = get(rewardPoolsAtom);
+  const rewardPool = get(rewardPoolsAtom);
   let hasJoinedCount = 0;
-  rewardPools.forEach((data) => {
+  rewardPool.pools.forEach((data) => {
     if (data.entryContractAddress) {
       hasJoinedCount++;
     }
@@ -101,11 +101,23 @@ const hasJoinedCountAtom = atom((get) => {
   return hasJoinedCount;
 });
 
+const loadingAtom = atom((get) => {
+  const userBalance = get(userBalanceAtom);
+  const rewardPool = get(rewardPoolsAtom);
+  let loading = false;
+  if (
+    !Array.isArray(userBalance) ||
+    Object.keys(userBalance).length === 0 ||
+    !rewardPool.loaded
+  )
+    loading = true;
+  return loading;
+});
+
 const Home = (props) => {
   const { classes } = props;
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [tabValue, setTabValue] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [txLoading, setTxLoading] = useState(false);
   const [multiDepositModalOpen, setMultiDepositModalOpen] = useState(false);
   const [singleDepositModalOpen, setSingleDepositModalOpen] = useState(false);
@@ -119,28 +131,34 @@ const Home = (props) => {
   const [snackbarType, setSnackbarType] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
-  const [rewardPools, setRewardPools] = useAtom(rewardPoolsAtom);
-
+  const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
   const [totalRewardApr] = useAtom(totalRewardAprAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
   const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
+  const [loading] = useAtom(loadingAtom);
 
-  useEffect(() => {
-    if (!account || !ethersProvider || !providerNetwork) return;
-    fetchUserBalance(
-      account,
-      ethersProvider,
-      providerNetwork,
-      tradeTokens,
-      setUserBalance
-    );
-    fetchRewardPoolsValues(
-      account,
-      ethersProvider,
-      providerNetwork,
-      setRewardPools
-    );
-  }, [account, ethersProvider, providerNetwork]);
+  useInterval(() => {
+    if (account && ethersProvider && providerNetwork) {
+      fetchUserBalance(
+        account,
+        ethersProvider,
+        providerNetwork,
+        tradeTokens,
+        setUserBalance
+      );
+      fetchRewardPoolsValues(
+        account,
+        ethersProvider,
+        providerNetwork,
+        setRewardPools
+      );
+    }
+  }, 10000);
+
+  // useEffect(() => {
+  //   if (!account || !ethersProvider || !providerNetwork) return;
+
+  // }, [account, ethersProvider, providerNetwork]);
 
   const createEntryContract = (data) => {};
 
@@ -448,7 +466,7 @@ const Home = (props) => {
           </Tabs>
           <TabPanel value={tabValue} index={0} className={classes.container}>
             <Grid container spacing={3}>
-              {rewardPools.map((pool, i) => (
+              {rewardPool.pools.map((pool, i) => (
                 <Grid item xs={12} sm={6} md={4} key={i}>
                   <Pool
                     data={pool}
@@ -462,7 +480,7 @@ const Home = (props) => {
             </Grid>
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.container}>
-            <Transaction data={rewardPools[0]} />
+            <Transaction data={rewardPool.pools[0]} />
           </TabPanel>
         </Paper>
       </Container>
@@ -470,7 +488,7 @@ const Home = (props) => {
       {singleDepositModalOpen && renderSingleDepositModal(depositData)}
       {multiWithdrawModalOpen && renderMultiWithdrawModal(withdrawData)}
       {singleWithdrawModalOpen && renderSingleWithdrawModal(withdrawData)}
-      {withdrawRewardsModalOpen && renderWithdrawRewardsModal(rewardPools)}
+      {withdrawRewardsModalOpen && renderWithdrawRewardsModal(rewardPool.pools)}
       {providerNetwork &&
         providerNetwork.chainId.toString() !==
           config.requiredNetworkId.toString() &&
