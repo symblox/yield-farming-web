@@ -5,7 +5,15 @@ import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config, { tradeTokens } from "../config/config";
 
-const userBalanceAtom = atom([]);
+let defaultBalances = [];
+for (let i = 0; i < tradeTokens.length; i++) {
+  defaultBalances.push({
+    name: tradeTokens[i].name,
+    symbol: tradeTokens[i].symbol,
+    balance: 0,
+  });
+}
+const userBalanceAtom = atom(defaultBalances);
 export default userBalanceAtom;
 
 export function useUserBalance() {

@@ -28,13 +28,12 @@ export default function Balance(props) {
   const classes = useStyles(props);
   const { name, symbol, balance } = props;
   const tokenIcon = "/" + name + ".png";
-
   return (
     <div className={classes.root}>
       <img src={tokenIcon} alt="" />
       <NumberFormat
         style={{ whiteSpace: "nowrap" }}
-        value={parseFloat(balance || 0).toLocaleString(undefined, {
+        value={parseFloat(balance).toLocaleString(undefined, {
           maximumFractionDigits: 10,
         })}
         defaultValue={"-"}
