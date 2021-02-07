@@ -224,19 +224,19 @@ class Store {
             }
             pool.stakeAmount = data[0];
             pool.rewardsAvailable = data[1];
-            pool.price = data[2];
-            pool.erc20Balance = data[3].erc20Balance;
+            pool.price = data[2]; //
+            pool.erc20Balance = data[3].erc20Balance; //
             if (pool.erc20Address2 === pool.rewardToken.address) {
               pool.erc20Balance2 = pool.rewardsBalance;
             } else {
               pool.erc20Balance2 = data[3].erc20Balance2;
             }
 
-            pool.rewardRate = data[4] * data[5];
+            pool.rewardRate = data[4] * data[5]; //
             pool.allocPoint = data[5];
-            pool.BPTPrice = data[6];
+            pool.BPTPrice = data[6]; //
             pool.totalSupply = data[7].totalSupply;
-            pool.totalBalanceForSyx = 0;
+            pool.totalBalanceForSyx = 0; //
             if (pool.type === "seed") {
               pool.totalBalanceForSyx =
                 parseFloat(pool.totalSupply) / parseFloat(pool.price);
@@ -246,7 +246,7 @@ class Store {
                 parseFloat(data[7].erc20Balance2);
             }
 
-            pool.rewardApr = (pool.totalBalanceForSyx > 0
+            pool.rewardApr = (pool.totalBalanceForSyx > 0 //
               ? ((parseFloat(pool.rewardRate) * blocksPerYear) /
                   pool.totalBalanceForSyx) *
                 100

@@ -3,9 +3,6 @@ import getTokens from "./tokens";
 const config = env;
 const tokens = getTokens();
 
-//If syx is a tradable token of the pool, it is defined to erc20Address2
-//If vlx is a tradable token of the pool, it is defined to erc20Address
-
 let vlxSyxPool = {
   id: "SYX2/VLX",
   featured: false,
@@ -19,12 +16,6 @@ let vlxSyxPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.wvlx,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.syxABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -44,12 +35,6 @@ let vlxSyxPool2 = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.wvlx,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.syxABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -68,12 +53,6 @@ let svlxSyxPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.svlx,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.syxABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -92,12 +71,6 @@ let usdtSyxPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.usdt,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 6,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.syxABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -118,12 +91,6 @@ let usdtSyxPool2 = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.usdt,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 6,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.syxABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -142,12 +109,6 @@ let vlxUsdtPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.wvlx,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.usdt,
-  // erc20ABI2: config.erc20ABI,
-  // erc20Decimals2: 6,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -166,12 +127,6 @@ let vlxEthPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.wvlx,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.weth,
-  // erc20ABI2: config.erc20ABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -190,12 +145,6 @@ let ethSyxPool = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.weth,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.erc20ABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };
@@ -216,12 +165,6 @@ let ethSyxPool2 = {
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
-  // erc20Address: config.weth,
-  // erc20ABI: config.erc20ABI,
-  // erc20Decimals: 18,
-  // erc20Address2: config.syx,
-  // erc20ABI2: config.erc20ABI,
-  // erc20Decimals2: 18,
   poolAddress: config.rewardPool,
   poolABI: config.rewardPoolABI,
 };

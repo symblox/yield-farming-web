@@ -448,14 +448,14 @@ const Home = (props) => {
           </Tabs>
           <TabPanel value={tabValue} index={0} className={classes.container}>
             <Grid container spacing={3}>
-              {rewardPools.map((data, i) => (
+              {rewardPools.map((pool, i) => (
                 <Grid item xs={12} sm={6} md={4} key={i}>
                   <Pool
-                    data={data}
+                    data={pool}
                     loading={loading || txLoading}
-                    onDeposit={() => openDepositModal(data)}
-                    onWithdraw={() => openWithdrawModal(data)}
-                    onJoin={() => createEntryContract(data)}
+                    onDeposit={() => openDepositModal(pool)}
+                    onWithdraw={() => openWithdrawModal(pool)}
+                    onJoin={() => createEntryContract(pool)}
                   />
                 </Grid>
               ))}
