@@ -41,6 +41,9 @@ import userBalanceAtom, { fetchUserBalance } from "../../hooks/useUserBalance";
 import rewardPoolsAtom, {
   fetchRewardPoolsValues,
 } from "../../hooks/useRewardPools";
+import rewardAprsAtom, {
+  fetchRewardAprsValues,
+} from "../../hooks/useRewardAprs";
 import useInterval from "../../hooks/useInterval";
 import useCreateConnector from "../../hooks/payables/useCreateConnector";
 
@@ -71,26 +74,26 @@ const totalRewardsAvailableAtom = atom((get) => {
 
   return totalRewardsAvailable;
 });
-const totalRewardAprAtom = atom((get) => {
-  const rewardPool = get(rewardPoolsAtom);
-  let totalRewardApr = 0,
-    totalStakeAmount = 0;
+// const totalRewardAprAtom = atom((get) => {
+//   const rewardPool = get(rewardPoolsAtom);
+//   let totalRewardApr = 0,
+//     totalStakeAmount = 0;
 
-  rewardPool.pools.forEach((pool) => {
-    const toSyxAmount =
-      (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
-      parseFloat(pool.price);
-    totalRewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
-    totalStakeAmount += toSyxAmount;
-  });
+//   rewardPool.pools.forEach((pool) => {
+//     const toSyxAmount =
+//       (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
+//       parseFloat(pool.price);
+//     totalRewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
+//     totalStakeAmount += toSyxAmount;
+//   });
 
-  totalRewardApr =
-    totalStakeAmount > 0
-      ? (totalRewardApr / totalStakeAmount).toFixed(1)
-      : "0.0";
+//   totalRewardApr =
+//     totalStakeAmount > 0
+//       ? (totalRewardApr / totalStakeAmount).toFixed(1)
+//       : "0.0";
 
-  return totalRewardApr;
-});
+//   return totalRewardApr;
+// });
 const hasJoinedCountAtom = atom((get) => {
   const rewardPool = get(rewardPoolsAtom);
   let hasJoinedCount = 0;
@@ -134,7 +137,7 @@ const Home = (props) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
   const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
-  const [totalRewardApr] = useAtom(totalRewardAprAtom);
+  const [aprs, setAprs] = useAtom(rewardAprsAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
   const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
   const [loading] = useAtom(loadingAtom);
@@ -153,6 +156,13 @@ const Home = (props) => {
         ethersProvider,
         providerNetwork,
         setRewardPools
+      );
+      fetchRewardAprsValues(
+        account,
+        rewardPool.pools,
+        ethersProvider,
+        providerNetwork,
+        setAprs
       );
     }
   };
@@ -342,7 +352,7 @@ const Home = (props) => {
                       gutterBottom
                     >
                       <NumberFormat
-                        value={totalRewardApr || 0}
+                        value={aprs.userApr}
                         defaultValue={"-"}
                         displayType={"text"}
                         thousandSeparator={true}
@@ -405,7 +415,7 @@ const Home = (props) => {
             <CardActions className={classes.actionsSm}>
               <FormattedMessage id="MY_STAKING_APR" />
               <NumberFormat
-                value={totalRewardApr || 0}
+                value={aprs.userApr}
                 defaultValue={"-"}
                 displayType={"text"}
                 thousandSeparator={true}
@@ -475,6 +485,7 @@ const Home = (props) => {
                 <Grid item xs={12} sm={6} md={4} key={i}>
                   <Pool
                     data={pool}
+                    apr={aprs["poolAprs"][pool.index]}
                     loading={loading || txLoading}
                     onDeposit={() => openDepositModal(pool)}
                     onWithdraw={() => openWithdrawModal(pool)}

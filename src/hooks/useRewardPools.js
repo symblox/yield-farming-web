@@ -14,14 +14,14 @@ export function useRewardPools(pool) {
   const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
 
   useEffect(() => {
-    if (!account || !ethersProvider || !pool) return;
+    if (!account || !ethersProvider || !providerNetwork || !pool) return;
     fetchRewardPoolsValues(
       account,
       ethersProvider,
       providerNetwork,
       setRewardPools
     );
-  }, [account, ethersProvider, pool]);
+  }, [account, ethersProvider, providerNetwork, pool]);
 
   return [rewardPool, setRewardPools];
 }
@@ -34,6 +34,7 @@ export async function fetchRewardPoolsValues(
 ) {
   if (account && provider && providerNetwork) {
     try {
+      const curBlockNumber = await provider.getBlockNumber();
       setMulticallAddress(providerNetwork.chainId, config.multicall);
       const ethcallProvider = new Provider(provider);
       await ethcallProvider.init();
@@ -62,7 +63,22 @@ export async function fetchRewardPoolsValues(
         );
         const totalAllocPointCall = poolContract.totalAllocPoint();
         const poolInfoCall = poolContract.poolInfo(pool.index);
-        let calls = [userInfoCall, totalAllocPointCall, poolInfoCall];
+        const syxPerBlockCall = poolContract.syxPerBlock();
+        const bonusEndBlockCall = poolContract.bonusEndBlock();
+        const startBlockCall = poolContract.startBlock();
+        const endBlockCall = poolContract.endBlock();
+        const bonusMultiplierCall = poolContract.BONUS_MULTIPLIER();
+
+        let calls = [
+          userInfoCall,
+          totalAllocPointCall,
+          poolInfoCall,
+          syxPerBlockCall,
+          bonusEndBlockCall,
+          startBlockCall,
+          endBlockCall,
+          bonusMultiplierCall,
+        ];
         if (connectorAddress !== AddressZero) {
           const connectorContract = new Contract(
             connectorAddress,
@@ -73,15 +89,37 @@ export async function fetchRewardPoolsValues(
         }
 
         const results = await ethcallProvider.all(calls);
-        const [userInfo, totalAllocPoint, poolInfo] = results;
+        const [
+          userInfo,
+          totalAllocPoint,
+          poolInfo,
+          rate,
+          bonusEndBlock,
+          startBlock,
+          endBlock,
+          bonusMultiplier,
+        ] = results;
         let earned = "0";
         if (connectorAddress !== AddressZero) {
-          earned = results[3];
+          earned = results[8];
         }
 
         pool.stakeAmount = formatUnits(userInfo.amount, pool.decimals);
         pool.rewardsAvailable = formatUnits(earned, pool.rewardToken.decimals);
         pool.allocPoint = poolInfo.allocPoint / totalAllocPoint;
+
+        if (parseFloat(curBlockNumber) >= parseFloat(endBlock)) {
+          pool.rewardRate = "0";
+        } else if (parseFloat(curBlockNumber) < parseFloat(startBlock)) {
+          pool.rewardRate = "0";
+        } else if (parseFloat(curBlockNumber) < parseFloat(bonusEndBlock)) {
+          pool.rewardRate = formatUnits(
+            parseFloat(rate) * parseFloat(bonusMultiplier) + "",
+            pool.rewardToken.decimals
+          );
+        } else {
+          pool.rewardRate = formatUnits(rate, pool.rewardToken.decimals);
+        }
 
         if (pool.type !== "seed") {
           const bptContract = new Contract(pool.address, pool.abi);

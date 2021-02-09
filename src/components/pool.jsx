@@ -15,7 +15,15 @@ import { fetchPoolTokenBalance } from "../hooks/usePoolTokenBalance";
 import { Web3Context } from "../contexts/Web3Context";
 
 const Pool = (props) => {
-  const { data: pool, loading, onDeposit, onWithdraw, onJoin, classes } = props;
+  const {
+    data: pool,
+    apr,
+    loading,
+    onDeposit,
+    onWithdraw,
+    onJoin,
+    classes,
+  } = props;
   const tokenNameList = pool.id.split("/");
   const { ethersProvider, providerNetwork } = useContext(Web3Context);
   const [poolTokenBalance, setPoolTokenBalance] = useState({});
@@ -124,7 +132,7 @@ const Pool = (props) => {
           <Typography className={classes.textSecondary}>
             <FormattedMessage id="AVG_STAKING_APR" />:{" "}
             <NumberFormat
-              value={pool.rewardApr}
+              value={apr}
               defaultValue={"-"}
               displayType={"text"}
               thousandSeparator={true}
