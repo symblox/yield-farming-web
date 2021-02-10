@@ -17,7 +17,7 @@ import {
   CardActions,
   CardContent,
 } from "@material-ui/core";
-
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { FormattedMessage } from "react-intl";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../contexts/Web3Context";
@@ -44,8 +44,14 @@ import rewardPoolsAtom, {
 import rewardAprsAtom, {
   fetchRewardAprsValues,
 } from "../../hooks/useRewardAprs";
+import sorAtom, {
+  findBestSwapsMulti,
+  fetchPoolData,
+  fetchPathData,
+} from "../../hooks/useSor";
 import useInterval from "../../hooks/useInterval";
 import useCreateConnector from "../../hooks/payables/useCreateConnector";
+import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -74,26 +80,6 @@ const totalRewardsAvailableAtom = atom((get) => {
 
   return totalRewardsAvailable;
 });
-// const totalRewardAprAtom = atom((get) => {
-//   const rewardPool = get(rewardPoolsAtom);
-//   let totalRewardApr = 0,
-//     totalStakeAmount = 0;
-
-//   rewardPool.pools.forEach((pool) => {
-//     const toSyxAmount =
-//       (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
-//       parseFloat(pool.price);
-//     totalRewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
-//     totalStakeAmount += toSyxAmount;
-//   });
-
-//   totalRewardApr =
-//     totalStakeAmount > 0
-//       ? (totalRewardApr / totalStakeAmount).toFixed(1)
-//       : "0.0";
-
-//   return totalRewardApr;
-// });
 const hasJoinedCountAtom = atom((get) => {
   const rewardPool = get(rewardPoolsAtom);
   let hasJoinedCount = 0;
@@ -138,11 +124,12 @@ const Home = (props) => {
   const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
   const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
   const [aprs, setAprs] = useAtom(rewardAprsAtom);
+  const [sor, setSor] = useAtom(sorAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
   const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
   const [loading] = useAtom(loadingAtom);
 
-  const loadData = () => {
+  const loadData = async () => {
     if (account && ethersProvider && providerNetwork) {
       fetchUserBalance(
         account,
@@ -151,15 +138,44 @@ const Home = (props) => {
         tradeTokens,
         setUserBalance
       );
-      fetchRewardPoolsValues(
+      await fetchRewardPoolsValues(
         account,
         ethersProvider,
         providerNetwork,
         setRewardPools
       );
+      const poolList = await fetchPoolData(ethersProvider, providerNetwork);
+      let pricesForRewardToken = {};
+      let inputToken;
+      const outputToken = config.syx;
+      const promises = tradeTokens.map(async (v) => {
+        if (v.symbol !== "SYX") {
+          inputToken = v.address;
+          const newSor = await fetchPathData(
+            inputToken,
+            outputToken,
+            sor,
+            poolList,
+            setSor
+          );
+          const [totalReturn] = await findBestSwapsMulti(
+            newSor,
+            "swapExactIn",
+            bnum(parseUnits("0.01", v.decimals)), //To prevent the number of bpts from being not enough to 1, use 0.01, if the price is not enough, it will be treated as 0
+            10,
+            0
+          );
+          pricesForRewardToken[v.symbol] = formatUnits(
+            bnum(totalReturn.toString()).times(bnum(100)).toString(),
+            18
+          );
+        }
+      });
+      await Promise.all(promises);
       fetchRewardAprsValues(
         account,
         rewardPool.pools,
+        pricesForRewardToken,
         ethersProvider,
         providerNetwork,
         setAprs

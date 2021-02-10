@@ -103,7 +103,6 @@ export async function fetchRewardPoolsValues(
         if (connectorAddress !== AddressZero) {
           earned = results[8];
         }
-
         pool.stakeAmount = formatUnits(userInfo.amount, pool.decimals);
         pool.rewardsAvailable = formatUnits(earned, pool.rewardToken.decimals);
         pool.allocPoint = poolInfo.allocPoint / totalAllocPoint;
@@ -120,6 +119,9 @@ export async function fetchRewardPoolsValues(
         } else {
           pool.rewardRate = formatUnits(rate, pool.rewardToken.decimals);
         }
+
+        pool.rewardRate =
+          parseFloat(pool.rewardRate) * parseFloat(pool.allocPoint);
 
         if (pool.type !== "seed") {
           const bptContract = new Contract(pool.address, pool.abi);

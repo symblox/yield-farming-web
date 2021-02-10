@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "dependencies": {
+        "@balancer-labs/sor": "^1.0.0",
         "@ethersproject/contracts": "^5.0.5",
         "@ethersproject/providers": "^5.0.5",
         "@ethersproject/units": "^5.0.2",

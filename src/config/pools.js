@@ -24,7 +24,7 @@ let vlxSyxPool = {
 let vlxSyxPool2 = {
   id: "SYX2/VLX",
   featured: true,
-  address: config.vlxSyxBpt2,
+  address: config.vlxSyxMultiBpt,
   symbol: "BPT",
   type: "swap-native",
   depositModal: "multiDeposit",
@@ -79,7 +79,7 @@ let usdtSyxPool = {
 let usdtSyxPool2 = {
   id: "SYX2/USDT",
   featured: true,
-  address: config.usdtSyxBpt2,
+  address: config.usdtSyxMultiBpt,
   symbol: "BPT",
   type: "swap",
   referral: false,
@@ -153,7 +153,7 @@ let ethSyxPool = {
 let ethSyxPool2 = {
   id: "SYX2/ETH",
   featured: true,
-  address: config.ethSyxBpt2,
+  address: config.ethSyxMultiBpt,
   symbol: "BPT",
   type: "swap",
   referral: false,
@@ -173,13 +173,25 @@ function getPools() {
   // assign pool IDs to the pools
   if (process.env.REACT_APP_ENV === "production") {
     [
+      vlxSyxPool2.index,
+      usdtSyxPool2.index,
+      ethSyxPool2.index,
       vlxSyxPool.index,
       vlxUsdtPool.index,
       usdtSyxPool.index,
       ethSyxPool.index,
       vlxEthPool.index,
-    ] = [0, 1, 2, 3, 4];
-    return [vlxSyxPool, vlxUsdtPool, usdtSyxPool, ethSyxPool, vlxEthPool];
+    ] = [5, 6, 7, 0, 1, 2, 3, 4];
+    return [
+      vlxSyxPool2,
+      usdtSyxPool2,
+      ethSyxPool2,
+      vlxSyxPool,
+      vlxUsdtPool,
+      usdtSyxPool,
+      ethSyxPool,
+      vlxEthPool,
+    ];
   } else {
     [
       vlxSyxPool2.index,
