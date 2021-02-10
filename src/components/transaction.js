@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { atom, useAtom } from "jotai";
-import { parseUnits } from "@ethersproject/units";
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { AddressZero } from "@ethersproject/constants";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -19,32 +19,25 @@ import styles from "../styles/transaction";
 import tokenBalanceAtom, {
   fetchTokenBalanceValues,
 } from "../hooks/useTokenBalance";
-import poolTokenBalanceAtom, {
-  fetchPoolTokenBalance,
-} from "../hooks/usePoolTokenBalance";
-import useCalcTradePrice from "../hooks/useCalcTradePrice";
-import useTrade from "../hooks/payables/useTrade";
-import config from "../config";
+import sorAtom, {
+  findBestSwapsMulti,
+  fetchPoolData,
+  fetchPathData,
+} from "../hooks/useSor";
+import config, { tradeTokens } from "../config";
 import { debounce } from "../utils/debounce.js";
+import { bnum } from "../utils/bignumber";
 
 const loadingAtom = atom((get) => {
-  const poolTokenBalance = get(poolTokenBalanceAtom);
   const tokenBalances = get(tokenBalanceAtom);
   let loading = false;
-  if (
-    Object.keys(poolTokenBalance).length === 0 ||
-    Object.keys(tokenBalances).length === 0
-  )
-    loading = true;
+  if (Object.keys(tokenBalances).length === 0) loading = true;
   return loading;
 });
 
 const Transaction = (props) => {
-  const { data: pool, classes, showHash, errorReturned } = props;
-  const poolAtom = atom(pool);
+  const { classes, showHash, errorReturned } = props;
   const tradableAmountAtom = atom((get) => {
-    const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
     const tokenBalances = get(tokenBalanceAtom);
     let tradableAmount = {};
     for (let key in tokenBalances) {
@@ -55,22 +48,12 @@ const Transaction = (props) => {
             : 0;
       }
 
-      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
-      let maxAmount;
-      if (tokenMaxIn > tokenBalances[key]) {
-        maxAmount = tokenBalances[key];
-      } else {
-        maxAmount = tokenMaxIn;
-      }
-
-      tradableAmount[key] = maxAmount;
+      tradableAmount[key] = tokenBalances[key];
     }
 
     return tradableAmount;
   });
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
-  const calcTradePrice = useCalcTradePrice();
-  const trade = useTrade();
   const [txLoading, setTxLoading] = useState(false);
   const [sellToken, setSellToken] = useState({});
   const [buyToken, setBuyToken] = useState({});
@@ -79,52 +62,72 @@ const Transaction = (props) => {
   const [price, setPrice] = useState("-");
   const [slippageTolerance, setSlippageTolerance] = useState(1); //%
   const [calcPriceLoading, setCalcPriceLoading] = useState(false);
+  const [poolList, setPoolList] = useState([]);
+  const [sor, setSor] = useAtom(sorAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
-  const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [tradableAmount] = useAtom(tradableAmountAtom);
   const [loading] = useAtom(loadingAtom);
 
   useEffect(() => {
-    if (!ethersProvider || !pool || !account) return;
-    if (pool.supportTokens.length >= 2) {
-      setSellToken(pool.supportTokens[0]);
-      setBuyToken(pool.supportTokens[1]);
-      fetchTradePrice(pool.supportTokens[0], pool.supportTokens[1]);
+    if (!ethersProvider || !providerNetwork || !account) return;
+    if (tradeTokens.length >= 2) {
+      setSellToken(tradeTokens[0]);
+      setBuyToken(tradeTokens[1]);
+      fetchTradePrice("swapExactIn", tradeTokens[0], tradeTokens[1]);
     }
     fetchTokenBalanceValues(
       account,
       ethersProvider,
       providerNetwork,
-      pool.supportTokens,
+      tradeTokens,
       setTokenBalances
     );
+    fetchPoolList();
+  }, [ethersProvider, providerNetwork, account]);
 
-    fetchPoolTokenBalance(
-      ethersProvider,
-      providerNetwork,
-      pool,
-      setPoolTokenBalance
-    );
-  }, [ethersProvider, pool, account]);
+  const fetchPoolList = async () => {
+    const poolList = await fetchPoolData(ethersProvider, providerNetwork);
+    setPoolList(poolList);
+  };
 
   const fetchTradePrice = async (
+    type = "swapExactIn",
     sellToken,
     buyToken,
     amount = 1,
-    type = "sell",
     callback
   ) => {
-    if (amount) {
+    if (amount && poolList.length > 0) {
       setCalcPriceLoading(true);
       debounce(1000, async () => {
-        const price = await calcTradePrice(
-          pool,
-          sellToken.address,
-          buyToken.address,
-          parseUnits(amount + "", sellToken.decimals),
-          type
+        const inputToken = sellToken.address;
+        const outputToken = buyToken.address;
+        const newSor = await fetchPathData(
+          inputToken,
+          outputToken,
+          sor,
+          poolList,
+          setSor
         );
-        setPrice(parseFloat(price).toFixed(6));
+        const [totalReturn] = await findBestSwapsMulti(
+          newSor,
+          type,
+          bnum(
+            parseUnits(
+              amount.toString(),
+              type == "swapExactIn" ? sellToken.decimals : buyToken.decimals
+            )
+          ),
+          10,
+          0
+        );
+        const price = parseFloat(
+          formatUnits(
+            bnum(totalReturn.toString()).div(bnum(amount)).toString(),
+            type == "swapExactIn" ? buyToken.decimals : sellToken.decimals
+          )
+        ).toFixed(6);
+        setPrice(price);
         if (typeof callback === "function") callback(price);
         setCalcPriceLoading(false);
       })();
@@ -132,9 +135,9 @@ const Transaction = (props) => {
   };
 
   const getAnotherToken = (tokenSymbol) => {
-    for (let i = 0; i < pool.supportTokens.length; i++) {
-      if (tokenSymbol !== pool.supportTokens[i].symbol) {
-        return pool.supportTokens[i];
+    for (let i = 0; i < tradeTokens.length; i++) {
+      if (tokenSymbol !== tradeTokens[i].symbol) {
+        return tradeTokens[i];
       }
     }
   };
@@ -144,16 +147,24 @@ const Transaction = (props) => {
     const anotherToken = getAnotherToken(value.symbol);
     switch (name) {
       case "sellToken":
-        setSellToken(value);
-        setBuyToken(anotherToken);
         setPrice("-");
-        fetchTradePrice(value, anotherToken);
+        setSellToken(value);
+        if (buyToken.symbol === value.symbol) {
+          setBuyToken(anotherToken);
+          fetchTradePrice("swapExactIn", value, anotherToken);
+        } else {
+          fetchTradePrice("swapExactIn", value, buyToken);
+        }
         break;
       case "buyToken":
-        setBuyToken(value);
-        setSellToken(anotherToken);
         setPrice("-");
-        fetchTradePrice(anotherToken, value);
+        setBuyToken(value);
+        if (sellToken.symbol === value.symbol) {
+          setSellToken(anotherToken);
+          fetchTradePrice("swapExactOut", anotherToken, value);
+        } else {
+          fetchTradePrice("swapExactOut", sellToken, value);
+        }
         break;
       default:
     }
@@ -168,14 +179,14 @@ const Transaction = (props) => {
       case "sellToken":
         setSellAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice(sellToken, buyToken, amount, "sell", (price) =>
-          setBuyAmount(amount * parseFloat(price) || "")
-        );
+        fetchTradePrice("swapExactIn", sellToken, buyToken, amount, (price) => {
+          setBuyAmount(amount * parseFloat(price) || "");
+        });
         break;
       case "buyToken":
         setBuyAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice(sellToken, buyToken, amount, "buy", (price) =>
+        fetchTradePrice("swapExactOut", sellToken, buyToken, amount, (price) =>
           setSellAmount((amount * 1) / parseFloat(price) || "")
         );
         break;
@@ -192,33 +203,32 @@ const Transaction = (props) => {
   };
 
   const confirm = async () => {
-    const maxPrice = parseUnits(
-      (1 / parseFloat(price)) * (1 + slippageTolerance / 100) + "",
-      buyToken.decimals
-    );
-    const minAmountOut = parseUnits(
-      buyAmount / (1 + slippageTolerance / 100) + "",
-      sellToken.decimals
-    );
-    const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
-
-    setTxLoading(true);
-    try {
-      const tx = await trade(
-        pool,
-        sellToken.symbol === "VLX" ? AddressZero : sellToken.address,
-        buyToken.symbol === "VLX" ? AddressZero : buyToken.address,
-        minAmountOut,
-        maxPrice,
-        tokenAmountIn
-      );
-      showHash(tx.hash);
-      //await tx.wait();
-    } catch (error) {
-      console.log(error);
-      errorReturned(JSON.stringify(error));
-    }
-    setTxLoading(false);
+    // const maxPrice = parseUnits(
+    //   (1 / parseFloat(price)) * (1 + slippageTolerance / 100) + "",
+    //   buyToken.decimals
+    // );
+    // const minAmountOut = parseUnits(
+    //   buyAmount / (1 + slippageTolerance / 100) + "",
+    //   sellToken.decimals
+    // );
+    // const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
+    // setTxLoading(true);
+    // try {
+    //   const tx = await trade(
+    //     pool,
+    //     sellToken.symbol === "VLX" ? AddressZero : sellToken.address,
+    //     buyToken.symbol === "VLX" ? AddressZero : buyToken.address,
+    //     minAmountOut,
+    //     maxPrice,
+    //     tokenAmountIn
+    //   );
+    //   showHash(tx.hash);
+    //   //await tx.wait();
+    // } catch (error) {
+    //   console.log(error);
+    //   errorReturned(JSON.stringify(error));
+    // }
+    // setTxLoading(false);
   };
 
   return (
@@ -292,7 +302,7 @@ const Transaction = (props) => {
                 id: "outlined-token",
               }}
             >
-              {pool.supportTokens.map((v, i) => (
+              {tradeTokens.map((v, i) => (
                 <MenuItem value={v} key={i}>
                   <img
                     className={classes.icon}
@@ -364,7 +374,7 @@ const Transaction = (props) => {
                 id: "outlined-token",
               }}
             >
-              {pool.supportTokens.map((v, i) => (
+              {tradeTokens.map((v, i) => (
                 <MenuItem value={v} key={i}>
                   <img
                     className={classes.icon}

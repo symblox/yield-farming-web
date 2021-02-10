@@ -512,7 +512,7 @@ const Home = (props) => {
             </Grid>
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.container}>
-            <Transaction data={rewardPool.pools[0]} />
+            <Transaction />
           </TabPanel>
         </Paper>
       </Container>
