@@ -17,44 +17,36 @@ export default function useTrade() {
   };
 
   return useCallback(
-    async (
-      pool,
-      sellToken,
-      buyToken,
-      minAmountOut,
-      maxPrice,
-      tokenAmountIn
-    ) => {
-      const bptContract = new Contract(pool.address, pool.abi, signer);
+    async (swaps, sellToken, buyToken, tokenAmountIn, minAmountOut) => {
+      const exchangeContract = new Contract(
+        config.exchangeProxy,
+        config.exchangeAbi,
+        signer
+      );
 
       let value = "0";
-      let action;
-      let params = [];
-
-      if (sellToken === AddressZero) {
-        action = "swapWTokenAmountIn(address,uint256,uint256)";
+      let action =
+        "multihopBatchSwapExactIn((address,address,address,uint256,uint256,uint256)[][],address,address,uint256,uint256)";
+      let params = [swaps, sellToken, buyToken, tokenAmountIn, minAmountOut];
+      if (
+        sellToken === AddressZero ||
+        sellToken.toLowerCase() === config.wvlx.toLowerCase()
+      ) {
         value = tokenAmountIn;
-        params = [buyToken, minAmountOut, maxPrice];
-      } else if (buyToken === AddressZero) {
-        action = "swapExactAmountInWTokenOut(address,uint256,uint256,uint256)";
-        params = [sellToken, tokenAmountIn, minAmountOut, maxPrice];
-        await approve(sellToken, pool.address, tokenAmountIn);
       } else {
-        action = "swapExactAmountIn(address,uint256,address,uint256,uint256)";
-        params = [sellToken, tokenAmountIn, buyToken, minAmountOut, maxPrice];
-        await approve(sellToken, pool.address, tokenAmountIn);
+        await approve(sellToken, config.exchangeProxy, tokenAmountIn);
       }
 
       let gasLimit;
       try {
-        gasLimit = await bptContract.estimateGas[action](...params, {
+        gasLimit = await exchangeContract.estimateGas[action](...params, {
           value,
         });
       } catch (err) {
         gasLimit = 1000000;
       }
 
-      return bptContract[action](...params, {
+      return exchangeContract[action](...params, {
         gasLimit,
         value,
       });

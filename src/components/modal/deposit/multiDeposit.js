@@ -179,7 +179,15 @@ const MultiDepositModal = (props) => {
       if (name === i + "") {
         amounts.push(value);
       } else {
-        const amount = ratio.times(bnum(maxTokenDepositAmount[token.symbol]));
+        let amount;
+        if (
+          ratio.eq(bnum(0)) ||
+          bnum(maxTokenDepositAmount[token.symbol]).eq(bnum(0))
+        ) {
+          amount = 0;
+        } else {
+          amount = ratio.times(bnum(maxTokenDepositAmount[token.symbol]));
+        }
         amounts.push(amount.toFixed(token.decimals, 0));
       }
     });
