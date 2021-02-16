@@ -63,8 +63,10 @@ function env() {
       rpcUrl: rpcUrls[requiredNetworkId],
       browser: browserUrls[requiredNetworkId],
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
-      rewardPool: "0x00A9368df04aBfb9CE9e42FA9062EE7E59aF59C8",
-      connectorFactory: "0x1b91eC3c5b8FC7f98ab3df0e3C0d5Bdc39769d83",
+      //rewardPool: "0x00A9368df04aBfb9CE9e42FA9062EE7E59aF59C8",
+      rewardPool: "0xF30dAcf6E9469ffCF4Dbe3d484C9E62CaA0f5A5f",
+      //connectorFactory: "0x1b91eC3c5b8FC7f98ab3df0e3C0d5Bdc39769d83",
+      connectorFactory: "0x01d81265F560Ecf64609997De47077c1bd7BE5bE",
       bptConnector: "0xd4Dc89F0afaaCFD81292E5A6deA95E7183c8a809", //BptReferralConnector
       bptFactory: "0x3eF481a34533cb34A8e74Ec02D8D739d983F5ceb",
       wvlx: "0x78f18612775a2c54efc74c2911542aa034fe8d3f",
