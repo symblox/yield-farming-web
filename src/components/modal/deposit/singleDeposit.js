@@ -201,14 +201,7 @@ const SingleDepositModal = (props) => {
       bnum(amount).toFixed(selected.decimals, 1),
       selected.decimals
     );
-    let params = [];
-    if (selected.symbol === "VLX") {
-      params.push("0");
-    } else {
-      params.push(selected.address);
-      params.push(tokenAmountIn);
-      params.push("0");
-    }
+    let params = [selected.address, tokenAmountIn, "0"];
     if (pool.referral) {
       params.push(referral || AddressZero);
     }

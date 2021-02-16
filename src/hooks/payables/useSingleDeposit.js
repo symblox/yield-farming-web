@@ -1,6 +1,6 @@
 import { useCallback, useContext } from "react";
 import { Contract } from "ethers";
-import { MaxUint256 } from "@ethersproject/constants";
+import { MaxUint256, AddressZero } from "@ethersproject/constants";
 import { Web3Context } from "../../contexts/Web3Context";
 import config from "../../config";
 
@@ -29,25 +29,14 @@ export default function useSingleDeposit() {
       );
 
       let value = "0";
-      let action;
-      switch (params.length) {
-        case 1:
-          action = "deposit(uint256)";
-          value = tokenAmountIn;
-          break;
-        case 2:
-          action = "deposit(uint256,address)";
-          value = tokenAmountIn;
-          break;
-        case 3:
-          action = "deposit(address,uint256,uint256)";
-          await approve(params[0], connectorAddress, params[1]);
-          break;
-        case 4:
-          action = "deposit(address,uint256,uint256,address)";
-          await approve(params[0], connectorAddress, params[1]);
-          break;
-        default:
+      let action = "deposit(address,uint256,uint256,address)";
+      if (
+        params[0] === AddressZero ||
+        params[0].toLowerCase() === config.wvlx.toLowerCase()
+      ) {
+        value = tokenAmountIn;
+      } else {
+        await approve(params[0], connectorAddress, params[1]);
       }
 
       const connectorContract = new Contract(

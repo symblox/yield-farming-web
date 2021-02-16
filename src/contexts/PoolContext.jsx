@@ -99,8 +99,8 @@ export function PoolContextProvider({ children }) {
             const tx = await oldSyxContract.approve(config.syx, amount);
             await tx.wait();
           }
-
-          const tx2 = await syxContract.exchangeSyx(amount);
+          console.log(config.oldSyx, config.syx, amount.toString());
+          const tx2 = await syxContract.exchangeSyx(config.oldSyx, amount);
           await tx2.wait();
           getSyxData();
           getOldSyxData();

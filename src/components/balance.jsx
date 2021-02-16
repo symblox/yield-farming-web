@@ -26,13 +26,13 @@ const useStyles = makeStyles({
 
 export default function Balance(props) {
   const classes = useStyles(props);
-  const { name, symbol, balance } = props;
+  const { name, symbol, balance, outline } = props;
   const tokenIcon = "/" + name + ".png";
   return (
     <div className={classes.root}>
       <img src={tokenIcon} alt="" />
       <NumberFormat
-        style={{ whiteSpace: "nowrap" }}
+        style={{ whiteSpace: "nowrap", color: outline ? "white" : "#454862" }}
         value={parseFloat(balance).toLocaleString(undefined, {
           maximumFractionDigits: 10,
         })}

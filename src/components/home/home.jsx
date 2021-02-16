@@ -336,6 +336,7 @@ const Home = (props) => {
                   name={data.name}
                   symbol={data.symbol}
                   balance={data.balance}
+                  outline={true}
                 />
               ))}
             </div>

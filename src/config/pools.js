@@ -161,7 +161,7 @@ let ethSyxPool2 = {
   withdrawModal: "multiWithdraw",
   rewardToken: tokens["SYX"],
   //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
-  supportTokens: [tokens["SYX"], tokens["ETH"]],
+  supportTokens: [tokens["ETH"], tokens["SYX"]],
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
@@ -193,28 +193,8 @@ function getPools() {
       vlxEthPool,
     ];
   } else {
-    [
-      vlxSyxPool2.index,
-      ethSyxPool2.index,
-      usdtSyxPool2.index,
-      svlxSyxPool.index,
-      vlxUsdtPool.index,
-      usdtSyxPool.index,
-      ethSyxPool.index,
-      vlxEthPool.index,
-      vlxSyxPool.index,
-    ] = [6, 7, 8, 10, 1, 2, 3, 4, 0];
-    return [
-      vlxSyxPool2,
-      ethSyxPool2,
-      usdtSyxPool2,
-      svlxSyxPool,
-      vlxUsdtPool,
-      usdtSyxPool,
-      ethSyxPool,
-      vlxEthPool,
-      vlxSyxPool,
-    ];
+    [vlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 2];
+    return [vlxSyxPool2, usdtSyxPool2, ethSyxPool2];
   }
 }
 export default getPools;

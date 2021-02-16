@@ -156,12 +156,7 @@ const SingleWithdrawModal = (props) => {
       selected.address,
       parseUnits(bnum(amount).toFixed(selected.decimals, 1), selected.decimals)
     );
-    let params = [];
-    if (selected.symbol !== "VLX") {
-      params.push(selected.address);
-    }
-    params.push(tokenAmountOut);
-    params.push("0");
+    let params = [selected.address, tokenAmountOut, "0"];
     try {
       const tx = await singleWithdraw(pool, params);
       showHash(tx.hash);

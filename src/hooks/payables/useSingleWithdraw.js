@@ -18,16 +18,7 @@ export default function useSingleWithdraw() {
         pool.index
       );
 
-      let action;
-      switch (params.length) {
-        case 2:
-          action = "withdraw(uint256,uint256)";
-          break;
-        case 3:
-          action = "withdraw(address,uint256,uint256)";
-          break;
-        default:
-      }
+      let action = "withdraw(address,uint256,uint256)";
 
       const connectorContract = new Contract(
         connectorAddress,
