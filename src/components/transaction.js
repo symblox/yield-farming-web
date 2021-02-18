@@ -107,39 +107,44 @@ const Transaction = (props) => {
       debounce(1000, async () => {
         const inputToken = sellToken.address;
         const outputToken = buyToken.address;
-        const newSor = await fetchPathData(
-          inputToken,
-          outputToken,
-          sor,
-          poolList,
-          setSor
-        );
-        const [totalReturn, swap] = await findBestSwapsMulti(
-          newSor,
-          type,
-          bnum(
-            parseUnits(
-              amount.toString(),
-              type === "swapExactIn" ? sellToken.decimals : buyToken.decimals
+        try {
+          const newSor = await fetchPathData(
+            inputToken,
+            outputToken,
+            sor,
+            poolList,
+            setSor
+          );
+          const [totalReturn, swap] = await findBestSwapsMulti(
+            newSor,
+            type,
+            bnum(
+              parseUnits(
+                amount.toString(),
+                type === "swapExactIn" ? sellToken.decimals : buyToken.decimals
+              )
+            ),
+            poolList.length,
+            0
+          );
+          setSwaps(swap);
+          const price = parseFloat(
+            formatUnits(
+              bnum(totalReturn.toString()).div(bnum(amount)).toFixed(0, 0),
+              type === "swapExactIn" ? buyToken.decimals : sellToken.decimals
             )
-          ),
-          poolList.length,
-          0
-        );
-        setSwaps(swap);
-        const price = parseFloat(
-          formatUnits(
-            bnum(totalReturn.toString()).div(bnum(amount)).toFixed(0, 0),
-            type === "swapExactIn" ? buyToken.decimals : sellToken.decimals
-          )
-        );
-        if (type === "swapExactIn") {
-          setPrice(price.toFixed(6));
-        } else {
-          setPrice((1 / price).toFixed(6));
-        }
+          );
+          if (type === "swapExactIn") {
+            setPrice(price.toFixed(6));
+          } else {
+            setPrice((1 / price).toFixed(6));
+          }
 
-        if (typeof callback === "function") callback(price);
+          if (typeof callback === "function") callback(price);
+        } catch (error) {
+          console.log(error);
+          errorReturned(JSON.stringify(error));
+        }
         setCalcPriceLoading(false);
       })();
     }
@@ -231,11 +236,11 @@ const Transaction = (props) => {
         tokenAmountIn,
         minAmountOut
       );
-      //showHash(tx.hash);
+      showHash(tx.hash);
       //await tx.wait();
     } catch (error) {
       console.log(error);
-      //errorReturned(JSON.stringify(error));
+      errorReturned(JSON.stringify(error));
     }
     setTxLoading(false);
   };

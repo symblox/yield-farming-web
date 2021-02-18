@@ -193,9 +193,15 @@ const Home = (props) => {
     createConnector(pool);
   };
 
-  const showHash = (txHash) => {};
+  const showHash = (txHash) => {
+    setSnackbarType("Hash");
+    setSnackbarMessage(txHash);
+  };
 
-  const errorReturned = (error) => {};
+  const errorReturned = (error) => {
+    setSnackbarType("Error");
+    setSnackbarMessage(error.toString());
+  };
 
   const openDepositModal = (data) => {
     switch (data.depositModal) {
@@ -513,7 +519,7 @@ const Home = (props) => {
             </Grid>
           </TabPanel>
           <TabPanel value={tabValue} index={1} className={classes.container}>
-            <Transaction />
+            <Transaction showHash={showHash} errorReturned={errorReturned} />
           </TabPanel>
         </Paper>
       </Container>
