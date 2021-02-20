@@ -5,12 +5,6 @@ import Web3 from "web3";
 import Web3Modal from "web3modal";
 
 import { nodeConfigs, networkOptions } from "../constants/constants";
-import Store from "../stores";
-
-import { GET_BALANCES_PERPETUAL } from "../constants";
-
-const store = Store.store;
-const emitter = Store.emitter;
 
 export const Web3Context = React.createContext({});
 
@@ -51,8 +45,6 @@ export const Web3Provider = ({ children }) => {
     provider.on("close", () => {});
     provider.on("accountsChanged", async (accounts) => {
       setAccount(accounts[0]);
-      store.setStore({ account: { address: accounts[0] } });
-      emitter.emit("accountsChanged");
     });
     provider.on("chainChanged", async (chainId) => {});
     provider.on("networkChanged", async (networkId) => {});
@@ -75,10 +67,6 @@ export const Web3Provider = ({ children }) => {
       setSigner(signer);
       const gotAccount = await signer.getAddress();
       setAccount(gotAccount);
-      store.setStore({
-        account: { address: gotAccount },
-        web3context: signer.provider.provider,
-      });
     } catch (error) {
       // eslint-disable-next-line
       console.log({ web3ModalError: error });
