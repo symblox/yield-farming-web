@@ -12,7 +12,7 @@ function getTokens() {
     },
     SYX: {
       symbol: "SYX",
-      name: "SYX2",
+      name: "SYX3",
       address: config.syx,
       abi: config.syxABI,
       decimals: 18,

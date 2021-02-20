@@ -266,7 +266,7 @@ class Store {
           for (let i = 0; i < poolData.length; i++) {
             if (poolData[i] && poolData[i].type === "seed") {
               for (let j = 0; j < poolData.length; j++) {
-                if (poolData[j] && poolData[j].id === "SYX2/VLX") {
+                if (poolData[j] && poolData[j].id === "SYX3/VLX") {
                   poolData[i].price = poolData[j].price;
                   poolData[i].totalBalanceForSyx =
                     parseFloat(poolData[i].totalSupply) /
@@ -283,7 +283,7 @@ class Store {
 
             if (poolData[i] && poolData[i].id === "USDT/VLX") {
               for (let j = 0; j < poolData.length; j++) {
-                if (poolData[j] && poolData[j].id === "SYX2/VLX") {
+                if (poolData[j] && poolData[j].id === "SYX3/VLX") {
                   const vlxSyxPrice = poolData[j].price;
                   const totalVlx =
                     poolData[i].totalBalanceForSyx * poolData[i].price;
@@ -301,7 +301,7 @@ class Store {
 
             if (poolData[i] && poolData[i].id === "ETH/VLX") {
               for (let j = 0; j < poolData.length; j++) {
-                if (poolData[j] && poolData[j].id === "SYX2/VLX") {
+                if (poolData[j] && poolData[j].id === "SYX3/VLX") {
                   const vlxSyxPrice = poolData[j].price;
                   const totalVlx =
                     poolData[i].totalBalanceForSyx * poolData[i].price;

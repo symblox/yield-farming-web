@@ -4,7 +4,7 @@ const config = env;
 const tokens = getTokens();
 
 let vlxSyxPool = {
-  id: "SYX2/VLX",
+  id: "SYX3/VLX",
   featured: false,
   address: config.vlxSyxBpt,
   symbol: "BPT",
@@ -22,7 +22,7 @@ let vlxSyxPool = {
 
 //new pool type
 let vlxSyxPool2 = {
-  id: "SYX2/VLX",
+  id: "SYX3/VLX",
   featured: true,
   address: config.vlxSyxMultiBpt,
   symbol: "BPT",
@@ -40,7 +40,7 @@ let vlxSyxPool2 = {
 };
 
 let svlxSyxPool = {
-  id: "SYX2/SVLX",
+  id: "SYX3/SVLX",
   featured: true,
   address: config.svlxSyxBpt,
   symbol: "BPT",
@@ -58,7 +58,7 @@ let svlxSyxPool = {
 };
 
 let usdtSyxPool = {
-  id: "SYX2/USDT",
+  id: "SYX3/USDT",
   featured: false,
   address: config.usdtSyxBpt,
   symbol: "BPT",
@@ -77,7 +77,7 @@ let usdtSyxPool = {
 
 //new pool type
 let usdtSyxPool2 = {
-  id: "SYX2/USDT",
+  id: "SYX3/USDT",
   featured: true,
   address: config.usdtSyxMultiBpt,
   symbol: "BPT",
@@ -132,7 +132,7 @@ let vlxEthPool = {
 };
 
 let ethSyxPool = {
-  id: "SYX2/ETH",
+  id: "SYX3/ETH",
   featured: false,
   address: config.ethSyxBpt,
   symbol: "BPT",
@@ -151,7 +151,7 @@ let ethSyxPool = {
 
 //new pool type
 let ethSyxPool2 = {
-  id: "SYX2/ETH",
+  id: "SYX3/ETH",
   featured: true,
   address: config.ethSyxMultiBpt,
   symbol: "BPT",
