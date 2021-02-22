@@ -38,29 +38,12 @@ export async function fetchRewardPoolsValues(
       setMulticallAddress(providerNetwork.chainId, config.multicall);
       const ethcallProvider = new Provider(provider);
       await ethcallProvider.init();
-
-      const connectorFactoryContract = new Contract(
-        config.connectorFactory,
-        config.connectorFactoryABI
-      );
       //Use temporary objects to set, otherwise the modification will not take effect
       let newPools = [];
       const promises = pools.map(async (pool, i) => {
         pool.sortIndex = i;
-        const connectorAddressCall = connectorFactoryContract.connectors(
-          account,
-          pool.index
-        );
-        const [connectorAddress] = await ethcallProvider.all([
-          connectorAddressCall,
-        ]);
-        pool.entryContractAddress = connectorAddress;
-
         const poolContract = new Contract(pool.poolAddress, pool.poolABI);
-        const userInfoCall = poolContract.userInfo(
-          pool.index,
-          connectorAddress
-        );
+        const userInfoCall = poolContract.userInfo(pool.index, account);
         const totalAllocPointCall = poolContract.totalAllocPoint();
         const poolInfoCall = poolContract.poolInfo(pool.index);
         const syxPerBlockCall = poolContract.syxPerBlock();
@@ -68,8 +51,9 @@ export async function fetchRewardPoolsValues(
         const startBlockCall = poolContract.startBlock();
         const endBlockCall = poolContract.endBlock();
         const bonusMultiplierCall = poolContract.BONUS_MULTIPLIER();
+        const earnedCall = poolContract.pendingSyx(pool.index, account);
 
-        let calls = [
+        const calls = [
           userInfoCall,
           totalAllocPointCall,
           poolInfoCall,
@@ -78,15 +62,8 @@ export async function fetchRewardPoolsValues(
           startBlockCall,
           endBlockCall,
           bonusMultiplierCall,
+          earnedCall,
         ];
-        if (connectorAddress !== AddressZero) {
-          const connectorContract = new Contract(
-            connectorAddress,
-            pool.entryContractABI
-          );
-          const earnedCall = connectorContract.earned();
-          calls.push(earnedCall);
-        }
 
         const results = await ethcallProvider.all(calls);
         const [
@@ -98,11 +75,8 @@ export async function fetchRewardPoolsValues(
           startBlock,
           endBlock,
           bonusMultiplier,
+          earned,
         ] = results;
-        let earned = "0";
-        if (connectorAddress !== AddressZero) {
-          earned = results[8];
-        }
         pool.stakeAmount = formatUnits(userInfo.amount, pool.decimals);
         pool.rewardsAvailable = formatUnits(earned, pool.rewardToken.decimals);
         pool.allocPoint = poolInfo.allocPoint / totalAllocPoint;
@@ -123,44 +97,6 @@ export async function fetchRewardPoolsValues(
         pool.rewardRate =
           parseFloat(pool.rewardRate) * parseFloat(pool.allocPoint);
 
-        if (pool.type !== "seed") {
-          const bptContract = new Contract(pool.address, pool.abi);
-          const maxInCall = bptContract.MAX_IN_RATIO();
-          const maxOutCall = bptContract.MAX_OUT_RATIO();
-          const totalSupplyCall = bptContract.totalSupply();
-
-          let extraCall = [];
-          pool.supportTokens.map((v, i) => {
-            extraCall.push(bptContract.getNormalizedWeight(v.address));
-          });
-
-          const results2 = await ethcallProvider.all([
-            maxInCall,
-            maxOutCall,
-            totalSupplyCall,
-            ...extraCall,
-          ]);
-
-          const [maxIn, maxOut, totalSupply] = results2;
-
-          let weight = "";
-          pool.supportTokens.map((v, i) => {
-            weight += (
-              parseFloat(formatUnits(results2[i + 3], pool.decimals)) * 100
-            ).toFixed(0);
-            if (i !== pool.supportTokens.length - 1) weight += ":";
-          });
-
-          pool.maxIn = formatUnits(maxIn, pool.decimals);
-          pool.maxOut = formatUnits(maxOut, pool.decimals);
-          pool.weight = weight;
-          pool.totalSupply = formatUnits(totalSupply, pool.decimals);
-        } else {
-          const bptContract = new Contract(pool.address, pool.abi);
-          const totalSupplyCall = bptContract.balanceOf(pool.poolAddress);
-          const [totalSupply] = await ethcallProvider.all([totalSupplyCall]);
-          pool.totalSupply = formatUnits(totalSupply, pool.decimals);
-        }
         newPools.push(pool);
       });
       await Promise.all(promises);

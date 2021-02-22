@@ -17,7 +17,6 @@ import {
   CardActions,
   CardContent,
 } from "@material-ui/core";
-import { parseUnits, formatUnits } from "@ethersproject/units";
 import { FormattedMessage } from "react-intl";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../contexts/Web3Context";
@@ -27,13 +26,10 @@ import { Header } from "../header";
 import Footer from "../footer";
 import Pool from "../pool";
 import Balance from "../balance";
-import MultiDepositModal from "../modal/deposit/multiDeposit";
-import MultiWithdrawModal from "../modal/withdraw/multiWithdraw";
-import SingleDepositModal from "../modal/deposit/singleDeposit";
-import SingleWithdrawModal from "../modal/withdraw/singleWithdraw";
+import DepositModal from "../modal/deposit/deposit";
+import WithdrawModal from "../modal/withdraw/withdraw";
 import WithdrawRewardsModal from "../modal/withdrawRewardsModal";
 import NetworkErrModal from "../modal/networkErrModal";
-import Transaction from "../transaction";
 import Loader from "../loader";
 import "./home.scss";
 import styles from "../../styles/home";
@@ -44,14 +40,7 @@ import rewardPoolsAtom, {
 import rewardAprsAtom, {
   fetchRewardAprsValues,
 } from "../../hooks/useRewardAprs";
-import sorAtom, {
-  findBestSwapsMulti,
-  fetchPoolData,
-  fetchPathData,
-} from "../../hooks/useSor";
 import useInterval from "../../hooks/useInterval";
-import useCreateConnector from "../../hooks/payables/useCreateConnector";
-import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -80,16 +69,6 @@ const totalRewardsAvailableAtom = atom((get) => {
 
   return totalRewardsAvailable;
 });
-const hasJoinedCountAtom = atom((get) => {
-  const rewardPool = get(rewardPoolsAtom);
-  let hasJoinedCount = 0;
-  rewardPool.pools.forEach((data) => {
-    if (data.entryContractAddress) {
-      hasJoinedCount++;
-    }
-  });
-  return hasJoinedCount;
-});
 
 const loadingAtom = atom((get) => {
   const userBalance = get(userBalanceAtom);
@@ -106,14 +85,11 @@ const loadingAtom = atom((get) => {
 
 const Home = (props) => {
   const { classes } = props;
-  const createConnector = useCreateConnector();
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
   const [tabValue, setTabValue] = useState(0);
   const [txLoading, setTxLoading] = useState(false);
-  const [multiDepositModalOpen, setMultiDepositModalOpen] = useState(false);
-  const [singleDepositModalOpen, setSingleDepositModalOpen] = useState(false);
-  const [multiWithdrawModalOpen, setMultiWithdrawModalOpen] = useState(false);
-  const [singleWithdrawModalOpen, setSingleWithdrawModalOpen] = useState(false);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawRewardsModalOpen, setWithdrawRewardsModalOpen] = useState(
     false
   );
@@ -124,9 +100,7 @@ const Home = (props) => {
   const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
   const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
   const [aprs, setAprs] = useAtom(rewardAprsAtom);
-  const [sor, setSor] = useAtom(sorAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
-  const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
   const [loading] = useAtom(loadingAtom);
 
   const loadData = async () => {
@@ -144,34 +118,7 @@ const Home = (props) => {
         providerNetwork,
         setRewardPools
       );
-      const poolList = await fetchPoolData(ethersProvider, providerNetwork);
-      let pricesForRewardToken = {};
-      let inputToken;
-      const outputToken = config.syx;
-      const promises = tradeTokens.map(async (v) => {
-        if (v.symbol !== "SYX") {
-          inputToken = v.address;
-          const newSor = await fetchPathData(
-            inputToken,
-            outputToken,
-            sor,
-            poolList,
-            setSor
-          );
-          const [totalReturn] = await findBestSwapsMulti(
-            newSor,
-            "swapExactIn",
-            bnum(parseUnits("0.01", v.decimals)), //To prevent the number of bpts from being not enough to 1, use 0.01, if the price is not enough, it will be treated as 0
-            10,
-            0
-          );
-          pricesForRewardToken[v.symbol] = formatUnits(
-            bnum(totalReturn.toString()).times(bnum(100)).toString(),
-            18
-          );
-        }
-      });
-      await Promise.all(promises);
+      let pricesForRewardToken = [];
       fetchRewardAprsValues(
         account,
         rewardPool.pools,
@@ -189,10 +136,6 @@ const Home = (props) => {
     loadData();
   }, [account, ethersProvider, providerNetwork]);
 
-  const createEntryContract = (pool) => {
-    createConnector(pool);
-  };
-
   const showHash = (txHash) => {
     setSnackbarType("Hash");
     setSnackbarMessage(txHash);
@@ -204,30 +147,12 @@ const Home = (props) => {
   };
 
   const openDepositModal = (data) => {
-    switch (data.depositModal) {
-      case "multiDeposit":
-        setMultiDepositModalOpen(true);
-        break;
-      case "singleDeposit":
-        setSingleDepositModalOpen(true);
-        break;
-      default:
-        break;
-    }
+    setDepositModalOpen(true);
     setDepositData(data);
   };
 
   const openWithdrawModal = (data) => {
-    switch (data.withdrawModal) {
-      case "multiWithdraw":
-        setMultiWithdrawModalOpen(true);
-        break;
-      case "singleWithdraw":
-        setSingleWithdrawModalOpen(true);
-        break;
-      default:
-        break;
-    }
+    setWithdrawModalOpen(true);
     setWithdrawData(data);
   };
 
@@ -239,54 +164,30 @@ const Home = (props) => {
     setTabValue(newValue);
   };
 
-  const renderMultiDepositModal = (data) => {
+  const renderDepositModal = (data) => {
     return (
-      <MultiDepositModal
+      <DepositModal
         data={data}
         loading={loading || txLoading}
-        closeModal={() => setMultiDepositModalOpen(false)}
-        modalOpen={multiDepositModalOpen}
+        closeModal={() => setDepositModalOpen(false)}
+        modalOpen={depositModalOpen}
         showHash={showHash}
         errorReturned={errorReturned}
+        loadData={loadData}
       />
     );
   };
 
-  const renderSingleDepositModal = (data) => {
+  const renderWithdrawModal = (data) => {
     return (
-      <SingleDepositModal
+      <WithdrawModal
         data={data}
         loading={loading || txLoading}
-        closeModal={() => setSingleDepositModalOpen(false)}
-        modalOpen={singleDepositModalOpen}
+        closeModal={() => setWithdrawModalOpen(false)}
+        modalOpen={withdrawModalOpen}
         showHash={showHash}
         errorReturned={errorReturned}
-      />
-    );
-  };
-
-  const renderMultiWithdrawModal = (data) => {
-    return (
-      <MultiWithdrawModal
-        data={data}
-        loading={loading || txLoading}
-        closeModal={() => setMultiWithdrawModalOpen(false)}
-        modalOpen={multiWithdrawModalOpen}
-        showHash={showHash}
-        errorReturned={errorReturned}
-      />
-    );
-  };
-
-  const renderSingleWithdrawModal = (data) => {
-    return (
-      <SingleWithdrawModal
-        data={data}
-        loading={loading || txLoading}
-        closeModal={() => setSingleWithdrawModalOpen(false)}
-        modalOpen={singleWithdrawModalOpen}
-        showHash={showHash}
-        errorReturned={errorReturned}
+        loadData={loadData}
       />
     );
   };
@@ -417,7 +318,7 @@ const Home = (props) => {
                       style={{ marginTop: "9px" }}
                       className={classes.buttonSecondary}
                       variant="contained"
-                      disabled={hasJoinedCount === 0 || loading || txLoading}
+                      disabled={loading || txLoading}
                       onClick={() => {
                         setWithdrawRewardsModalOpen(true);
                       }}
@@ -475,7 +376,7 @@ const Home = (props) => {
                       style={{ marginTop: "9px" }}
                       className={classes.buttonSecondary}
                       variant="contained"
-                      disabled={hasJoinedCount === 0 || loading || txLoading}
+                      disabled={loading || txLoading}
                       onClick={() => {
                         setWithdrawRewardsModalOpen(true);
                       }}
@@ -500,7 +401,6 @@ const Home = (props) => {
             centered
           >
             <Tab label={<FormattedMessage id="RP_LIST_TITLE" />} />
-            <Tab label={<FormattedMessage id="EXCHANGE" />} />
           </Tabs>
           <TabPanel value={tabValue} index={0} className={classes.container}>
             <Grid container spacing={3}>
@@ -512,21 +412,15 @@ const Home = (props) => {
                     loading={loading || txLoading}
                     onDeposit={() => openDepositModal(pool)}
                     onWithdraw={() => openWithdrawModal(pool)}
-                    onJoin={() => createEntryContract(pool)}
                   />
                 </Grid>
               ))}
             </Grid>
           </TabPanel>
-          <TabPanel value={tabValue} index={1} className={classes.container}>
-            <Transaction showHash={showHash} errorReturned={errorReturned} />
-          </TabPanel>
         </Paper>
       </Container>
-      {multiDepositModalOpen && renderMultiDepositModal(depositData)}
-      {singleDepositModalOpen && renderSingleDepositModal(depositData)}
-      {multiWithdrawModalOpen && renderMultiWithdrawModal(withdrawData)}
-      {singleWithdrawModalOpen && renderSingleWithdrawModal(withdrawData)}
+      {depositModalOpen && renderDepositModal(depositData)}
+      {withdrawModalOpen && renderWithdrawModal(withdrawData)}
       {withdrawRewardsModalOpen && renderWithdrawRewardsModal(rewardPool.pools)}
       {providerNetwork &&
         providerNetwork.chainId.toString() !==

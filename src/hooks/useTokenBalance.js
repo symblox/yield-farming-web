@@ -41,7 +41,7 @@ export async function fetchTokenBalanceValues(
       await ethcallProvider.init();
       let calls = [];
       for (let i = 0; i < supportTokens.length; i++) {
-        if (supportTokens[i].symbol === "VLX") {
+        if (supportTokens[i].symbol === "BNB") {
           calls.push(ethcallProvider.getEthBalance(account));
         } else {
           const contract = new Contract(

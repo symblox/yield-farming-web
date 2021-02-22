@@ -3,13 +3,6 @@ const config = env;
 
 function getTokens() {
   return {
-    VLX: {
-      symbol: "VLX",
-      name: "VLX",
-      address: config.wvlx,
-      abi: config.erc20ABI,
-      decimals: 18,
-    },
     SYX: {
       symbol: "SYX",
       name: "SYX3",
@@ -35,6 +28,20 @@ function getTokens() {
       symbol: "SVLX",
       name: "SVLX",
       address: config.svlx,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    BNB: {
+      symbol: "BNB",
+      name: "BNB",
+      address: config.wbnb,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
+    CakeLP: {
+      symbol: "Cake-LP",
+      name: "Cake-LP",
+      address: config.bnbSyxPoolMutil,
       abi: config.erc20ABI,
       decimals: 18,
     },

@@ -52,7 +52,7 @@ const en_US = {
   DEPOSIT_INCENTIVE_PLAN: "Deposit Now",
   RATIO: "Ratio",
   ACTION: "Action",
-  STAKING_TIP: "Deposit VLX to the pools you select to earn rewards",
+  STAKING_TIP: "Deposit BNB to the pools you select to earn rewards",
   WITHDRAW_REWARDS_TIP:
     "Please find the reward token SYX in the wallet after claimed",
   UNIT_PRICE: "Unit Price",
@@ -78,7 +78,7 @@ const en_US = {
   SYX_TOKEN: "SYX (V2)",
   USDT_TOKEN: "USDT on VELAS",
   WETH_TOKEN: "WETH on VELAS",
-  WVLX_TOKEN: "VLX Escrow",
+  WBNB_TOKEN: "BNB Escrow",
   DEV_FUND: "Dev Fund",
   REFERRER: "Referrer Address",
   WALLET_CONNECT_TO: "Connected to {network}",

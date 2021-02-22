@@ -48,7 +48,7 @@ export async function fetchUserBalance(
       await ethcallProvider.init();
       let calls = [];
       for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i].symbol === "VLX") {
+        if (tokens[i].symbol === "BNB") {
           calls.push(ethcallProvider.getEthBalance(account));
         } else {
           const erc20Contract = new Contract(tokens[i].address, tokens[i].abi);
