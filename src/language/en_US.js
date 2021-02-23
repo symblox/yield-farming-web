@@ -100,5 +100,6 @@ const en_US = {
   LANGUAGE: "Language",
   SLIPPAGE_TOLERANCE: "Slippage tolerance",
   MIN_RECEIVED: "Minimum received",
+  LIQUIDITY: "Liquidity",
 };
 export default en_US;

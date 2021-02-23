@@ -97,5 +97,6 @@ const zh_CN = {
   LANGUAGE: "语言",
   SLIPPAGE_TOLERANCE: "滑移公差",
   MIN_RECEIVED: "最低收到",
+  LIQUIDITY: "流动性",
 };
 export default zh_CN;

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { withRouter } from "react-router-dom";
-import { parseUnits, formatUnits } from "@ethersproject/units";
 import { withStyles } from "@material-ui/core/styles";
 import {
   Box,
@@ -17,6 +16,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  Link,
 } from "@material-ui/core";
 import { FormattedMessage } from "react-intl";
 import NumberFormat from "react-number-format";
@@ -43,7 +43,6 @@ import rewardAprsAtom, {
 } from "../../hooks/useRewardAprs";
 import useInterval from "../../hooks/useInterval";
 import useFindPairPriceForSyx from "../../hooks/useFindPairPriceForSyx";
-import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -436,6 +435,12 @@ const Home = (props) => {
             centered
           >
             <Tab label={<FormattedMessage id="RP_LIST_TITLE" />} />
+            <Link href={config.liquidityPageUrl} target="_blank">
+              <Tab label={<FormattedMessage id="LIQUIDITY" />} />
+            </Link>
+            <Link href={config.swapPageUrl} target="_blank">
+              <Tab label={<FormattedMessage id="EXCHANGE" />} />
+            </Link>
           </Tabs>
           <TabPanel value={tabValue} index={0} className={classes.container}>
             <Grid container spacing={3}>
