@@ -66,7 +66,7 @@ const DepositModal = (props) => {
   const [txLoading, setTxLoading] = useState(false);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [loading] = useAtom(loadingAtom);
-  console.log({ loadData });
+
   useEffect(() => {
     if (!ethersProvider || !pool) return;
     fetchTokenBalanceValues(

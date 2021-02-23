@@ -30,6 +30,7 @@ function env() {
       wbnb: "0xae13d989dac2f0debff460ac112a837c89baa7cd",
       bnbSyxPoolMutil: "0x59aa824ac262d96989c04ac0bdbdc9a52e77cc63",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",
+      pancakePairAbi: abis.pancakePairAbi,
       erc20ABI: abis.erc20ABI,
       rewardPoolABI: abis.rewardPoolABI,
       syxABI: abis.erc20ABI,

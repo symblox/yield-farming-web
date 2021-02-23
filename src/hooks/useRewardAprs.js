@@ -45,49 +45,33 @@ export async function fetchRewardAprsValues(
       let newPoolAprs = {};
       let totalRewardApr = bnum(0);
       let totalStakeAmount = bnum(0);
-      // const promises = pools.map(async (pool) => {
-      //   let rewardApr;
-      //   if (pool.type !== "seed") {
-      //     const bptContract = new Contract(pool.address, pool.abi);
-      //     let calls = [];
-      //     let totalBalanceForSyx = bnum(0);
+      const promises = pools.map(async (pool) => {
+        let rewardApr, totalBalanceForSyx;
+        const lpContract = new Contract(pool.address, pool.abi);
+        const calls = [lpContract.balanceOf(config.rewardPool)];
+        const [lpBalance] = await ethcallProvider.all([...calls]);
+        totalBalanceForSyx = bnum(
+          formatUnits(
+            prices[pool.symbol].times(bnum(lpBalance.toString())).toFixed(0, 1),
+            pool.decimals
+          ).toString()
+        );
+        rewardApr = totalBalanceForSyx.gt(bnum(0))
+          ? bnum(pool.rewardRate)
+              .times(bnum(blocksPerYear + ""))
+              .times(bnum(100))
+              .div(totalBalanceForSyx)
+          : bnum(0);
 
-      //     pool.supportTokens.map((v) => {
-      //       calls.push(bptContract.getBalance(v.address));
-      //     });
-
-      //     const results = await ethcallProvider.all([...calls]);
-      //     pool.supportTokens.map((v, i) => {
-      //       if (pool.rewardToken.symbol === v.symbol) {
-      //         totalBalanceForSyx = totalBalanceForSyx.plus(
-      //           bnum(formatUnits(results[i], v.decimals))
-      //         );
-      //       } else {
-      //         totalBalanceForSyx = totalBalanceForSyx.plus(
-      //           bnum(formatUnits(results[i], v.decimals)).times(
-      //             prices[v.symbol]
-      //           )
-      //         );
-      //       }
-      //     });
-      //     rewardApr = totalBalanceForSyx.gt(bnum(0))
-      //       ? bnum(pool.rewardRate)
-      //           .times(bnum(blocksPerYear + ""))
-      //           .times(bnum(100))
-      //           .div(totalBalanceForSyx)
-      //       : bnum(0);
-      //     const toSyxAmount = bnum(pool.stakeAmount)
-      //       .div(bnum(pool.totalSupply))
-      //       .times(totalBalanceForSyx);
-      //     if (!toSyxAmount.isNaN()) {
-      //       totalRewardApr = totalRewardApr.plus(rewardApr.times(toSyxAmount));
-      //       totalStakeAmount = totalStakeAmount.plus(toSyxAmount);
-      //     }
-      //   }
-      //   //Percentage display e.g 10 = 10%
-      //   newPoolAprs[pool.index] = rewardApr.toFixed(1, 0);
-      // });
-      // await Promise.all(promises);
+        const toSyxAmount = bnum(pool.stakeAmount).times(prices[pool.symbol]);
+        if (!toSyxAmount.isNaN()) {
+          totalRewardApr = totalRewardApr.plus(rewardApr.times(toSyxAmount));
+          totalStakeAmount = totalStakeAmount.plus(toSyxAmount);
+        }
+        //Percentage display e.g 10 = 10%
+        newPoolAprs[pool.index] = rewardApr.toFixed(1, 0);
+      });
+      await Promise.all(promises);
       setAprs({
         poolAprs: newPoolAprs,
         userApr: totalStakeAmount.gt(0)

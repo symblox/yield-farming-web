@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { withRouter } from "react-router-dom";
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { withStyles } from "@material-ui/core/styles";
 import {
   Box,
@@ -41,6 +42,8 @@ import rewardAprsAtom, {
   fetchRewardAprsValues,
 } from "../../hooks/useRewardAprs";
 import useInterval from "../../hooks/useInterval";
+import useFindPairPriceForSyx from "../../hooks/useFindPairPriceForSyx";
+import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -102,6 +105,7 @@ const Home = (props) => {
   const [aprs, setAprs] = useAtom(rewardAprsAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
   const [loading] = useAtom(loadingAtom);
+  const findPairPriceForSyx = useFindPairPriceForSyx();
 
   const loadData = async () => {
     if (account && ethersProvider && providerNetwork) {
@@ -118,7 +122,38 @@ const Home = (props) => {
         providerNetwork,
         setRewardPools
       );
-      let pricesForRewardToken = [];
+
+      let pricesForRewardToken = {};
+      let balanceForRewardToken = {};
+      const promises = rewardPool.pools.map(async (v) => {
+        const result = await findPairPriceForSyx(v);
+        if (Array.isArray(result) && result.length > 0) {
+          for (let i = 0; i < result.length; i++) {
+            if (pricesForRewardToken[result[i].symbol]) {
+              const newBalanceForRewardToken = balanceForRewardToken[
+                result[i].symbol
+              ].plus(result[i].totalBalanceForSyx);
+              pricesForRewardToken[result[i].symbol] = result[i].price
+                .times(result[i].totalBalanceForSyx)
+                .plus(
+                  pricesForRewardToken[result[i].symbol].times(
+                    balanceForRewardToken[result[i].symbol]
+                  )
+                )
+                .div(newBalanceForRewardToken);
+              balanceForRewardToken[
+                result[i].symbol
+              ] = newBalanceForRewardToken;
+            } else {
+              pricesForRewardToken[result[i].symbol] = result[i].price;
+              balanceForRewardToken[result[i].symbol] =
+                result[i].totalBalanceForSyx;
+            }
+            pricesForRewardToken[result[i].symbol] = result[i].price;
+          }
+        }
+      });
+      await Promise.all(promises);
       fetchRewardAprsValues(
         account,
         rewardPool.pools,
