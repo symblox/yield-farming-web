@@ -63,9 +63,7 @@ const WithdrawRewardsModal = (props) => {
   useEffect(() => {
     if (!pools || pools.length === 0) return;
     pools.forEach((pool) => {
-      if (pool.entryContractAddress) {
-        setCurPool(pool);
-      }
+      setCurPool(pool);
     });
   }, [pools]);
 
@@ -133,13 +131,11 @@ const WithdrawRewardsModal = (props) => {
             {curPool.id}
             <Select value={curPool} onChange={poolHandleChange}>
               {pools.map((v, i) => {
-                if (v.entryContractAddress) {
-                  return (
-                    <MenuItem value={v} key={i}>
-                      {v.id}
-                    </MenuItem>
-                  );
-                }
+                return (
+                  <MenuItem value={v} key={i}>
+                    {v.id}
+                  </MenuItem>
+                );
               })}
             </Select>
             <img className={classes.downIcon} src={"/down.svg"} alt="" />

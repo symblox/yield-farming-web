@@ -8,29 +8,15 @@ export default function useWithdrawReward() {
 
   return useCallback(
     async (pool) => {
-      const connectorFactoryContract = new Contract(
-        config.connectorFactory,
-        config.connectorFactoryABI,
-        signer
-      );
-      const connectorAddress = await connectorFactoryContract.connectors(
-        account,
-        pool.index
-      );
-
-      const connectorContract = new Contract(
-        connectorAddress,
-        pool.entryContractABI,
-        signer
-      );
+      const poolContract = new Contract(pool.poolAddress, pool.poolABI, signer);
       let gasLimit;
       try {
-        gasLimit = await connectorContract.estimateGas["getReward"]();
+        gasLimit = await poolContract.estimateGas["getReward"](pool.index);
       } catch (err) {
         gasLimit = 1000000;
       }
 
-      return connectorContract["getReward"]({
+      return poolContract["getReward"](pool.index, {
         gasLimit,
       });
     },
