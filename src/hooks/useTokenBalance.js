@@ -4,6 +4,7 @@ import { formatUnits, parseEther } from "@ethersproject/units";
 import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config from "../config";
+import { bnum } from "../utils/bignumber";
 
 const tokenBalanceAtom = atom({});
 export default tokenBalanceAtom;
@@ -55,8 +56,9 @@ export async function fetchTokenBalanceValues(
       const balancesRes = await ethcallProvider.all(calls);
       let balances = {};
       for (let i = 0; i < balancesRes.length; i++) {
-        balances[supportTokens[i].symbol] = parseFloat(
-          formatUnits(balancesRes[i], supportTokens[i].decimals)
+        balances[supportTokens[i].symbol] = formatUnits(
+          balancesRes[i],
+          supportTokens[i].decimals
         );
       }
       setTokenBalances(balances);
