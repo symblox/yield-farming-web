@@ -14,7 +14,7 @@ import { Web3Context } from "../contexts/Web3Context";
 
 const Pool = (props) => {
   const { data: pool, apr, loading, onDeposit, onWithdraw, classes } = props;
-  const tokenNameList = pool.id.split("/");
+  const tokenNameList = pool.id.split("-")[0].split("/");
   const { ethersProvider, providerNetwork } = useContext(Web3Context);
 
   return (

@@ -31,6 +31,7 @@ function env() {
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
       rewardPool: "0x63eB6B51530FdF84aFC709F9591C4128D5a827C2",
       syx: "0xd2f83494cd97e61f117015ba79cbf8f42fd13634",
+      vSyx: "0x4151daa0e2d282439a9dc8dd988eee688414f246",
       wbnb: "0xae13d989dac2f0debff460ac112a837c89baa7cd",
       bnbSyxPoolMutil: "0x59aa824ac262d96989c04ac0bdbdc9a52e77cc63",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",

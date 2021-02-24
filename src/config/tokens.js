@@ -10,6 +10,13 @@ function getTokens() {
       abi: config.syxABI,
       decimals: 18,
     },
+    "SYX-VELAS": {
+      symbol: "SYX-VELAS",
+      name: "SYX-VELAS",
+      address: config.vSyx,
+      abi: config.syxABI,
+      decimals: 18,
+    },
     BNB: {
       symbol: "BNB",
       name: "BNB",

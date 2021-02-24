@@ -43,6 +43,7 @@ import rewardAprsAtom, {
 } from "../../hooks/useRewardAprs";
 import useInterval from "../../hooks/useInterval";
 import useFindPairPriceForSyx from "../../hooks/useFindPairPriceForSyx";
+import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -122,7 +123,9 @@ const Home = (props) => {
         setRewardPools
       );
 
-      let pricesForRewardToken = {};
+      let pricesForRewardToken = {
+        "SYX-VELAS": bnum("1"),
+      };
       let balanceForRewardToken = {};
       const promises = rewardPool.pools.map(async (v) => {
         const result = await findPairPriceForSyx(v);
