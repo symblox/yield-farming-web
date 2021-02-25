@@ -109,61 +109,65 @@ const Home = (props) => {
 
   const loadData = async () => {
     if (account && ethersProvider && providerNetwork) {
-      fetchUserBalance(
-        account,
-        ethersProvider,
-        providerNetwork,
-        tradeTokens,
-        setUserBalance
-      );
-      await fetchRewardPoolsValues(
-        account,
-        ethersProvider,
-        providerNetwork,
-        setRewardPools
-      );
+      try {
+        fetchUserBalance(
+          account,
+          ethersProvider,
+          providerNetwork,
+          tradeTokens,
+          setUserBalance
+        );
+        await fetchRewardPoolsValues(
+          account,
+          ethersProvider,
+          providerNetwork,
+          setRewardPools
+        );
 
-      let pricesForRewardToken = {
-        "SYX-VELAS": bnum("1"),
-      };
-      let balanceForRewardToken = {};
-      const promises = rewardPool.pools.map(async (v) => {
-        const result = await findPairPriceForSyx(v);
-        if (Array.isArray(result) && result.length > 0) {
-          for (let i = 0; i < result.length; i++) {
-            if (pricesForRewardToken[result[i].symbol]) {
-              const newBalanceForRewardToken = balanceForRewardToken[
-                result[i].symbol
-              ].plus(result[i].totalBalanceForSyx);
-              pricesForRewardToken[result[i].symbol] = result[i].price
-                .times(result[i].totalBalanceForSyx)
-                .plus(
-                  pricesForRewardToken[result[i].symbol].times(
-                    balanceForRewardToken[result[i].symbol]
+        let pricesForRewardToken = {
+          "SYX-VELAS": bnum("1"),
+        };
+        let balanceForRewardToken = {};
+        const promises = rewardPool.pools.map(async (v) => {
+          const result = await findPairPriceForSyx(v);
+          if (Array.isArray(result) && result.length > 0) {
+            for (let i = 0; i < result.length; i++) {
+              if (pricesForRewardToken[result[i].symbol]) {
+                const newBalanceForRewardToken = balanceForRewardToken[
+                  result[i].symbol
+                ].plus(result[i].totalBalanceForSyx);
+                pricesForRewardToken[result[i].symbol] = result[i].price
+                  .times(result[i].totalBalanceForSyx)
+                  .plus(
+                    pricesForRewardToken[result[i].symbol].times(
+                      balanceForRewardToken[result[i].symbol]
+                    )
                   )
-                )
-                .div(newBalanceForRewardToken);
-              balanceForRewardToken[
-                result[i].symbol
-              ] = newBalanceForRewardToken;
-            } else {
+                  .div(newBalanceForRewardToken);
+                balanceForRewardToken[
+                  result[i].symbol
+                ] = newBalanceForRewardToken;
+              } else {
+                pricesForRewardToken[result[i].symbol] = result[i].price;
+                balanceForRewardToken[result[i].symbol] =
+                  result[i].totalBalanceForSyx;
+              }
               pricesForRewardToken[result[i].symbol] = result[i].price;
-              balanceForRewardToken[result[i].symbol] =
-                result[i].totalBalanceForSyx;
             }
-            pricesForRewardToken[result[i].symbol] = result[i].price;
           }
-        }
-      });
-      await Promise.all(promises);
-      fetchRewardAprsValues(
-        account,
-        rewardPool.pools,
-        pricesForRewardToken,
-        ethersProvider,
-        providerNetwork,
-        setAprs
-      );
+        });
+        await Promise.all(promises);
+        fetchRewardAprsValues(
+          account,
+          rewardPool.pools,
+          pricesForRewardToken,
+          ethersProvider,
+          providerNetwork,
+          setAprs
+        );
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
