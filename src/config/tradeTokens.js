@@ -9,7 +9,7 @@ function getTradeTokens() {
       tokens["WBNB"],
       tokens["SYX"],
       tokens["SYX-VELAS"],
-      tokens["CakeLP"],
+      tokens["SYX/BNB-LP"],
     ];
   }
 }

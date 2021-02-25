@@ -5,7 +5,7 @@ function getTokens() {
   return {
     SYX: {
       symbol: "SYX",
-      name: "SYX3",
+      name: "SYX",
       address: config.syx,
       abi: config.syxABI,
       decimals: 18,
@@ -31,9 +31,9 @@ function getTokens() {
       abi: config.erc20ABI,
       decimals: 18,
     },
-    CakeLP: {
-      symbol: "Cake-LP",
-      name: "Cake-LP",
+    "SYX/BNB-LP": {
+      symbol: "SYX/BNB-LP",
+      name: "SYX/BNB-LP",
       address: config.bnbSyxPoolMutil,
       abi: config.erc20ABI,
       decimals: 18,

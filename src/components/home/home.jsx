@@ -353,7 +353,7 @@ const Home = (props) => {
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
-                      <span className="small-text">SYX3</span>
+                      <span className="small-text">SYX</span>
                     </Typography>
                     <Button
                       style={{ marginTop: "9px" }}
@@ -408,7 +408,7 @@ const Home = (props) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         isNumericString={true}
-                        suffix={"SYX3"}
+                        suffix={"SYX"}
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />

@@ -33,12 +33,12 @@ let seedSyxPool = {
 
 //new pool type
 let bnbSyxPoolMutil = {
-  id: "SYX3/BNB-LP",
+  id: "SYX/BNB-LP",
   featured: true,
   address: config.bnbSyxPoolMutil,
-  symbol: "Cake-LP",
+  symbol: "SYX/BNB-LP",
   rewardToken: tokens["SYX"],
-  supportTokens: [tokens["CakeLP"]],
+  supportTokens: [tokens["SYX/BNB-LP"]],
   abi: config.pancakePairAbi,
   decimals: 18,
   poolAddress: config.rewardPool,
