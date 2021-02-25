@@ -101,5 +101,6 @@ const en_US = {
   SLIPPAGE_TOLERANCE: "Slippage tolerance",
   MIN_RECEIVED: "Minimum received",
   LIQUIDITY: "Liquidity",
+  BRIDGE: "Bridge",
 };
 export default en_US;

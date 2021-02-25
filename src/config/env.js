@@ -28,6 +28,7 @@ function env() {
         "https://pancake-swap-git-symblox-symblox-dev.vercel.app/#/pool",
       swapPageUrl:
         "https://pancake-swap-git-symblox-symblox-dev.vercel.app/#/swap",
+      bridgeUrl: "https://dev.x.symblox.io/",
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
       rewardPool: "0x63eB6B51530FdF84aFC709F9591C4128D5a827C2",
       syx: "0xd2f83494cd97e61f117015ba79cbf8f42fd13634",

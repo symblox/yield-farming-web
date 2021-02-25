@@ -448,6 +448,9 @@ const Home = (props) => {
             <Link href={config.swapPageUrl} target="_blank">
               <Tab label={<FormattedMessage id="EXCHANGE" />} />
             </Link>
+            <Link href={config.bridgeUrl} target="_blank">
+              <Tab label={<FormattedMessage id="BRIDGE" />} />
+            </Link>
           </Tabs>
           <TabPanel value={tabValue} index={0} className={classes.container}>
             <Grid container spacing={3}>

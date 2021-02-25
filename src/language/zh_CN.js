@@ -98,5 +98,6 @@ const zh_CN = {
   SLIPPAGE_TOLERANCE: "滑移公差",
   MIN_RECEIVED: "最低收到",
   LIQUIDITY: "流动性",
+  BRIDGE: "跨链",
 };
 export default zh_CN;
