@@ -5,6 +5,8 @@ import bptRefConnector from "./bptRefConnector.json";
 import wvlxConnector from "./wvlxConnector.json";
 import connectorFactory from "./connectorFactory.json";
 import erc20 from "./erc20.json";
+import svlx from "./svlx.json";
+import stakingAuRa from "./stakingAuRa.json";
 
 const rewardPoolABI = rewardPool;
 const bptABI = bpt;
@@ -13,13 +15,17 @@ const bptRefConnectorABI = bptRefConnector;
 const wvlxConnectorABI = wvlxConnector;
 const connectorFactoryABI = connectorFactory;
 const erc20ABI = erc20;
+const svlxABI = svlx;
+const stakingAuRaABI = stakingAuRa;
 
 export default {
-    rewardPoolABI,
-    bptABI,
-    syxABI,
-    bptRefConnectorABI,
-    wvlxConnectorABI,
-    connectorFactoryABI,
-    erc20ABI
+  rewardPoolABI,
+  bptABI,
+  syxABI,
+  bptRefConnectorABI,
+  wvlxConnectorABI,
+  connectorFactoryABI,
+  erc20ABI,
+  svlxABI,
+  stakingAuRaABI,
 };

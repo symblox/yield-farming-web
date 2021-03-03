@@ -83,10 +83,14 @@ const zh_CN = {
   WALLET_CONNECT_TO: "已连接网络 {network}",
   WALLET_DISCONNECT: "取消连接",
   EXCHANGE: "兑换",
+  EXCHANGE_SVLX: "兑换 SVLX",
+  EXCHANGE_VLX: "兑换 VLX",
   EXCHANGE_TITLE: "兑换新的 SYX 代币参与 Symblox 最新流动性挖矿",
   EXCHANGE_SUB_TITLE: "您想兑换多少个新的 SYX 代币？",
   EXCHANGE_TIP: "输入您想兑换的金额",
   EXCHANGE_RATE: "SYX 兑换比例",
+  SVLX_EXCHANGE_RATE: "SVLX 兑换 VLX 比例",
+  VLX_EXCHANGE_RATE: "VLX 兑换 SVLX 比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
   EXCHANGE_WARNING:
@@ -98,5 +102,8 @@ const zh_CN = {
   DAPP_PVLX: "pVLX 无损挖矿",
   V1: "V1",
   LANGUAGE: "语言",
+  WITHDRAWABLE_TIP:
+    "可直接取出金额为{maxWithdrawable}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
+  WITHDRAW_APPLY: "预约取现",
 };
 export default zh_CN;
