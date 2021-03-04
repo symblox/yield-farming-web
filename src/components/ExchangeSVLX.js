@@ -86,6 +86,7 @@ const styles = (theme) => ({
 const ExchangeSVLX = ({ classes }) => {
   const {
     balanceState,
+    orderedAmount,
     svlxExchangeRate,
     svlxDeposit,
     svlxWithdraw,
@@ -302,6 +303,14 @@ const ExchangeSVLX = ({ classes }) => {
                 values={{
                   maxWithdrawable: formatEther(svlxWithdrawable.toString()),
                   stakingEpochDuration: (stakingEpochDuration / 60).toFixed(2),
+                  orderedAmount:
+                    orderedAmount &&
+                    orderedAmount[1] &&
+                    parseFloat(orderedAmount[2]) > 0
+                      ? parseFloat(
+                          formatEther(orderedAmount[1].toString())
+                        ).toFixed(4)
+                      : 0,
                 }}
               />
             ) : (

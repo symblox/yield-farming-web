@@ -106,7 +106,7 @@ const en_US = {
   V1: "V1",
   LANGUAGE: "Language",
   WITHDRAWABLE_TIP:
-    "The amount that can be withdrawn directly is {maxWithdrawable}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
+    "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
   WITHDRAW_APPLY: "Apply for withdrawal",
 };
 export default en_US;
