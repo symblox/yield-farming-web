@@ -6,7 +6,6 @@ import { Provider as JotaiProvider } from "jotai";
 
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Web3Provider } from "./contexts/Web3Context";
-import { PoolContextProvider } from "./contexts/PoolContext";
 
 import interestTheme from "./theme";
 import Routes from "./Routes";
@@ -19,11 +18,9 @@ class App extends Component {
           <MuiThemeProvider theme={createMuiTheme(interestTheme)}>
             <CssBaseline />
             <Web3Provider>
-              <PoolContextProvider>
-                <Router>
-                  <Routes />
-                </Router>
-              </PoolContextProvider>
+              <Router>
+                <Routes />
+              </Router>
             </Web3Provider>
           </MuiThemeProvider>
         </LanguageProvider>
