@@ -105,7 +105,7 @@ const en_US = {
   SLIPPAGE_TOLERANCE: "Slippage tolerance",
   MIN_RECEIVED: "Minimum received",
   WITHDRAWABLE_TIP:
-    "The amount that can be withdrawn directly is {maxWithdrawable}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
+    "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
   WITHDRAW_APPLY: "Apply for withdrawal",
 };
 export default en_US;

@@ -100,7 +100,7 @@ function env() {
       wvlxConnectorABI: abis.wvlxConnectorABI,
       connectorFactoryABI: abis.connectorFactoryABI,
       stakingAuRaABI: abis.stakingAuRaABI,
-      secPerBlock: 5,
+      secPerBlock: 15,
     };
   }
 }

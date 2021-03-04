@@ -51,6 +51,7 @@ export function PoolContextProvider({ children }) {
   const [svlxExchangeRate, setSvlxExchangeRate] = useState("-");
   const [svlxWithdrawable, setSvlxWithdrawable] = useState("0");
   const [stakingEpochDuration, setStakingEpochDuration] = useState("-");
+  const [orderedAmount, setOrderedAmount] = useState(null);
   const [oldSyxSupply, setOldSyxSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [lastChainId, setLastChainId] = useState(0);
@@ -95,6 +96,7 @@ export function PoolContextProvider({ children }) {
         const balance = await svlxContract.balanceOf(account);
         const withdrawable = await svlxContract.getTotalWithdrawable();
         const stakingAuRa = await svlxContract.stakingAuRa();
+        const orderedAmount = await svlxContract.orderedAmount();
 
         const stakingAuRaContract = new Contract(
           stakingAuRa,
@@ -109,6 +111,7 @@ export function PoolContextProvider({ children }) {
         balanceDispatch({ type: "svlx", data: balance });
         setSvlxWithdrawable(withdrawable);
         setStakingEpochDuration(stakingEpochDuration);
+        setOrderedAmount(orderedAmount);
       } catch (error) {
         setIsError(true);
         setErrorMsg(JSON.stringify(error));
@@ -278,6 +281,7 @@ export function PoolContextProvider({ children }) {
     <PoolContext.Provider
       value={{
         balanceState,
+        orderedAmount,
         oldSyxSupply,
         exchangeSyx,
         svlxDeposit,

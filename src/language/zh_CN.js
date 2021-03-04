@@ -102,7 +102,7 @@ const zh_CN = {
   SLIPPAGE_TOLERANCE: "滑移公差",
   MIN_RECEIVED: "最低收到",
   WITHDRAWABLE_TIP:
-    "可直接取出金额为{maxWithdrawable}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
+    "可直接取出金额为{maxWithdrawable}, 已预约金额{orderedAmount}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
   WITHDRAW_APPLY: "预约取现",
 };
 export default zh_CN;
