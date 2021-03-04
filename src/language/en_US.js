@@ -91,6 +91,7 @@ const en_US = {
   EXCHANGE_SUB_TITLE:
     "How many SYX tokens would you like to redeem for the new ones?",
   EXCHANGE_TIP: "Enter the amount you would like to exchange",
+  EXCHANGE_RATE: "SYX exchange rate",
   SVLX_EXCHANGE_RATE: "SVLX exchange VLX rate",
   VLX_EXCHANGE_RATE: "VLX exchange SVLX rate",
   EXCHANGE_TOTAL_SUPPLY: "Max old SYX to new SYX liquidity",
