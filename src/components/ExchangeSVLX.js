@@ -245,8 +245,7 @@ const ExchangeSVLX = ({ classes }) => {
               />
               <Typography variant="body2">
                 <FormattedMessage id="EXPECTED_TO_GET" />:{" "}
-                {Math.floor((amount / svlxExchangeRate) * 1000000) / 1000000}{" "}
-                SVLX
+                {parseFloat(amount / svlxExchangeRate).toFixed(4)} SVLX
                 <br />
               </Typography>
             </FormControl>
@@ -270,7 +269,7 @@ const ExchangeSVLX = ({ classes }) => {
                   }}
                 ></CircularProgress>
               ) : (
-                <FormattedMessage id="LP_DEPOSIT" />
+                <FormattedMessage id="DEPOSIT" />
               )}
             </Button>
           </Grid>
@@ -323,8 +322,7 @@ const ExchangeSVLX = ({ classes }) => {
               />
               <Typography variant="body2">
                 <FormattedMessage id="EXPECTED_TO_GET" />:{" "}
-                {Math.floor(svlxAmount * svlxExchangeRate * 1000000) / 1000000}{" "}
-                VLX
+                {parseFloat(svlxAmount * svlxExchangeRate).toFixed(4)} VLX
                 <br />
               </Typography>
             </FormControl>
@@ -378,7 +376,7 @@ const ExchangeSVLX = ({ classes }) => {
                 parseFloat(svlxAmount) ? (
                 <FormattedMessage id="WITHDRAW_APPLY" />
               ) : (
-                <FormattedMessage id="LP_WITHDRAW" />
+                <FormattedMessage id="WITHDRAW" />
               )}
             </Button>
           </Grid>

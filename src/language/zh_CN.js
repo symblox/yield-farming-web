@@ -103,5 +103,7 @@ const zh_CN = {
     "可直接取出金额为{maxWithdrawable}, 已预约金额{orderedAmount}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
   WITHDRAW_APPLY: "预约取现",
   EXPECTED_TO_GET: "预计将获得",
+  DEPOSIT: "存入",
+  WITHDRAW: "取出",
 };
 export default zh_CN;
