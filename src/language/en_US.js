@@ -84,8 +84,6 @@ const en_US = {
   WALLET_CONNECT_TO: "Connected to {network}",
   WALLET_DISCONNECT: "Discconnect",
   EXCHANGE: "Exchange",
-  EXCHANGE_SVLX: "Exchange SVLX",
-  EXCHANGE_VLX: "Exchange VLX",
   EXCHANGE_TITLE: "Redeem new SYX tokens for Symblox yield farming 2.0",
   EXCHANGE_SUB_TITLE:
     "How many SYX tokens would you like to redeem for the new ones?",
@@ -107,5 +105,6 @@ const en_US = {
   WITHDRAWABLE_TIP:
     "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
   WITHDRAW_APPLY: "Apply for withdrawal",
+  EXPECTED_TO_GET: "Expected to get",
 };
 export default en_US;

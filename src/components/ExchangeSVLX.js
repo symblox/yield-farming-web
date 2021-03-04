@@ -15,6 +15,7 @@ import {
   OutlinedInput,
   Typography,
   Grid,
+  Divider,
 } from "@material-ui/core";
 
 import { PoolContext } from "../contexts/PoolContext";
@@ -75,6 +76,25 @@ const styles = (theme) => ({
     "&.Mui-disabled": {
       background:
         "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
+      color: "#FFFFFF",
+    },
+  },
+  buttonSecondary: {
+    background: "linear-gradient(135deg, #FF3A33 0%, #FC06C6 100%, #FF3A33)",
+    borderRadius: "26px",
+    // fontFamily: "Noto Sans SC",
+    fontStyle: "normal",
+    fontWeight: 500,
+    fontSize: "20px",
+    color: "#FFFFFF",
+    width: "100%",
+    margin: "26px auto 0 auto",
+    "&:hover": {
+      background: "linear-gradient(315deg, #FF78E1 0%, #FF736E 100%, #FF78E1)",
+    },
+    "&.Mui-disabled": {
+      background:
+        "linear-gradient(135deg, rgb(255, 58, 51, 0.12) 0%, rgb(252, 6, 198, 0.12) 100%, rgb(255, 58, 51, 0.12))",
       color: "#FFFFFF",
     },
   },
@@ -189,6 +209,25 @@ const ExchangeSVLX = ({ classes }) => {
             <FormControl variant="outlined" className={classes.box}>
               <Typography>
                 <FormattedMessage id="EXCHANGE_TIP" />
+                <span style={{ float: "right" }}>
+                  <FormattedMessage
+                    id="EXCHANGE_WALLET_BALANCE"
+                    values={{
+                      amount: (
+                        <NumberFormat
+                          value={formatEther(balanceState.vlx)}
+                          defaultValue={"-"}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                          isNumericString={true}
+                          suffix={" VLX"}
+                          decimalScale={4}
+                          fixedDecimalScale={true}
+                        />
+                      ),
+                    }}
+                  />
+                </span>
               </Typography>
               <OutlinedInput
                 // className={classes.customInput}
@@ -205,23 +244,9 @@ const ExchangeSVLX = ({ classes }) => {
                 }
               />
               <Typography variant="body2">
-                <FormattedMessage
-                  id="EXCHANGE_WALLET_BALANCE"
-                  values={{
-                    amount: (
-                      <NumberFormat
-                        value={formatEther(balanceState.vlx)}
-                        defaultValue={"-"}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        isNumericString={true}
-                        suffix={" VLX"}
-                        decimalScale={4}
-                        fixedDecimalScale={true}
-                      />
-                    ),
-                  }}
-                />
+                <FormattedMessage id="EXPECTED_TO_GET" />:{" "}
+                {Math.floor((amount / svlxExchangeRate) * 1000000) / 1000000}{" "}
+                SVLX
                 <br />
               </Typography>
             </FormControl>
@@ -245,11 +270,13 @@ const ExchangeSVLX = ({ classes }) => {
                   }}
                 ></CircularProgress>
               ) : (
-                <FormattedMessage id="EXCHANGE_SVLX" />
+                <FormattedMessage id="LP_DEPOSIT" />
               )}
             </Button>
           </Grid>
-
+          <Grid item xs={12} sm={12}>
+            <Divider />
+          </Grid>
           <Grid item xs={12} sm={12}>
             <Typography className={classes.subTitle}>
               <FormattedMessage id="SVLX_EXCHANGE_RATE" />
@@ -260,6 +287,25 @@ const ExchangeSVLX = ({ classes }) => {
             <FormControl variant="outlined" className={classes.box}>
               <Typography>
                 <FormattedMessage id="EXCHANGE_TIP" />
+                <span style={{ float: "right" }}>
+                  <FormattedMessage
+                    id="EXCHANGE_WALLET_BALANCE"
+                    values={{
+                      amount: (
+                        <NumberFormat
+                          value={formatEther(balanceState.svlx)}
+                          defaultValue={"-"}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                          isNumericString={true}
+                          suffix={" SVLX"}
+                          decimalScale={4}
+                          fixedDecimalScale={true}
+                        />
+                      ),
+                    }}
+                  />
+                </span>
               </Typography>
               <OutlinedInput
                 // className={classes.customInput}
@@ -276,23 +322,9 @@ const ExchangeSVLX = ({ classes }) => {
                 }
               />
               <Typography variant="body2">
-                <FormattedMessage
-                  id="EXCHANGE_WALLET_BALANCE"
-                  values={{
-                    amount: (
-                      <NumberFormat
-                        value={formatEther(balanceState.svlx)}
-                        defaultValue={"-"}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        isNumericString={true}
-                        suffix={" SVLX"}
-                        decimalScale={4}
-                        fixedDecimalScale={true}
-                      />
-                    ),
-                  }}
-                />
+                <FormattedMessage id="EXPECTED_TO_GET" />:{" "}
+                {Math.floor(svlxAmount * svlxExchangeRate * 1000000) / 1000000}{" "}
+                VLX
                 <br />
               </Typography>
             </FormControl>
@@ -316,9 +348,8 @@ const ExchangeSVLX = ({ classes }) => {
             ) : (
               ""
             )}
-
             <Button
-              className={classes.button}
+              className={classes.buttonSecondary}
               disabled={
                 svlxAmount == 0 ||
                 parseFloat(svlxAmount) >
@@ -347,7 +378,7 @@ const ExchangeSVLX = ({ classes }) => {
                 parseFloat(svlxAmount) ? (
                 <FormattedMessage id="WITHDRAW_APPLY" />
               ) : (
-                <FormattedMessage id="EXCHANGE_VLX" />
+                <FormattedMessage id="LP_WITHDRAW" />
               )}
             </Button>
           </Grid>
