@@ -175,7 +175,6 @@ export function PoolContextProvider({ children }) {
       if (account) {
         setLoading(true);
         const oldSyxAddress = config[type];
-        console.log(type, oldSyxAddress);
         try {
           const signer = ethersProvider.getSigner();
           const syxContract = new Contract(config.syx, config.syxABI, signer);
@@ -189,7 +188,7 @@ export function PoolContextProvider({ children }) {
             const tx = await oldSyxContract.approve(config.syx, amount);
             await tx.wait();
           }
-          const tx2 = await syxContract.exchangeSyx(config.oldSyx, amount);
+          const tx2 = await syxContract.exchangeSyx(oldSyxAddress, amount);
           await tx2.wait();
           getSyxData();
           getOldSyxData();

@@ -141,7 +141,7 @@ const ExchangeSyx = ({ classes }) => {
     }
     setBalances(array);
     setTokens(tokens);
-    setCurToken(tokens[0] || []);
+    setCurToken(tokens[0]);
   }, [balanceState]);
 
   return (
@@ -266,8 +266,11 @@ const ExchangeSyx = ({ classes }) => {
                     parseFloat(formatEther(balanceState.oldSyx2))) ||
                 loading
               }
-              onClick={() => {
-                if (amount > 0) exchangeSyx(curToken.type, parseEther(amount));
+              onClick={async () => {
+                if (amount > 0) {
+                  await exchangeSyx(curToken.type, parseEther(amount));
+                  setAmount(0);
+                }
               }}
             >
               {loading ? (

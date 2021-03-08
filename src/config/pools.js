@@ -193,8 +193,8 @@ function getPools() {
       vlxEthPool,
     ];
   } else {
-    [vlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 2];
-    return [vlxSyxPool2, usdtSyxPool2, ethSyxPool2];
+    [vlxSyxPool2.index] = [0];
+    return [vlxSyxPool2];
   }
 }
 export default getPools;
