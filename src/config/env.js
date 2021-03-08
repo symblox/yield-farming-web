@@ -68,7 +68,7 @@ function env() {
       bptConnector: "0xd4Dc89F0afaaCFD81292E5A6deA95E7183c8a809", //BptReferralConnector
       bptFactory: "0x0Eb59099deD7D74841AE2d978EAc3378382DBA0C",
       wvlx: "0x78f18612775a2c54efc74c2911542aa034fe8d3f",
-      svlx: "0x17aCFfF64385FaeB974e618E29E23952775527b2",
+      svlx: "0xE5D72F0506bC6C0701E701caC1e255D16801B5C0",
       weth: "0x41e7fb07236a736e06b3460e458a5b827e552521",
       syx: "0xa94BFDE008232f03A7C34b7B994CcAA07a28283D",
       usdt: "0xA23bAeA56de679FD1baf200E92a75ac8d5eeBc8A",
@@ -95,9 +95,11 @@ function env() {
       rewardPoolABI: abis.rewardPoolABI,
       bptABI: abis.bptABI,
       syxABI: abis.syxABI,
+      svlxABI: abis.svlxABI,
       bptRefConnectorABI: abis.bptRefConnectorABI,
       wvlxConnectorABI: abis.wvlxConnectorABI,
       connectorFactoryABI: abis.connectorFactoryABI,
+      stakingAuRaABI: abis.stakingAuRaABI,
       secPerBlock: 5,
     };
   }
