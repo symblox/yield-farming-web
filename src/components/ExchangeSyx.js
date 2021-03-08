@@ -6,6 +6,8 @@ import { withStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 import { FormattedMessage } from "react-intl";
 import {
   Box,
@@ -79,9 +81,6 @@ const styles = (theme) => ({
       color: "#FFFFFF",
     },
   },
-  warning: {
-    color: "#FF0000",
-  },
 });
 
 const ExchangeSyx = ({ classes }) => {
@@ -99,6 +98,13 @@ const ExchangeSyx = ({ classes }) => {
 
   const [amount, setAmount] = useState(0);
   const [balances, setBalances] = useState([]);
+  const [curToken, setCurToken] = useState({});
+  const [tokens, setTokens] = useState([]);
+
+  const tokenHandleChange = (event) => {
+    setCurToken(event.target.value);
+    setAmount(0);
+  };
 
   const amountChange = (event) => {
     if (event.target.value && Number.isNaN(parseFloat(event.target.value))) {
@@ -109,20 +115,38 @@ const ExchangeSyx = ({ classes }) => {
   };
 
   const getMaxAmount = () => {
-    setAmount(formatEther(balanceState.oldSyx));
+    setAmount(
+      formatEther(
+        curToken.type === "oldSyx" ? balanceState.oldSyx : balanceState.oldSyx2
+      )
+    );
   };
 
   useEffect(() => {
     let array = [];
+    let tokens = [];
     for (let i in balanceState) {
       const balance = formatEther(balanceState[i]);
-      if (i != "oldSyx")
+      if (i != "svlx") {
+        let name = i;
+        if (i === "syx") {
+          name = "newSyx";
+        }
         array.push({
-          name: i,
+          name,
           balance,
+        });
+      }
+      if (i === "oldSyx" || i === "oldSyx2")
+        tokens.push({
+          type: i,
+          name: i === "oldSyx" ? "syx v1" : "syx v2",
+          symbol: "syx",
         });
     }
     setBalances(array);
+    setTokens(tokens);
+    setCurToken(tokens[0]);
   }, [balanceState]);
 
   return (
@@ -175,27 +199,55 @@ const ExchangeSyx = ({ classes }) => {
               <Typography>
                 <FormattedMessage id="EXCHANGE_TIP" />
               </Typography>
-              <OutlinedInput
-                // className={classes.customInput}
-                id="outlined-adornment-password"
-                type={"text"}
-                value={amount}
-                onChange={amountChange}
-                endAdornment={
-                  <InputAdornment position="end">
-                    <Button onClick={getMaxAmount}>
-                      <FormattedMessage id="POPUP_INPUT_MAX" />
-                    </Button>
-                  </InputAdornment>
-                }
-              />
+              <Grid container>
+                <Grid item xs={9}>
+                  <OutlinedInput
+                    // className={classes.customInput}
+                    id="outlined-adornment-password"
+                    type={"text"}
+                    value={amount}
+                    onChange={amountChange}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <Button
+                          onClick={getMaxAmount}
+                          style={{ padding: "10px 12px" }}
+                        >
+                          <FormattedMessage id="POPUP_INPUT_MAX" />
+                        </Button>
+                      </InputAdornment>
+                    }
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <Select value={curToken} onChange={tokenHandleChange}>
+                    {tokens.map((v, i) => {
+                      if (v.type === "oldSyx" || v.type === "oldSyx2") {
+                        return (
+                          <MenuItem value={v} key={i}>
+                            {v.name}
+                          </MenuItem>
+                        );
+                      }
+                    })}
+                  </Select>
+                </Grid>
+              </Grid>
               <Typography variant="body2">
                 <FormattedMessage
                   id="EXCHANGE_WALLET_BALANCE"
                   values={{
                     amount: (
                       <NumberFormat
-                        value={formatEther(balanceState.oldSyx)}
+                        value={formatEther(
+                          (
+                            parseFloat(balanceState.oldSyx) +
+                            parseFloat(balanceState.oldSyx2)
+                          ).toLocaleString("fullwide", {
+                            maximumFractionDigits: 10,
+                            useGrouping: false,
+                          })
+                        )}
                         defaultValue={"-"}
                         displayType={"text"}
                         thousandSeparator={true}
@@ -207,22 +259,25 @@ const ExchangeSyx = ({ classes }) => {
                     ),
                   }}
                 />
-                <br />
-              </Typography>
-              <Typography variant="body1" className={classes.warning}>
-                <FormattedMessage id="EXCHANGE_WARNING" />
               </Typography>
             </FormControl>
             <Button
               className={classes.button}
               disabled={
                 amount == 0 ||
-                parseFloat(amount) >
-                  parseFloat(formatEther(balanceState.oldSyx)) ||
+                (curToken.type === "oldSyx" &&
+                  parseFloat(amount) >
+                    parseFloat(formatEther(balanceState.oldSyx))) ||
+                (curToken.type === "oldSyx2" &&
+                  parseFloat(amount) >
+                    parseFloat(formatEther(balanceState.oldSyx2))) ||
                 loading
               }
-              onClick={() => {
-                if (amount > 0) exchangeSyx(parseEther(amount));
+              onClick={async () => {
+                if (amount > 0) {
+                  await exchangeSyx(curToken.type, parseEther(amount));
+                  setAmount(0);
+                }
               }}
             >
               {loading ? (

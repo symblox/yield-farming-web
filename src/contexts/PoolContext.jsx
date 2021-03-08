@@ -14,6 +14,7 @@ export const PoolContext = React.createContext({});
 const initialBalanceState = {
   syx: 0,
   oldSyx: 0,
+  oldSyx2: 0,
   vlx: 0,
   svlx: 0,
 };
@@ -27,6 +28,10 @@ function balanceReducer(state, action) {
     case "oldSyx":
       return Object.assign({}, state, {
         oldSyx: action.data,
+      });
+    case "oldSyx2":
+      return Object.assign({}, state, {
+        oldSyx2: action.data,
       });
     case "svlx":
       return Object.assign({}, state, {
@@ -130,8 +135,16 @@ export function PoolContextProvider({ children }) {
         const oldSyxBalance = await oldSyxContract.balanceOf(account);
         const oldSyxSupply = await oldSyxContract.totalSupply();
 
-        setOldSyxSupply(oldSyxSupply);
+        const oldSyx2Contract = new Contract(
+          config.oldSyx2,
+          config.erc20ABI,
+          ethersProvider
+        );
+        const oldSyx2Balance = await oldSyx2Contract.balanceOf(account);
+        const oldSyx2Supply = await oldSyx2Contract.totalSupply();
+        setOldSyxSupply(oldSyxSupply.add(oldSyx2Supply));
         balanceDispatch({ type: "oldSyx", data: oldSyxBalance });
+        balanceDispatch({ type: "oldSyx2", data: oldSyx2Balance });
       } catch (error) {
         setIsError(true);
         setErrorMsg(JSON.stringify(error));
@@ -143,7 +156,7 @@ export function PoolContextProvider({ children }) {
     if (account) {
       try {
         const syxContract = new Contract(
-          config.syx,
+          config.newSyx,
           config.erc20ABI,
           ethersProvider
         );
@@ -158,24 +171,34 @@ export function PoolContextProvider({ children }) {
   }, [account, balanceDispatch, ethersProvider]);
 
   const exchangeSyx = useCallback(
-    async (amount) => {
+    async (type, amount) => {
       if (account) {
         setLoading(true);
+        const oldSyxAddress = config[type];
         try {
           const signer = ethersProvider.getSigner();
-          const syxContract = new Contract(config.syx, config.syxABI, signer);
+          const syxContract = new Contract(
+            config.newSyx,
+            config.syxABI,
+            signer
+          );
           const oldSyxContract = new Contract(
-            config.oldSyx,
+            oldSyxAddress,
             config.erc20ABI,
             signer
           );
-          const allowance = await oldSyxContract.allowance(account, config.syx);
+          const allowance = await oldSyxContract.allowance(
+            account,
+            config.newSyx
+          );
           if (parseFloat(allowance) < parseFloat(amount)) {
-            const tx = await oldSyxContract.approve(config.syx, amount);
+            const tx = await oldSyxContract.approve(config.newSyx, amount);
             await tx.wait();
           }
-
-          const tx2 = await syxContract.exchangeSyx(amount);
+          const tx2 = await syxContract.exchangeSyx(
+            oldSyxAddress,
+            amount.toString()
+          );
           await tx2.wait();
           getSyxData();
           getOldSyxData();
