@@ -257,8 +257,11 @@ const ExchangeSVLX = ({ classes }) => {
                   parseFloat(formatEther(balanceState.vlx)) ||
                 loading
               }
-              onClick={() => {
-                if (amount > 0) svlxDeposit(parseEther(amount));
+              onClick={async () => {
+                if (amount > 0) {
+                  await svlxDeposit(parseEther(amount.toString()));
+                  setAmount(0);
+                }
               }}
             >
               {loading ? (
@@ -354,15 +357,17 @@ const ExchangeSVLX = ({ classes }) => {
                   parseFloat(formatEther(balanceState.svlx)) ||
                 loading
               }
-              onClick={() => {
-                if (svlxAmount > 0)
-                  svlxWithdraw(
+              onClick={async () => {
+                if (svlxAmount > 0) {
+                  await svlxWithdraw(
                     parseEther(
                       Math.floor(svlxAmount * svlxExchangeRate * 1000000) /
                         1000000 +
                         ""
                     )
                   );
+                  setSvlxAmount(0);
+                }
               }}
             >
               {loading ? (
