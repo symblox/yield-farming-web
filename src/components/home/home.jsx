@@ -1,1296 +1,542 @@
-import React, { Component } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { atom, useAtom } from "jotai";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import {
+  Box,
   Button,
   Grid,
   Paper,
+  Tab,
+  Tabs,
   Typography,
   Divider,
   Container,
   Hidden,
-  Collapse,
   Card,
   CardActions,
   CardContent,
 } from "@material-ui/core";
-
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { FormattedMessage } from "react-intl";
 import NumberFormat from "react-number-format";
 import { Web3Context } from "../../contexts/Web3Context";
-import config, { tokensName } from "../../config";
+import config, { tradeTokens } from "../../config";
 import Snackbar from "../snackbar";
 import { Header } from "../header";
 import Footer from "../footer";
 import Pool from "../pool";
 import Balance from "../balance";
-import DepositModal from "../modal/depositModal";
 import MultiDepositModal from "../modal/deposit/multiDeposit";
 import MultiWithdrawModal from "../modal/withdraw/multiWithdraw";
-import TransactionModal from "../modal/transactionModal";
+import SingleDepositModal from "../modal/deposit/singleDeposit";
+import SingleWithdrawModal from "../modal/withdraw/singleWithdraw";
 import WithdrawRewardsModal from "../modal/withdrawRewardsModal";
-import WithdrawModal from "../modal/withdrawModal";
 import NetworkErrModal from "../modal/networkErrModal";
-
+import Transaction from "../transaction";
 import Loader from "../loader";
-import Store from "../../stores";
 import "./home.scss";
+import styles from "../../styles/home";
+import userBalanceAtom, { fetchUserBalance } from "../../hooks/useUserBalance";
+import rewardPoolsAtom, {
+  fetchRewardPoolsValues,
+} from "../../hooks/useRewardPools";
+import rewardAprsAtom, {
+  fetchRewardAprsValues,
+} from "../../hooks/useRewardAprs";
+import sorAtom, {
+  findBestSwapsMulti,
+  fetchPoolData,
+  fetchPathData,
+} from "../../hooks/useSor";
+import useInterval from "../../hooks/useInterval";
+import useCreateConnector from "../../hooks/payables/useCreateConnector";
+import { bnum } from "../../utils/bignumber";
 
-import {
-  ERROR,
-  WITHDRAW_RETURNED,
-  DEPOSIT_RETURNED,
-  TRADE_RETURNED,
-  TX_CONFIRM,
-  GET_REWARDS_RETURNED,
-  CONNECTION_DISCONNECTED,
-  GET_BALANCES_PERPETUAL_RETURNED,
-  GET_BALANCES_PERPETUAL,
-  CREATE_ENTRY_CONTRACT,
-  CREATE_ENTRY_CONTRACT_RETURNED,
-} from "../../constants";
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
 
-const emitter = Store.emitter;
-const dispatcher = Store.dispatcher;
-const store = Store.store;
+const totalRewardsAvailableAtom = atom((get) => {
+  const rewardPool = get(rewardPoolsAtom);
+  let totalRewardsAvailable = 0;
+  if (rewardPool.pools) {
+    rewardPool.pools.forEach((pool) => {
+      totalRewardsAvailable += parseFloat(pool.rewardsAvailable || 0);
+    });
+    totalRewardsAvailable = totalRewardsAvailable.toFixed(4);
+  }
 
-const styles = (theme) => ({
-  root: {
-    width: "100%",
-    background: "#FFFFFF",
-    borderRadius: "12px",
-    boxShadow: "0px 0px 35px 0px rgba(94, 85, 126, 0.15)",
-
-    "& Button": {
-      minWidth: "237px",
-    },
-  },
-  title: {
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: "32px",
-    lineHeight: "45px",
-    textAlign: "center",
-    color: "#1E304B",
-    margin: "45px auto",
-  },
-  headerTitle: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: "60px",
-    lineHeight: "70px",
-    textAlign: "center",
-    color: "#FFFFFF",
-  },
-  headerTitleSecondary: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: "24px",
-    lineHeight: "29px",
-    textAlign: "center",
-    color: "#FFFFFF",
-    mixBlendMode: "normal",
-    opacity: 0.6,
-    margin: "20px auto 80px auto",
-  },
-  tableHeader: {
-    height: "80px",
-    "& td": {
-      // fontFamily: "Noto Sans SC",
-      fontStyle: "normal",
-      fontWeight: "300 !important",
-      fontSize: "20px",
-      lineHeight: "28px",
-      color: "#ACAEBC",
-      padding: "26px 25px",
-    },
-  },
-  tableBody: {
-    height: "100px",
-    "& td": {
-      // fontFamily: "Noto Sans SC",
-      fontStyle: "normal",
-      fontSize: "20px",
-      lineHeight: "24px",
-      padding: "38px 25px",
-    },
-  },
-  icon: {
-    width: "36px",
-    height: "36px",
-    position: "relative",
-    marginTop: "-6px",
-    marginRight: "8px",
-    display: "inline-block",
-    verticalAlign: "middle",
-  },
-  walletIcon: {
-    width: "24px",
-    height: "24px",
-    marginRight: "8px",
-  },
-  iconSecondary: {
-    width: "51px",
-    height: "24px",
-    marginLeft: "8px",
-  },
-  button: {
-    background: "linear-gradient(135deg, #42D9FE 0%, #2872FA 100%, #42D9FE)",
-    borderRadius: "26px",
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "20px",
-    color: "#FFFFFF",
-    minWidth: "115px",
-    marginTop: "-15px",
-    "&:hover": {
-      background: "linear-gradient(315deg, #4DB5FF 0%, #57E2FF 100%, #4DB5FF)",
-    },
-    "&.Mui-disabled": {
-      background:
-        "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
-      color: "#FFFFFF",
-    },
-  },
-  buttonSecondary: {
-    background: "linear-gradient(135deg, #FF3A33 0%, #FC06C6 100%, #FF3A33)",
-    borderRadius: "26px",
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "20px",
-    color: "#FFFFFF",
-    minWidth: "115px",
-    marginTop: "-15px",
-    "&:hover": {
-      background: "linear-gradient(315deg, #FF78E1 0%, #FF736E 100%, #FF78E1)",
-    },
-    "&.Mui-disabled": {
-      background:
-        "linear-gradient(135deg, rgb(255, 58, 51, 0.12) 0%, rgb(252, 6, 198, 0.12) 100%, rgb(255, 58, 51, 0.12))",
-      color: "#FFFFFF",
-    },
-  },
-  paper: {
-    padding: theme.spacing(2),
-    textAlign: "center",
-    color: theme.palette.text.secondary,
-    height: "100%",
-  },
-  actions: {
-    height: "79px",
-    padding: "46px 36px",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "18px",
-    lineHeight: "25px",
-    color: "#C0C1CE",
-    overflowX: "scroll",
-    overflowY: "hidden",
-  },
-  actionsSm: {
-    textAlign: "left",
-    color: "#1E304B",
-    fontFamily: "Oswald",
-    fontSize: "24px",
-    fontWeight: 300,
-    display: "block",
-    padding: "13px 32px",
-    "& span": {
-      float: "right",
-    },
-  },
-  paperTitle: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: "20px",
-    lineHeight: "28px",
-    color: "#ACAEBC",
-  },
-  paperTitleSecondary: {
-    fontFamily: "Oswald",
-    fontStyle: "normal",
-    fontWeight: 500,
-    fontSize: "46px",
-    lineHeight: "56px",
-    color: "#1E304B",
-    paddingTop: "18px",
-
-    "& .small-text": {
-      fontSize: "20px",
-      lineHeight: "28px",
-      color: "#454862",
-    },
-  },
-  paperTip: {
-    // fontFamily: "Noto Sans SC",
-    fontStyle: "normal",
-    fontWeight: "300",
-    fontSize: "16px",
-    lineHeight: "22px",
-    textAlign: "center",
-    color: "#ACAEBC",
-    margin: "24px auto 0px auto",
-  },
-  divider: {
-    position: "absolute",
-    height: "50%",
-    left: "50%",
-    top: "25%",
-  },
-  balanceBar: {
-    textAlign: "left",
-    color: "white",
-    fontSize: "24px",
-    "& div": {
-      display: "flex",
-    },
-  },
-  collapse: {
-    background: "#EEF6FF",
-    padding: "10px 22px",
-    textAlign: "left",
-    fontSize: "18px",
-    color: "#C0C1CE",
-    position: "relative",
-  },
-  customAlert: {
-    "& .MuiAlert-message": {
-      width: "100%",
-      textAlign: "center",
-    },
-  },
+  return totalRewardsAvailable;
+});
+const hasJoinedCountAtom = atom((get) => {
+  const rewardPool = get(rewardPoolsAtom);
+  let hasJoinedCount = 0;
+  rewardPool.pools.forEach((data) => {
+    if (data.entryContractAddress) {
+      hasJoinedCount++;
+    }
+  });
+  return hasJoinedCount;
 });
 
-class Home extends Component {
-  static contextType = Web3Context;
-  constructor(props) {
-    super(props);
+const loadingAtom = atom((get) => {
+  const userBalance = get(userBalanceAtom);
+  const rewardPool = get(rewardPoolsAtom);
+  let loading = false;
+  if (
+    !Array.isArray(userBalance) ||
+    Object.keys(userBalance).length === 0 ||
+    !rewardPool.loaded
+  )
+    loading = true;
+  return loading;
+});
 
-    const rewardPools = store.getStore("rewardPools");
-    this.state = {
-      rewardPools,
-      loading: true,
-      txLoading: false,
-      depositModalOpen: false,
-      multiDepositModalOpen: false,
-      multiWithdrawModalOpen: false,
-      withdrawRewardsModalOpen: false,
-      withdrawModalOpen: false,
-      transactionModalOpen: false,
-    };
-  }
+const Home = (props) => {
+  const { classes } = props;
+  const createConnector = useCreateConnector();
+  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const [tabValue, setTabValue] = useState(0);
+  const [txLoading, setTxLoading] = useState(false);
+  const [multiDepositModalOpen, setMultiDepositModalOpen] = useState(false);
+  const [singleDepositModalOpen, setSingleDepositModalOpen] = useState(false);
+  const [multiWithdrawModalOpen, setMultiWithdrawModalOpen] = useState(false);
+  const [singleWithdrawModalOpen, setSingleWithdrawModalOpen] = useState(false);
+  const [withdrawRewardsModalOpen, setWithdrawRewardsModalOpen] = useState(
+    false
+  );
+  const [depositData, setDepositData] = useState({});
+  const [withdrawData, setWithdrawData] = useState({});
+  const [snackbarType, setSnackbarType] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
+  const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
+  const [aprs, setAprs] = useAtom(rewardAprsAtom);
+  const [sor, setSor] = useAtom(sorAtom);
+  const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
+  const [hasJoinedCount] = useAtom(hasJoinedCountAtom);
+  const [loading] = useAtom(loadingAtom);
 
-  componentWillMount() {
-    emitter.on(CONNECTION_DISCONNECTED, this.connectionDisconnected);
-    emitter.on(GET_BALANCES_PERPETUAL_RETURNED, this.getBalancesReturned);
-    emitter.on(ERROR, this.errorReturned);
-    emitter.on(DEPOSIT_RETURNED, this.showHash);
-    emitter.on(WITHDRAW_RETURNED, this.showHash);
-    emitter.on(TRADE_RETURNED, this.showHash);
-    emitter.on(GET_REWARDS_RETURNED, this.showHash);
-    emitter.on(CREATE_ENTRY_CONTRACT_RETURNED, this.showHash);
-    emitter.on(TX_CONFIRM, this.hideLoading);
-    emitter.on("accountsChanged", () => {
-      this.setState({ loading: true }, () => {
-        dispatcher.dispatch({
-          type: GET_BALANCES_PERPETUAL,
-          content: {},
-        });
-      });
-    });
-  }
-
-  componentDidMount() {
-    const networkId = store.getStore("networkId");
-    this.setState({
-      networkId,
-    });
-
-    const that = this;
-    setTimeout(async () => {
-      const account = store.getStore("account");
-      that.setState({
+  const loadData = async () => {
+    if (account && ethersProvider && providerNetwork) {
+      fetchUserBalance(
         account,
-      });
-      dispatcher.dispatch({
-        type: GET_BALANCES_PERPETUAL,
-        content: {},
-      });
-    }, 2000);
-  }
-  componentWillUnmount() {
-    emitter.removeListener(
-      CONNECTION_DISCONNECTED,
-      this.connectionDisconnected
-    );
-    emitter.removeListener(
-      GET_BALANCES_PERPETUAL_RETURNED,
-      this.getBalancesReturned
-    );
-    emitter.removeListener(DEPOSIT_RETURNED, this.showHash);
-    emitter.removeListener(WITHDRAW_RETURNED, this.showHash);
-    emitter.removeListener(TRADE_RETURNED, this.showHash);
-    emitter.removeListener(GET_REWARDS_RETURNED, this.showHash);
-    emitter.removeListener(CREATE_ENTRY_CONTRACT_RETURNED, this.showHash);
-    emitter.removeListener(ERROR, this.errorReturned);
-    emitter.removeListener(TX_CONFIRM, this.hideLoading);
-  }
-
-  connectionDisconnected = () => {
-    this.setState({ account: store.getStore("account") });
-  };
-
-  showHash = (txHash) => {
-    this.setState({
-      snackbarMessage: null,
-      snackbarType: null,
-      depositModalOpen: false,
-      multiDepositModalOpen: false,
-      multiWithdrawModalOpen: false,
-      withdrawRewardsModalOpen: false,
-      withdrawModalOpen: false,
-      transactionModalOpen: false,
-      txLoading: true,
-    });
-    const that = this;
-    setTimeout(() => {
-      const snackbarObj = { snackbarMessage: txHash, snackbarType: "Hash" };
-      that.setState(snackbarObj);
-    });
-
-    setTimeout(() => {
-      dispatcher.dispatch({ type: GET_BALANCES_PERPETUAL, content: {} });
-      this.hideLoading();
-    }, 10000);
-  };
-
-  showLoading = () => {
-    this.setState({ txLoading: true });
-  };
-
-  hideLoading = () => {
-    this.setState({
-      txLoading: false,
-    });
-  };
-
-  createEntryContract = (data) => {
-    const { account } = this.state;
-    if (
-      !Object.getOwnPropertyNames(account).length ||
-      account.address === undefined
-    ) {
-      this.context.connectWeb3();
-    } else {
-      this.showLoading();
-      setTimeout(() => {
-        this.hideLoading();
-      }, 5000);
-      dispatcher.dispatch({
-        type: CREATE_ENTRY_CONTRACT,
-        content: {
-          asset: data,
-        },
-      });
-    }
-  };
-
-  errorReturned = (error) => {
-    const snackbarObj = { snackbarMessage: null, snackbarType: null };
-    this.setState(snackbarObj);
-    this.setState({ loading: false, txLoading: false });
-    const that = this;
-    setTimeout(() => {
-      const snackbarObj = {
-        snackbarMessage: error.toString(),
-        snackbarType: "Error",
-        depositModalOpen: false,
-        multiDepositModalOpen: false,
-        multiWithdrawModalOpen: false,
-        withdrawRewardsModalOpen: false,
-        withdrawModalOpen: false,
-        transactionModalOpen: false,
-      };
-      that.setState(snackbarObj);
-    });
-  };
-
-  getBalancesReturned = () => {
-    const rewardPools = store.getStore("rewardPools");
-    this.setState({
-      loading: false,
-      rewardPools,
-    });
-
-    const that = this;
-    window.setTimeout(() => {
-      const account = store.getStore("account");
-      that.setState({
+        ethersProvider,
+        providerNetwork,
+        tradeTokens,
+        setUserBalance
+      );
+      await fetchRewardPoolsValues(
         account,
+        ethersProvider,
+        providerNetwork,
+        setRewardPools
+      );
+      const poolList = await fetchPoolData(ethersProvider, providerNetwork);
+      let pricesForRewardToken = {};
+      let inputToken;
+      const outputToken = config.syx;
+      const promises = tradeTokens.map(async (v) => {
+        if (v.symbol !== "SYX") {
+          inputToken = v.address;
+          const newSor = await fetchPathData(
+            inputToken,
+            outputToken,
+            sor,
+            poolList,
+            setSor
+          );
+          const [totalReturn] = await findBestSwapsMulti(
+            newSor,
+            "swapExactIn",
+            bnum(parseUnits("0.01", v.decimals)), //To prevent the number of bpts from being not enough to 1, use 0.01, if the price is not enough, it will be treated as 0
+            10,
+            0
+          );
+          pricesForRewardToken[v.symbol] = formatUnits(
+            bnum(totalReturn.toString()).times(bnum(100)).toString(),
+            18
+          );
+        }
       });
-      dispatcher.dispatch({ type: GET_BALANCES_PERPETUAL, content: {} });
-    }, 10000);
-  };
-
-  openDepositModal = (data) => {
-    if (data.depositModal) {
-      let key;
-      switch (data.depositModal) {
-        case "multiDeposit":
-          key = "multiDepositModalOpen";
-          break;
-        default:
-          key = "depositModalOpen";
-          break;
-      }
-      this.setState({
-        [key]: true,
-        depositData: data,
-      });
-    } else {
-      this.setState({
-        depositModalOpen: true,
-        depositData: data,
-      });
+      await Promise.all(promises);
+      fetchRewardAprsValues(
+        account,
+        rewardPool.pools,
+        pricesForRewardToken,
+        ethersProvider,
+        providerNetwork,
+        setAprs
+      );
     }
   };
 
-  openWithdrawModal = (data) => {
-    if (data.withdrawModal) {
-      let key;
-      switch (data.withdrawModal) {
-        case "multiWithdraw":
-          key = "multiWithdrawModalOpen";
-          break;
-        default:
-          key = "withdrawModalOpen";
-          break;
-      }
-      this.setState({
-        [key]: true,
-        withdrawData: data,
-      });
-    } else {
-      this.setState({
-        withdrawModalOpen: true,
-        withdrawData: data,
-      });
+  useInterval(() => loadData(), 10000);
+
+  useEffect(() => {
+    loadData();
+  }, [account, ethersProvider, providerNetwork]);
+
+  const createEntryContract = (pool) => {
+    createConnector(pool);
+  };
+
+  const showHash = (txHash) => {
+    setSnackbarType("Hash");
+    setSnackbarMessage(txHash);
+  };
+
+  const errorReturned = (error) => {
+    setSnackbarType("Error");
+    setSnackbarMessage(error.toString());
+  };
+
+  const openDepositModal = (data) => {
+    switch (data.depositModal) {
+      case "multiDeposit":
+        setMultiDepositModalOpen(true);
+        break;
+      case "singleDeposit":
+        setSingleDepositModalOpen(true);
+        break;
+      default:
+        break;
     }
+    setDepositData(data);
   };
 
-  openWithdrawRewardsModal = () => {
-    this.setState({
-      withdrawRewardsModalOpen: true,
-    });
-  };
-
-  openTransactionModal = (data) => {
-    const { account } = this.state;
-    if (
-      !Object.getOwnPropertyNames(account).length ||
-      account.address === undefined
-    ) {
-      this.context.connectWeb3();
-    } else {
-      this.setState({
-        transactionModalOpen: true,
-        tradeData: data,
-      });
+  const openWithdrawModal = (data) => {
+    switch (data.withdrawModal) {
+      case "multiWithdraw":
+        setMultiWithdrawModalOpen(true);
+        break;
+      case "singleWithdraw":
+        setSingleWithdrawModalOpen(true);
+        break;
+      default:
+        break;
     }
+    setWithdrawData(data);
   };
 
-  closeDepositModal = () => {
-    this.setState({ depositModalOpen: false });
+  const renderNetworkErrModal = () => {
+    return <NetworkErrModal />;
   };
 
-  closeMultiDepositModal = () => {
-    this.setState({ multiDepositModalOpen: false });
+  const handleChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
-  closeMultiWithdrawModal = () => {
-    this.setState({ multiWithdrawModalOpen: false });
+  const renderMultiDepositModal = (data) => {
+    return (
+      <MultiDepositModal
+        data={data}
+        loading={loading || txLoading}
+        closeModal={() => setMultiDepositModalOpen(false)}
+        modalOpen={multiDepositModalOpen}
+        showHash={showHash}
+        errorReturned={errorReturned}
+      />
+    );
   };
 
-  closeWithdrawRewardsModal = () => {
-    this.setState({ withdrawRewardsModalOpen: false });
+  const renderSingleDepositModal = (data) => {
+    return (
+      <SingleDepositModal
+        data={data}
+        loading={loading || txLoading}
+        closeModal={() => setSingleDepositModalOpen(false)}
+        modalOpen={singleDepositModalOpen}
+        showHash={showHash}
+        errorReturned={errorReturned}
+      />
+    );
   };
 
-  closeWithdrawModal = () => {
-    this.setState({ withdrawModalOpen: false });
+  const renderMultiWithdrawModal = (data) => {
+    return (
+      <MultiWithdrawModal
+        data={data}
+        loading={loading || txLoading}
+        closeModal={() => setMultiWithdrawModalOpen(false)}
+        modalOpen={multiWithdrawModalOpen}
+        showHash={showHash}
+        errorReturned={errorReturned}
+      />
+    );
   };
 
-  closeTransactionModal = () => {
-    this.setState({ transactionModalOpen: false });
+  const renderSingleWithdrawModal = (data) => {
+    return (
+      <SingleWithdrawModal
+        data={data}
+        loading={loading || txLoading}
+        closeModal={() => setSingleWithdrawModalOpen(false)}
+        modalOpen={singleWithdrawModalOpen}
+        showHash={showHash}
+        errorReturned={errorReturned}
+      />
+    );
   };
 
-  renderSnackbar = () => {
-    var { snackbarType, snackbarMessage } = this.state;
+  const renderWithdrawRewardsModal = (data) => {
+    return (
+      <WithdrawRewardsModal
+        data={data}
+        loading={loading || txLoading}
+        closeModal={() => setWithdrawRewardsModalOpen(false)}
+        modalOpen={withdrawRewardsModalOpen}
+        showHash={showHash}
+        errorReturned={errorReturned}
+      />
+    );
+  };
+
+  const renderSnackbar = () => {
     return (
       <Snackbar type={snackbarType} message={snackbarMessage} open={true} />
     );
   };
 
-  renderDepositModal = (data) => {
-    return (
-      <DepositModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeDepositModal}
-        modalOpen={this.state.depositModalOpen}
-      />
-    );
-  };
-
-  renderMultiDepositModal = (data) => {
-    return (
-      <MultiDepositModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeMultiDepositModal}
-        modalOpen={this.state.multiDepositModalOpen}
-        showHash={this.showHash}
-        errorReturned={this.errorReturned}
-      />
-    );
-  };
-
-  renderMultiWithdrawModal = (data) => {
-    return (
-      <MultiWithdrawModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeMultiWithdrawModal}
-        modalOpen={this.state.multiWithdrawModalOpen}
-        showHash={this.showHash}
-        errorReturned={this.errorReturned}
-      />
-    );
-  };
-
-  renderWithdrawRewardsModal = (data) => {
-    return (
-      <WithdrawRewardsModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeWithdrawRewardsModal}
-        modalOpen={this.state.withdrawRewardsModalOpen}
-      />
-    );
-  };
-
-  renderWithdrawModal = (data) => {
-    return (
-      <WithdrawModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeWithdrawModal}
-        modalOpen={this.state.withdrawModalOpen}
-      />
-    );
-  };
-
-  renderTransactionModal = (data) => {
-    return (
-      <TransactionModal
-        data={data}
-        loading={this.state.loading || this.state.txLoading}
-        closeModal={this.closeTransactionModal}
-        modalOpen={this.state.transactionModalOpen}
-      />
-    );
-  };
-
-  renderNetworkErrModal = () => {
-    return <NetworkErrModal />;
-  };
-
-  render() {
-    const { classes } = this.props;
-    const {
-      depositModalOpen,
-      multiDepositModalOpen,
-      multiWithdrawModalOpen,
-      withdrawRewardsModalOpen,
-      withdrawModalOpen,
-      transactionModalOpen,
-      rewardPools,
-      snackbarMessage,
-      loading,
-      txLoading,
-    } = this.state;
-
-    if (!rewardPools) {
-      return null;
-    }
-
-    let rewardApr = 0,
-      rewardsAvailable = 0,
-      totalStakeAmount = 0;
-    if (this.state.rewardPools) {
-      this.state.rewardPools.forEach((pool) => {
-        const toSyxAmount =
-          (parseFloat(pool.stakeAmount) * parseFloat(pool.BPTPrice)) /
-          parseFloat(pool.price);
-        rewardApr += parseFloat(pool.rewardApr) * toSyxAmount;
-        rewardsAvailable += parseFloat(pool.rewardsAvailable || 0);
-        totalStakeAmount += toSyxAmount;
-      });
-
-      rewardApr =
-        totalStakeAmount > 0
-          ? (rewardApr / totalStakeAmount).toFixed(1)
-          : "0.0";
-      rewardsAvailable = rewardsAvailable.toFixed(4);
-    }
-
-    let balanceSet = new Set();
-    let hasJoinedCount = 0;
-    rewardPools.forEach((data) => {
-      if (data.entryContractAddress) {
-        hasJoinedCount++;
-      }
-      balanceSet.add(
-        JSON.stringify({
-          name: data.name,
-          erc20Balance: data.erc20Balance,
-        })
-      );
-    });
-
-    return (
-      <div>
-        <Header />
-        <Container>
-          <Hidden xsDown>
-            <Typography className={classes.headerTitle} gutterBottom>
-              <FormattedMessage id="HOME_TITLE" />
-            </Typography>
-            <Typography className={classes.headerTitleSecondary} gutterBottom>
-              <FormattedMessage id="HOME_SUBTITLE" />
-            </Typography>
-          </Hidden>
-          <Hidden smUp>
-            <div className={classes.balanceBar}>
+  return (
+    <div>
+      <Header />
+      <Container>
+        <Hidden xsDown>
+          <Typography className={classes.headerTitle} gutterBottom>
+            <FormattedMessage id="HOME_TITLE" />
+          </Typography>
+          <Typography className={classes.headerTitleSecondary} gutterBottom>
+            <FormattedMessage id="HOME_SUBTITLE" />
+          </Typography>
+        </Hidden>
+        <Hidden smUp>
+          <div className={classes.balanceBar}>
+            <img className={classes.walletIcon} src={"/wallet.svg"} alt="" />
+            <span style={{ opacity: "0.6" }}>
+              <FormattedMessage id="WALLET_BALANCE" />
+            </span>
+            <div
+              style={{
+                display: "flex",
+                margin: "10px auto 20px",
+                overflowX: "scroll",
+                overflowY: "hidden",
+              }}
+            >
+              {Array.from(userBalances).map((data, i) => (
+                <Balance
+                  key={i}
+                  name={data.name}
+                  symbol={data.symbol}
+                  balance={data.balance}
+                  outline={true}
+                />
+              ))}
+            </div>
+          </div>
+        </Hidden>
+        <Hidden xsDown>
+          <Card className={classes.root}>
+            <CardActions className={classes.actions}>
               <img className={classes.walletIcon} src={"/wallet.svg"} alt="" />
-              <span style={{ opacity: "0.6" }}>
-                <FormattedMessage id="WALLET_BALANCE" />
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  margin: "10px auto 20px",
-                  overflowX: "scroll",
-                  overflowY: "hidden",
-                }}
-              >
-                {rewardPools.length > 0 ? (
-                  <Balance
-                    outline={true}
-                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
-                    balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
-                  />
-                ) : (
-                  <></>
-                )}
-                {Array.from(balanceSet).map((data, i) => (
-                  <Balance
-                    key={i}
-                    outline={true}
-                    name={JSON.parse(data).name}
-                    balance={JSON.parse(data).erc20Balance}
-                  />
-                ))}
-              </div>
-            </div>
-          </Hidden>
-          <Hidden xsDown>
-            <Card className={classes.root}>
-              <CardActions className={classes.actions}>
-                <img
-                  className={classes.walletIcon}
-                  src={"/wallet.svg"}
-                  alt=""
+              <FormattedMessage id="WALLET_BALANCE" />
+              {Array.from(userBalances).map((data, i) => (
+                <Balance
+                  key={i}
+                  name={data.name}
+                  symbol={data.symbol}
+                  balance={data.balance}
                 />
-                <FormattedMessage id="WALLET_BALANCE" />
-                {rewardPools.length > 0 ? (
-                  <Balance
-                    name={rewardPools[0] ? rewardPools[0].rewardsSymbol : ""}
-                    balance={rewardPools[0] ? rewardPools[0].rewardsBalance : 0}
-                  />
-                ) : (
-                  <></>
-                )}
-                {Array.from(balanceSet).map((data, i) => (
-                  <Balance
-                    key={i}
-                    name={JSON.parse(data).name}
-                    balance={JSON.parse(data).erc20Balance}
-                  />
-                ))}
-              </CardActions>
-              <Divider />
-              <CardContent>
-                <Grid container spacing={3} style={{ position: "relative" }}>
-                  <Grid item xs={12} sm={6}>
-                    <Paper className={classes.paper}>
-                      <Typography className={classes.paperTitle} gutterBottom>
-                        <FormattedMessage id="MY_STAKING_APR" />
-                      </Typography>
-                      <Typography
-                        className={classes.paperTitleSecondary}
-                        gutterBottom
-                      >
-                        <NumberFormat
-                          value={rewardApr || 0}
-                          defaultValue={"-"}
-                          displayType={"text"}
-                          thousandSeparator={true}
-                          isNumericString={true}
-                          decimalScale={1}
-                          fixedDecimalScale={true}
-                        />
-                        <span className="small-text"> %</span>
-                      </Typography>
-                      <Typography className={classes.paperTip} gutterBottom>
-                        <FormattedMessage id="STAKING_TIP" />
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Hidden xsDown>
-                    <Divider
-                      className={classes.divider}
-                      orientation="vertical"
-                    />
-                  </Hidden>
-                  <Grid item xs={12} sm={6}>
-                    <Paper className={classes.paper}>
-                      <Typography className={classes.paperTitle} gutterBottom>
-                        <FormattedMessage id="WITHDRAWABLE_REWARDS" />
-                      </Typography>
-                      <Typography
-                        className={classes.paperTitleSecondary}
-                        gutterBottom
-                      >
-                        <NumberFormat
-                          value={rewardsAvailable || 0}
-                          defaultValue={"-"}
-                          displayType={"text"}
-                          thousandSeparator={true}
-                          isNumericString={true}
-                          decimalScale={4}
-                          fixedDecimalScale={true}
-                        />
-                        <span className="small-text">SYX2</span>
-                      </Typography>
-                      <Button
-                        style={{ marginTop: "9px" }}
-                        className={classes.buttonSecondary}
-                        variant="contained"
-                        disabled={hasJoinedCount === 0 || loading || txLoading}
-                        onClick={() => {
-                          this.openWithdrawRewardsModal();
-                        }}
-                      >
-                        <FormattedMessage id="RP_WITHDRAW_REWARDS" />
-                      </Button>
-                      <Typography className={classes.paperTip} gutterBottom>
-                        <FormattedMessage id="WITHDRAW_REWARDS_TIP" />
-                      </Typography>
-                    </Paper>
-                  </Grid>
+              ))}
+            </CardActions>
+            <Divider />
+            <CardContent>
+              <Grid container spacing={3} style={{ position: "relative" }}>
+                <Grid item xs={12} sm={6}>
+                  <Paper className={classes.paper}>
+                    <Typography className={classes.paperTitle} gutterBottom>
+                      <FormattedMessage id="MY_STAKING_APR" />
+                    </Typography>
+                    <Typography
+                      className={classes.paperTitleSecondary}
+                      gutterBottom
+                    >
+                      <NumberFormat
+                        value={aprs.userApr}
+                        defaultValue={"-"}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        isNumericString={true}
+                        decimalScale={1}
+                        fixedDecimalScale={true}
+                      />
+                      <span className="small-text"> %</span>
+                    </Typography>
+                    <Typography className={classes.paperTip} gutterBottom>
+                      <FormattedMessage id="STAKING_TIP" />
+                    </Typography>
+                  </Paper>
                 </Grid>
-              </CardContent>
-            </Card>
-          </Hidden>
-          <Hidden smUp>
-            <Card className={classes.root}>
-              <CardActions className={classes.actionsSm}>
-                <FormattedMessage id="MY_STAKING_APR" />
-                <NumberFormat
-                  value={rewardApr || 0}
-                  defaultValue={"-"}
-                  displayType={"text"}
-                  thousandSeparator={true}
-                  isNumericString={true}
-                  suffix={"%"}
-                  decimalScale={1}
-                  fixedDecimalScale={true}
-                />
-              </CardActions>
-              <Divider />
-              <CardContent>
-                <Grid container spacing={3} style={{ position: "relative" }}>
-                  <Grid item xs={12}>
-                    <Paper className={classes.paper}>
-                      <Typography className={classes.paperTitle} gutterBottom>
-                        <FormattedMessage id="WITHDRAWABLE_REWARDS" />
-                      </Typography>
-                      <Typography
-                        className={classes.paperTitleSecondary}
-                        gutterBottom
-                      >
-                        <NumberFormat
-                          value={rewardsAvailable || 0}
-                          defaultValue={"-"}
-                          displayType={"text"}
-                          thousandSeparator={true}
-                          isNumericString={true}
-                          suffix={"SYX2"}
-                          decimalScale={4}
-                          fixedDecimalScale={true}
-                        />
-                      </Typography>
-                      <Button
-                        style={{ marginTop: "9px" }}
-                        className={classes.buttonSecondary}
-                        variant="contained"
-                        disabled={hasJoinedCount === 0 || loading || txLoading}
-                        onClick={() => {
-                          this.openWithdrawRewardsModal();
-                        }}
-                      >
-                        <FormattedMessage id="RP_WITHDRAW_REWARDS" />
-                      </Button>
-                      <Typography className={classes.paperTip} gutterBottom>
-                        <FormattedMessage id="WITHDRAW_REWARDS_TIP" />
-                      </Typography>
-                    </Paper>
-                  </Grid>
+                <Hidden xsDown>
+                  <Divider className={classes.divider} orientation="vertical" />
+                </Hidden>
+                <Grid item xs={12} sm={6}>
+                  <Paper className={classes.paper}>
+                    <Typography className={classes.paperTitle} gutterBottom>
+                      <FormattedMessage id="WITHDRAWABLE_REWARDS" />
+                    </Typography>
+                    <Typography
+                      className={classes.paperTitleSecondary}
+                      gutterBottom
+                    >
+                      <NumberFormat
+                        value={totalRewardsAvailable || 0}
+                        defaultValue={"-"}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        isNumericString={true}
+                        decimalScale={4}
+                        fixedDecimalScale={true}
+                      />
+                      <span className="small-text">SYX3</span>
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "9px" }}
+                      className={classes.buttonSecondary}
+                      variant="contained"
+                      disabled={hasJoinedCount === 0 || loading || txLoading}
+                      onClick={() => {
+                        setWithdrawRewardsModalOpen(true);
+                      }}
+                    >
+                      <FormattedMessage id="RP_WITHDRAW_REWARDS" />
+                    </Button>
+                    <Typography className={classes.paperTip} gutterBottom>
+                      <FormattedMessage id="WITHDRAW_REWARDS_TIP" />
+                    </Typography>
+                  </Paper>
                 </Grid>
-              </CardContent>
-            </Card>
-          </Hidden>
-          <div className={classes.title}>
-            <FormattedMessage id="RP_LIST_TITLE" />
-          </div>
-          <Grid container spacing={3}>
-            {rewardPools.map((data, i) => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <Pool
-                  data={data}
-                  loading={loading || txLoading}
-                  onDeposit={() => this.openDepositModal(data)}
-                  onWithdraw={() => this.openWithdrawModal(data)}
-                  onJoin={() => this.createEntryContract(data)}
-                />
               </Grid>
-            ))}
-          </Grid>
-          <div className={"exchange-table"}>
-            <div className={classes.title}>
-              <FormattedMessage id="LP_LIST_TITLE" />
-            </div>
-            <div className="table-wrap">
-              <Hidden xsDown>
-                <table>
-                  <thead className="table-head">
-                    <tr className={classes.tableHeader}>
-                      <td>
-                        <FormattedMessage id="LP_TRADING_PAIR" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_SYX_PRICE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_MY_SHARE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="RATIO" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="ACTION" />
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {this.state.rewardPools ? (
-                      this.state.rewardPools.map((pool, i) => {
-                        if (pool.type !== "seed") {
-                          return (
-                            <tr key={i} className={classes.tableBody}>
-                              <td>
-                                <img
-                                  className={classes.icon}
-                                  src={
-                                    "/" +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? tokensName[pool.tokens[1].toLowerCase()]
-                                      : tokensName[
-                                          pool.tokens[0].toLowerCase()
-                                        ]) +
-                                    ".png"
-                                  }
-                                  style={{
-                                    marginRight: "-4px",
-                                    zIndex: 2,
-                                  }}
-                                  alt=""
-                                />
-                                <img
-                                  className={classes.icon}
-                                  src={
-                                    "/" +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? tokensName[pool.tokens[0].toLowerCase()]
-                                      : tokensName[
-                                          pool.tokens[1].toLowerCase()
-                                        ]) +
-                                    ".png"
-                                  }
-                                  alt=""
-                                />
-                                {pool.id == "ETH/VLX"
-                                  ? "VLX/ETH"
-                                  : pool.id == "USDT/VLX"
-                                  ? "VLX/USDT"
-                                  : pool.id}
-                              </td>
-                              <td>
-                                <NumberFormat
-                                  value={
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? 1 / pool.price
-                                      : pool.price) || 0
-                                  }
-                                  defaultValue={"-"}
-                                  displayType={"text"}
-                                  thousandSeparator={true}
-                                  isNumericString={true}
-                                  suffix={
-                                    " " +
-                                    (pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? pool.tokens[0]
-                                      : pool.tokens[1])
-                                  }
-                                  decimalScale={pool.id == "ETH/VLX" ? 6 : 4}
-                                  fixedDecimalScale={true}
-                                />
-                              </td>
-                              <td>
-                                {pool.totalSupply > 0 ? (
-                                  <NumberFormat
-                                    value={(
-                                      (parseFloat(pool.stakeAmount) /
-                                        parseFloat(pool.totalSupply)) *
-                                      100
-                                    ).toLocaleString(undefined, {
-                                      maximumFractionDigits: 10,
-                                    })}
-                                    defaultValue={"-"}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    isNumericString={true}
-                                    suffix={"%"}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                  />
-                                ) : (
-                                  "0.00 %"
-                                )}
-                              </td>
-                              <td>
-                                <div>
-                                  {(pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX") &&
-                                  pool.weight
-                                    ? pool.weight.split(":")[1] +
-                                      ":" +
-                                      pool.weight.split(":")[0]
-                                    : pool.weight}
-                                </div>
-                              </td>
-                              <td>
-                                <Button
-                                  className={classes.button}
-                                  size="small"
-                                  variant="contained"
-                                  onClick={() => {
-                                    this.openTransactionModal(pool);
-                                  }}
-                                  disabled={loading || txLoading}
-                                >
-                                  <FormattedMessage id="LP_SWAP" />
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        } else {
-                          return <React.Fragment key={i}></React.Fragment>;
-                        }
-                      })
-                    ) : (
-                      <></>
-                    )}
-                  </tbody>
-                </table>
-              </Hidden>
-              <Hidden smUp>
-                <table>
-                  <thead className="table-head">
-                    <tr className={classes.tableHeader}>
-                      <td>
-                        <FormattedMessage id="LP_TRADING_PAIR" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="LP_SYX_PRICE" />
-                      </td>
-                      <td>
-                        <FormattedMessage id="ACTION" />
-                      </td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {this.state.rewardPools ? (
-                      this.state.rewardPools.map((pool, i) => {
-                        if (pool.type !== "seed") {
-                          return (
-                            <React.Fragment key={i}>
-                              <tr
-                                className={classes.tableBody}
-                                onClick={() =>
-                                  this.setState({
-                                    ["open" + i]: !this.state["open" + i],
-                                  })
-                                }
-                              >
-                                <td>
-                                  <img
-                                    className={classes.icon}
-                                    src={
-                                      "/" +
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? tokensName[
-                                            pool.tokens[1].toLowerCase()
-                                          ]
-                                        : tokensName[
-                                            pool.tokens[0].toLowerCase()
-                                          ]) +
-                                      ".png"
-                                    }
-                                    style={{
-                                      marginRight: "-4px",
-                                      zIndex: 2,
-                                    }}
-                                    alt=""
-                                  />
-                                  <img
-                                    className={classes.icon}
-                                    src={
-                                      "/" +
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? tokensName[
-                                            pool.tokens[0].toLowerCase()
-                                          ]
-                                        : tokensName[
-                                            pool.tokens[1].toLowerCase()
-                                          ]) +
-                                      ".png"
-                                    }
-                                    alt=""
-                                  />
-
-                                  <span
-                                    style={{
-                                      paddingLeft: "5px",
-                                    }}
-                                  >
-                                    {pool.id == "ETH/VLX"
-                                      ? "VLX/ETH"
-                                      : pool.id == "USDT/VLX"
-                                      ? "VLX/USDT"
-                                      : pool.id}
-                                  </span>
-                                </td>
-                                <td>
-                                  <NumberFormat
-                                    value={
-                                      (pool.id == "ETH/VLX" ||
-                                      pool.id == "USDT/VLX"
-                                        ? 1 / pool.price
-                                        : pool.price) || 0
-                                    }
-                                    defaultValue={"-"}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    isNumericString={true}
-                                    decimalScale={pool.id == "ETH/VLX" ? 6 : 4}
-                                    fixedDecimalScale={true}
-                                  />
-                                  <div
-                                    style={{
-                                      color: "#a4a7be",
-                                    }}
-                                  >
-                                    {pool.id == "ETH/VLX" ||
-                                    pool.id == "USDT/VLX"
-                                      ? pool.tokens[0]
-                                      : pool.tokens[1]}
-                                  </div>
-                                </td>
-                                <td>
-                                  <Button
-                                    className={classes.button}
-                                    size="small"
-                                    variant="contained"
-                                    onClick={() => {
-                                      this.openTransactionModal(pool);
-                                    }}
-                                    disabled={loading || txLoading}
-                                  >
-                                    <FormattedMessage id="LP_SWAP" />
-                                  </Button>
-                                </td>
-                              </tr>
-                              <Collapse
-                                in={this.state["open" + i]}
-                                timeout="auto"
-                                unmountOnExit
-                                className={classes.collapse}
-                              >
-                                <div className="triangle-up"></div>
-                                <Grid container spacing={3}>
-                                  <Grid item xs={6}>
-                                    {tokensName[pool.tokens[1].toLowerCase()]}
-                                    :
-                                    <NumberFormat
-                                      value={pool.bptVlxBalance || 0}
-                                      defaultValue={"-"}
-                                      displayType={"text"}
-                                      thousandSeparator={true}
-                                      isNumericString={true}
-                                      decimalScale={4}
-                                      fixedDecimalScale={true}
-                                      renderText={(value) => (
-                                        <span
-                                          style={{
-                                            color: "#1E304B",
-                                            paddingLeft: "5px",
-                                          }}
-                                        >
-                                          {value}
-                                        </span>
-                                      )}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <FormattedMessage id="LP_MY_SHARE" />:
-                                    <span
-                                      style={{
-                                        color: "#1E304B",
-                                        paddingLeft: "5px",
-                                      }}
-                                    >
-                                      {pool.totalSupply > 0 ? (
-                                        <NumberFormat
-                                          value={(
-                                            (parseFloat(pool.stakeAmount) /
-                                              parseFloat(pool.totalSupply)) *
-                                            100
-                                          ).toLocaleString(undefined, {
-                                            maximumFractionDigits: 10,
-                                          })}
-                                          defaultValue={"-"}
-                                          displayType={"text"}
-                                          thousandSeparator={true}
-                                          isNumericString={true}
-                                          suffix={"%"}
-                                          decimalScale={2}
-                                          fixedDecimalScale={true}
-                                        />
-                                      ) : (
-                                        "0.00 %"
-                                      )}
-                                    </span>
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    {tokensName[pool.tokens[0].toLowerCase()]}
-                                    :
-                                    <NumberFormat
-                                      value={pool.bptSyxBalance || 0}
-                                      defaultValue={"-"}
-                                      displayType={"text"}
-                                      thousandSeparator={true}
-                                      isNumericString={true}
-                                      decimalScale={4}
-                                      fixedDecimalScale={true}
-                                      renderText={(value) => (
-                                        <span
-                                          style={{
-                                            color: "#1E304B",
-                                            paddingLeft: "5px",
-                                          }}
-                                        >
-                                          {value}
-                                        </span>
-                                      )}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <FormattedMessage id="RATIO" />:
-                                    <span
-                                      style={{
-                                        color: "#1E304B",
-                                        paddingLeft: "5px",
-                                      }}
-                                    >
-                                      {(pool.id == "ETH/VLX" ||
-                                        pool.id == "USDT/VLX") &&
-                                      pool.weight
-                                        ? pool.weight.split(":")[1] +
-                                          ":" +
-                                          pool.weight.split(":")[0]
-                                        : pool.weight}
-                                    </span>
-                                  </Grid>
-                                </Grid>
-                              </Collapse>
-                            </React.Fragment>
-                          );
-                        } else {
-                          return <React.Fragment key={i}></React.Fragment>;
-                        }
-                      })
-                    ) : (
-                      <></>
-                    )}
-                  </tbody>
-                </table>
-              </Hidden>
-            </div>
-          </div>
-        </Container>
-        {/* {modalOpen && this.renderModal()} */}
-        {depositModalOpen && this.renderDepositModal(this.state.depositData)}
-        {multiDepositModalOpen &&
-          this.renderMultiDepositModal(this.state.depositData)}
-        {multiWithdrawModalOpen &&
-          this.renderMultiWithdrawModal(this.state.withdrawData)}
-        {withdrawRewardsModalOpen &&
-          this.renderWithdrawRewardsModal(this.state.rewardPools)}
-        {withdrawModalOpen && this.renderWithdrawModal(this.state.withdrawData)}
-        {transactionModalOpen &&
-          this.renderTransactionModal(this.state.tradeData)}
-        {this.state.networkId &&
-          this.state.networkId.toString() !==
-            config.requiredNetworkId.toString() &&
-          this.renderNetworkErrModal()}
-        {snackbarMessage && this.renderSnackbar()}
-
-        {(loading || txLoading) && <Loader />}
-        <Footer />
-      </div>
-    );
-  }
-}
+            </CardContent>
+          </Card>
+        </Hidden>
+        <Hidden smUp>
+          <Card className={classes.root}>
+            <CardActions className={classes.actionsSm}>
+              <FormattedMessage id="MY_STAKING_APR" />
+              <NumberFormat
+                value={aprs.userApr}
+                defaultValue={"-"}
+                displayType={"text"}
+                thousandSeparator={true}
+                isNumericString={true}
+                suffix={"%"}
+                decimalScale={1}
+                fixedDecimalScale={true}
+              />
+            </CardActions>
+            <Divider />
+            <CardContent>
+              <Grid container spacing={3} style={{ position: "relative" }}>
+                <Grid item xs={12}>
+                  <Paper className={classes.paper}>
+                    <Typography className={classes.paperTitle} gutterBottom>
+                      <FormattedMessage id="WITHDRAWABLE_REWARDS" />
+                    </Typography>
+                    <Typography
+                      className={classes.paperTitleSecondary}
+                      gutterBottom
+                    >
+                      <NumberFormat
+                        value={totalRewardsAvailable || 0}
+                        defaultValue={"-"}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        isNumericString={true}
+                        suffix={"SYX3"}
+                        decimalScale={4}
+                        fixedDecimalScale={true}
+                      />
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "9px" }}
+                      className={classes.buttonSecondary}
+                      variant="contained"
+                      disabled={hasJoinedCount === 0 || loading || txLoading}
+                      onClick={() => {
+                        setWithdrawRewardsModalOpen(true);
+                      }}
+                    >
+                      <FormattedMessage id="RP_WITHDRAW_REWARDS" />
+                    </Button>
+                    <Typography className={classes.paperTip} gutterBottom>
+                      <FormattedMessage id="WITHDRAW_REWARDS_TIP" />
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Hidden>
+        <Paper className={classes.container}>
+          <Tabs
+            value={tabValue}
+            onChange={handleChange}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+          >
+            <Tab label={<FormattedMessage id="RP_LIST_TITLE" />} />
+            <Tab label={<FormattedMessage id="EXCHANGE" />} />
+          </Tabs>
+          <TabPanel value={tabValue} index={0} className={classes.container}>
+            <Grid container spacing={3}>
+              {rewardPool.pools.map((pool, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Pool
+                    data={pool}
+                    apr={aprs["poolAprs"][pool.index]}
+                    loading={loading || txLoading}
+                    onDeposit={() => openDepositModal(pool)}
+                    onWithdraw={() => openWithdrawModal(pool)}
+                    onJoin={() => createEntryContract(pool)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </TabPanel>
+          <TabPanel value={tabValue} index={1} className={classes.container}>
+            <Transaction showHash={showHash} errorReturned={errorReturned} />
+          </TabPanel>
+        </Paper>
+      </Container>
+      {multiDepositModalOpen && renderMultiDepositModal(depositData)}
+      {singleDepositModalOpen && renderSingleDepositModal(depositData)}
+      {multiWithdrawModalOpen && renderMultiWithdrawModal(withdrawData)}
+      {singleWithdrawModalOpen && renderSingleWithdrawModal(withdrawData)}
+      {withdrawRewardsModalOpen && renderWithdrawRewardsModal(rewardPool.pools)}
+      {providerNetwork &&
+        providerNetwork.chainId.toString() !==
+          config.requiredNetworkId.toString() &&
+        renderNetworkErrModal()}
+      {snackbarMessage && renderSnackbar()}
+      {(loading || txLoading) && <Loader />}
+      <Footer />
+    </div>
+  );
+};
 
 export default withRouter(withStyles(styles)(Home));

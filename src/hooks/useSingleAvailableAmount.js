@@ -5,12 +5,14 @@ import { Contract, Provider, setMulticallAddress } from "ethers-multicall";
 import { Web3Context } from "../contexts/Web3Context";
 import config from "../config";
 
-const availableAmountAtom = atom("-");
-export default availableAmountAtom;
+const singleAvailableAmountAtom = atom("-");
+export default singleAvailableAmountAtom;
 
-export function useAvailableAmount(pool) {
+export function useSingleAvailableAmount(pool) {
   const { ethersProvider, providerNetwork } = useContext(Web3Context);
-  const [availableAmounts, setAvailableAmounts] = useAtom(availableAmountAtom);
+  const [availableAmounts, setAvailableAmounts] = useAtom(
+    singleAvailableAmountAtom
+  );
 
   useEffect(() => {
     if (!ethersProvider || !pool) return;
@@ -38,18 +40,38 @@ export async function fetchAvailableValues(
       const ethcallProvider = new Provider(provider);
       await ethcallProvider.init();
       const bptContract = new Contract(pool.address, pool.abi);
-
       const totalSupplyCall = bptContract.totalSupply();
+      const totalWeightCall = bptContract.getTotalDenormalizedWeight();
+      const swapFeeCall = bptContract.getSwapFee();
 
-      const [totalSupply] = await ethcallProvider.all([totalSupplyCall]);
+      const [totalSupply, totalWeight, swapFee] = await ethcallProvider.all([
+        totalSupplyCall,
+        totalWeightCall,
+        swapFeeCall,
+      ]);
       for (let i = 0; i < pool.supportTokens.length; i++) {
         const balanceCall = bptContract.getBalance(
           pool.supportTokens[i].address
         );
-        const [balance] = await ethcallProvider.all([balanceCall]);
+        const denormCall = bptContract.getDenormalizedWeight(
+          pool.supportTokens[i].address
+        );
+        const [balance, denorm] = await ethcallProvider.all([
+          balanceCall,
+          denormCall,
+        ]);
         const stakeAmount = parseEther(pool.stakeAmount + "");
 
-        const amountOut = stakeAmount.mul(balance).div(totalSupply);
+        const amountOutCall = bptContract.calcSingleOutGivenPoolIn(
+          balance,
+          denorm,
+          totalSupply,
+          totalWeight,
+          stakeAmount,
+          swapFee
+        );
+        const [amountOut] = await ethcallProvider.all([amountOutCall]);
+
         array.push({
           name: pool.supportTokens[i].symbol,
           amount: formatUnits(

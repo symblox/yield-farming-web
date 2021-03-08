@@ -13,7 +13,6 @@ const zh_CN = {
   LP_SWAP: "交易",
   RP_LIST_TITLE: "奖励池",
   RP_TYPE: "名称",
-  RP_ROI: "年收益率 (APR)",
   RP_MY_REWARDS: "我的奖励",
   RP_MY_STAKES: "已抵押",
   RP_STAKE: "抵押",
@@ -91,8 +90,6 @@ const zh_CN = {
   VLX_EXCHANGE_RATE: "VLX 兑换 SVLX 比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
-  EXCHANGE_WARNING:
-    "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_OLD: "旧版矿池",
   DAPP_MINING_NEW: "新版矿池",
   SYX_TOKEN_EXCHANGE: "新 SYX 兑换",
@@ -100,6 +97,8 @@ const zh_CN = {
   DAPP_PVLX: "pVLX 无损挖矿",
   V1: "V1",
   LANGUAGE: "语言",
+  SLIPPAGE_TOLERANCE: "滑移公差",
+  MIN_RECEIVED: "最低收到",
   WITHDRAWABLE_TIP:
     "可直接取出金额为{maxWithdrawable}, 已预约金额{orderedAmount}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
   WITHDRAW_APPLY: "预约取现",

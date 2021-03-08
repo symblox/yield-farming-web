@@ -13,7 +13,6 @@ const en_US = {
   LP_SWAP: "Swap",
   RP_LIST_TITLE: "Reward Pools",
   RP_TYPE: "Name",
-  RP_ROI: "ROI",
   RP_MY_REWARDS: "My Rewards",
   RP_MY_STAKES: "My Stakes",
   RP_STAKE: "Stake",
@@ -94,8 +93,6 @@ const en_US = {
   VLX_EXCHANGE_RATE: "VLX exchange SVLX rate",
   EXCHANGE_TOTAL_SUPPLY: "Max old SYX to new SYX liquidity",
   EXCHANGE_WALLET_BALANCE: "Redeemable balance: {amount}",
-  EXCHANGE_WARNING:
-    "DO NOT use the above exchange function if you have already set delegation in the voting app, or you will lose your SYX toknes PERMANENTLY",
   DAPP_MINING_OLD: "Yield Farming (V1)",
   DAPP_MINING_NEW: "New Yield Farming",
   DAPP_PVLX: "pVLX No-Loss Mining",
@@ -103,6 +100,8 @@ const en_US = {
   DAPP_CROSS_CHAIN: "Cross-Chain",
   V1: "V1",
   LANGUAGE: "Language",
+  SLIPPAGE_TOLERANCE: "Slippage tolerance",
+  MIN_RECEIVED: "Minimum received",
   WITHDRAWABLE_TIP:
     "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
   WITHDRAW_APPLY: "Apply for withdrawal",
