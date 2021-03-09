@@ -129,7 +129,7 @@ const ExchangeSyx = ({ classes }) => {
       const balance = formatEther(balanceState[i]);
       if (i != "svlx")
         array.push({
-          name: i,
+          name: i.toUpperCase(),
           balance,
         });
       if (i === "oldSyx" || i === "oldSyx2")
@@ -204,7 +204,10 @@ const ExchangeSyx = ({ classes }) => {
                     onChange={amountChange}
                     endAdornment={
                       <InputAdornment position="end">
-                        <Button onClick={getMaxAmount}>
+                        <Button
+                          onClick={getMaxAmount}
+                          style={{ padding: "10px 12px" }}
+                        >
                           <FormattedMessage id="POPUP_INPUT_MAX" />
                         </Button>
                       </InputAdornment>
@@ -235,11 +238,10 @@ const ExchangeSyx = ({ classes }) => {
                           (
                             parseFloat(balanceState.oldSyx) +
                             parseFloat(balanceState.oldSyx2)
-                          )
-                            .toLocaleString(undefined, {
-                              maximumFractionDigits: 10,
-                            })
-                            .replaceAll(",", "")
+                          ).toLocaleString("fullwide", {
+                            maximumFractionDigits: 10,
+                            useGrouping: false,
+                          })
                         )}
                         defaultValue={"-"}
                         displayType={"text"}
