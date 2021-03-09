@@ -258,7 +258,7 @@ const ExchangeSVLX = ({ classes }) => {
                 loading
               }
               onClick={() => {
-                if (amount > 0) svlxDeposit(parseEther(amount));
+                if (amount > 0) svlxDeposit(parseEther(amount.toString()));
               }}
             >
               {loading ? (
