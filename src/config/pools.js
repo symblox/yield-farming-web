@@ -39,24 +39,6 @@ let vlxSyxPool2 = {
   poolABI: config.rewardPoolABI,
 };
 
-let svlxSyxPool = {
-  id: "SYX/SVLX",
-  featured: true,
-  address: config.svlxSyxBpt,
-  symbol: "BPT",
-  type: "swap",
-  depositModal: "multiDeposit",
-  withdrawModal: "multiWithdraw",
-  rewardToken: tokens["SYX"],
-  //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
-  supportTokens: [tokens["SVLX"], tokens["SYX"]],
-  abi: config.bptABI,
-  decimals: 18,
-  entryContractABI: config.bptRefConnectorABI,
-  poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
-};
-
 let usdtSyxPool = {
   id: "SYX/USDT",
   featured: false,
@@ -68,6 +50,24 @@ let usdtSyxPool = {
   withdrawModal: "singleWithdraw",
   rewardToken: tokens["SYX"],
   supportTokens: [tokens["USDT"], tokens["SYX"]],
+  abi: config.bptABI,
+  decimals: 18,
+  entryContractABI: config.bptRefConnectorABI,
+  poolAddress: config.rewardPool,
+  poolABI: config.rewardPoolABI,
+};
+
+let svlxSyxPool2 = {
+  id: "SYX/SVLX",
+  featured: true,
+  address: config.svlxSyxMultiBpt,
+  symbol: "BPT",
+  type: "swap",
+  depositModal: "multiDeposit",
+  withdrawModal: "multiWithdraw",
+  rewardToken: tokens["SYX"],
+  //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
+  supportTokens: [tokens["SVLX"], tokens["SYX"]],
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
@@ -193,8 +193,13 @@ function getPools() {
       vlxEthPool,
     ];
   } else {
-    [vlxSyxPool2.index] = [0];
-    return [vlxSyxPool2];
+    [
+      vlxSyxPool2.index,
+      svlxSyxPool2.index,
+      usdtSyxPool2.index,
+      ethSyxPool2.index,
+    ] = [0, 1, 4, 3]; //2 is error
+    return [vlxSyxPool2, svlxSyxPool2, usdtSyxPool2, ethSyxPool2];
   }
 }
 export default getPools;
