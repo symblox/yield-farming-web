@@ -237,7 +237,7 @@ const ExchangeSyx = ({ classes }) => {
               </Grid>
               <Typography variant="body2">
                 <FormattedMessage
-                  id="EXCHANGE_WALLET_BALANCE"
+                  id="EXCHANGE_WALLET_BALANCE2"
                   values={{
                     amount: (
                       <NumberFormat
