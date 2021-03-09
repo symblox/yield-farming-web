@@ -252,7 +252,7 @@ const ExchangeSyx = ({ classes }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         isNumericString={true}
-                        suffix={" SYX"}
+                        suffix={" SYX+SYX2"}
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
