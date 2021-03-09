@@ -90,7 +90,7 @@ const zh_CN = {
   SVLX_EXCHANGE_RATE: "SVLX 兑换 VLX 比例",
   VLX_EXCHANGE_RATE: "VLX 兑换 SVLX 比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
-  EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
+  EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount} {amount2}",
   EXCHANGE_WARNING:
     "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_OLD: "旧版矿池",
