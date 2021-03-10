@@ -129,11 +129,19 @@ const ExchangeSyx = ({ classes }) => {
     let tokens = [];
     for (let i in balanceState) {
       const balance = formatEther(balanceState[i]);
-      if (i != "svlx")
+      if (i != "svlx") {
+        let name = i.toUpperCase();
+        if (i === "oldSyx") {
+          name = "SYX1";
+        }
+        if (i === "oldSyx2") {
+          name = "SYX2";
+        }
         array.push({
-          name: i.toUpperCase(),
+          name,
           balance,
         });
+      }
       if (i === "oldSyx" || i === "oldSyx2")
         tokens.push({
           type: i,
@@ -249,7 +257,7 @@ const ExchangeSyx = ({ classes }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         isNumericString={true}
-                        suffix={" SYX"}
+                        suffix={" SYX1"}
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
