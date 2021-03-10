@@ -295,8 +295,8 @@ export function PoolContextProvider({ children }) {
       getOldSyxData();
       getSyxData();
       getVlxData();
-      // getSvlxData();
-      // getSvlxExchangeRate();
+      getSvlxData();
+      getSvlxExchangeRate();
     }
   }, [account, providerNetwork, lastChainId]);
 
