@@ -154,7 +154,7 @@ const ExchangeSVLX = ({ classes }) => {
       const balance = formatEther(balanceState[i]);
       if (i == "vlx" || i == "svlx")
         array.push({
-          name: i,
+          name: i.toUpperCase(),
           balance,
         });
     }
