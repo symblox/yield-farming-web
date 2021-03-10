@@ -85,13 +85,16 @@ const en_US = {
   WALLET_CONNECT_TO: "Connected to {network}",
   WALLET_DISCONNECT: "Discconnect",
   EXCHANGE: "Exchange",
-  EXCHANGE_TITLE: "Redeem new SYX tokens for Symblox yield farming 2.0",
+  EXCHANGE_TITLE: "Redeem SYX tokens for ALL NEW Symblox yield farming",
   EXCHANGE_SUB_TITLE:
     "How many SYX tokens would you like to redeem for the new ones?",
   EXCHANGE_TIP: "Enter the amount you would like to exchange",
-  EXCHANGE_RATE: "Old SYX to new SYX exchange rate",
+  EXCHANGE_RATE: "SYX exchange rate",
+  SVLX_EXCHANGE_RATE: "SVLX exchange VLX rate",
+  VLX_EXCHANGE_RATE: "VLX exchange SVLX rate",
   EXCHANGE_TOTAL_SUPPLY: "Max old SYX to new SYX liquidity",
   EXCHANGE_WALLET_BALANCE: "Redeemable balance: {amount}",
+  EXCHANGE_WALLET_BALANCE2: "Redeemable balance: {amount} {amount2}",
   EXCHANGE_WARNING:
     "DO NOT use the above exchange function if you have already set delegation in the voting app, or you will lose your SYX toknes PERMANENTLY",
   DAPP_MINING_OLD: "Yield Farming (V1)",
@@ -101,5 +104,11 @@ const en_US = {
   DAPP_CROSS_CHAIN: "Cross-Chain",
   V1: "V1",
   LANGUAGE: "Language",
+  WITHDRAWABLE_TIP:
+    "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
+  WITHDRAW_APPLY: "Apply for withdrawal",
+  EXPECTED_TO_GET: "Expected to get",
+  DEPOSIT: "Deposit",
+  WITHDRAW: "Withdraw",
 };
 export default en_US;

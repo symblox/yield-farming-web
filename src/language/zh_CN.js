@@ -87,8 +87,11 @@ const zh_CN = {
   EXCHANGE_SUB_TITLE: "您想兑换多少个新的 SYX 代币？",
   EXCHANGE_TIP: "输入您想兑换的金额",
   EXCHANGE_RATE: "SYX 兑换比例",
+  SVLX_EXCHANGE_RATE: "SVLX 兑换 VLX 比例",
+  VLX_EXCHANGE_RATE: "VLX 兑换 SVLX 比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
+  EXCHANGE_WALLET_BALANCE2: "可兑换余额: {amount} {amount2}",
   EXCHANGE_WARNING:
     "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_OLD: "旧版矿池",
@@ -98,5 +101,11 @@ const zh_CN = {
   DAPP_PVLX: "pVLX 无损挖矿",
   V1: "V1",
   LANGUAGE: "语言",
+  WITHDRAWABLE_TIP:
+    "可直接取出金额为{maxWithdrawable}, 已预约金额{orderedAmount}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
+  WITHDRAW_APPLY: "预约取现",
+  EXPECTED_TO_GET: "预计将获得",
+  DEPOSIT: "存入",
+  WITHDRAW: "取出",
 };
 export default zh_CN;
