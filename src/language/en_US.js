@@ -85,7 +85,7 @@ const en_US = {
   WALLET_CONNECT_TO: "Connected to {network}",
   WALLET_DISCONNECT: "Discconnect",
   EXCHANGE: "Exchange",
-  EXCHANGE_TITLE: "Redeem new SYX tokens for Symblox yield farming 2.0",
+  EXCHANGE_TITLE: "Redeem SYX tokens for ALL NEW Symblox yield farming",
   EXCHANGE_SUB_TITLE:
     "How many SYX tokens would you like to redeem for the new ones?",
   EXCHANGE_TIP: "Enter the amount you would like to exchange",
