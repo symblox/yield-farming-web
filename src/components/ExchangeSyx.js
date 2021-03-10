@@ -115,11 +115,13 @@ const ExchangeSyx = ({ classes }) => {
   };
 
   const getMaxAmount = () => {
-    setAmount(
-      formatEther(
-        curToken.type === "oldSyx" ? balanceState.oldSyx : balanceState.oldSyx2
-      )
-    );
+    let balance = 0;
+    if (curToken.type === "oldSyx") {
+      balance = Math.floor(formatEther(balanceState.oldSyx) * 10000) / 10000;
+    } else if (curToken.type === "oldSyx2") {
+      balance = Math.floor(formatEther(balanceState.oldSyx2) * 10000) / 10000;
+    }
+    setAmount(balance + "");
   };
 
   useEffect(() => {
@@ -206,7 +208,7 @@ const ExchangeSyx = ({ classes }) => {
                       <InputAdornment position="end">
                         <Button
                           onClick={getMaxAmount}
-                          style={{ padding: "10px 12px" }}
+                          style={{ padding: "10px 0px", minWidth: "44px" }}
                         >
                           <FormattedMessage id="POPUP_INPUT_MAX" />
                         </Button>
@@ -230,24 +232,44 @@ const ExchangeSyx = ({ classes }) => {
               </Grid>
               <Typography variant="body2">
                 <FormattedMessage
-                  id="EXCHANGE_WALLET_BALANCE"
+                  id="EXCHANGE_WALLET_BALANCE2"
                   values={{
                     amount: (
                       <NumberFormat
                         value={formatEther(
-                          (
-                            parseFloat(balanceState.oldSyx) +
-                            parseFloat(balanceState.oldSyx2)
-                          ).toLocaleString("fullwide", {
-                            maximumFractionDigits: 10,
-                            useGrouping: false,
-                          })
+                          parseFloat(balanceState.oldSyx).toLocaleString(
+                            "fullwide",
+                            {
+                              maximumFractionDigits: 10,
+                              useGrouping: false,
+                            }
+                          )
                         )}
                         defaultValue={"-"}
                         displayType={"text"}
                         thousandSeparator={true}
                         isNumericString={true}
                         suffix={" SYX"}
+                        decimalScale={4}
+                        fixedDecimalScale={true}
+                      />
+                    ),
+                    amount2: (
+                      <NumberFormat
+                        value={formatEther(
+                          parseFloat(balanceState.oldSyx2).toLocaleString(
+                            "fullwide",
+                            {
+                              maximumFractionDigits: 10,
+                              useGrouping: false,
+                            }
+                          )
+                        )}
+                        defaultValue={"-"}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        isNumericString={true}
+                        suffix={" SYX2"}
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
