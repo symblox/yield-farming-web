@@ -28,6 +28,7 @@ function env() {
       syx: "0x01Db6ACFA20562Ba835aE9F5085859580A0b1386",
       oldSyx: "0x2de7063fe77aAFB5b401d65E5A108649Ec577170",
       wvlx: "0x2b1aBEb48f875465bf0D3A262a2080ab1C7A3E39",
+      svlx: "0xaADBAa6758fC00dEc9B43A0364a372605D8f1883",
       bptFactory: "0xC850E858367971B11ed74d97AA0C87ec85a03Ea1",
       vlxSyxBpt: "0x7bD57dCA1C703E068F4A0A3Bc506612372eF7dC6",
       vlxUsdtBpt: "0x1fA22A3F8B36B5b24deE233fdaC1114E930b9Cda",
@@ -51,6 +52,8 @@ function env() {
       bptRefConnectorABI: abis.bptRefConnectorABI,
       wvlxConnectorABI: abis.wvlxConnectorABI,
       connectorFactoryABI: abis.connectorFactoryABI,
+      stakingAuRaABI: abis.stakingAuRaABI,
+      svlxABI: abis.svlxABI,
       secPerBlock: 5,
     };
   } else {
