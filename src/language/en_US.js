@@ -110,5 +110,7 @@ const en_US = {
   EXPECTED_TO_GET: "Expected to get",
   DEPOSIT: "Deposit",
   WITHDRAW: "Withdraw",
+  SVLX_WITHDRAW_ERR:
+    "VELAS Staking Node is in locked state now. Please try again in 30 minutes",
 };
 export default en_US;
