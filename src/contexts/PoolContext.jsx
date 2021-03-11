@@ -61,7 +61,7 @@ export function PoolContextProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [lastChainId, setLastChainId] = useState(0);
   const [isError, setIsError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState({});
 
   const getSvlxExchangeRate = useCallback(async () => {
     try {
@@ -74,7 +74,7 @@ export function PoolContextProvider({ children }) {
       setSvlxExchangeRate(rate / 10 ** 18);
     } catch (error) {
       setIsError(true);
-      setErrorMsg(JSON.stringify(error));
+      setErrorMsg(error);
     }
   }, [ethersProvider]);
 
@@ -85,7 +85,7 @@ export function PoolContextProvider({ children }) {
         balanceDispatch({ type: "vlx", data: balance });
       } catch (error) {
         setIsError(true);
-        setErrorMsg(JSON.stringify(error));
+        setErrorMsg(error);
       }
     }
   }, [account, balanceDispatch, ethersProvider]);
@@ -119,7 +119,7 @@ export function PoolContextProvider({ children }) {
         setOrderedAmount(orderedAmount);
       } catch (error) {
         setIsError(true);
-        setErrorMsg(JSON.stringify(error));
+        setErrorMsg(error);
       }
     }
   }, [account, balanceDispatch, ethersProvider]);
@@ -147,7 +147,7 @@ export function PoolContextProvider({ children }) {
         balanceDispatch({ type: "oldSyx2", data: oldSyx2Balance });
       } catch (error) {
         setIsError(true);
-        setErrorMsg(JSON.stringify(error));
+        setErrorMsg(error);
       }
     }
   }, [account, balanceDispatch, setOldSyxSupply, ethersProvider]);
@@ -165,7 +165,7 @@ export function PoolContextProvider({ children }) {
         balanceDispatch({ type: "syx", data: syxBalance });
       } catch (error) {
         setIsError(true);
-        setErrorMsg(JSON.stringify(error));
+        setErrorMsg(error);
       }
     }
   }, [account, balanceDispatch, ethersProvider]);
@@ -204,7 +204,7 @@ export function PoolContextProvider({ children }) {
           getOldSyxData();
         } catch (error) {
           setIsError(true);
-          setErrorMsg(JSON.stringify(error));
+          setErrorMsg(error);
         } finally {
           setLoading(false);
         }
@@ -240,7 +240,7 @@ export function PoolContextProvider({ children }) {
           getSvlxExchangeRate();
         } catch (error) {
           setIsError(true);
-          setErrorMsg(JSON.stringify(error));
+          setErrorMsg(error);
         } finally {
           setLoading(false);
         }
@@ -267,15 +267,20 @@ export function PoolContextProvider({ children }) {
           } catch (error) {
             gasLimit = 3000000;
           }
-
-          const tx = await svlxContract.withdraw(amount, { gasLimit });
-          await tx.wait();
+          try {
+            const tx = await svlxContract.withdraw(amount, { gasLimit });
+            await tx.wait();
+          } catch (error) {
+            error.type = "SVLX_WITHDRAW_ERR";
+            setIsError(true);
+            setErrorMsg(error);
+          }
           getVlxData();
           getSvlxData();
           getSvlxExchangeRate();
         } catch (error) {
           setIsError(true);
-          setErrorMsg(JSON.stringify(error));
+          setErrorMsg(error);
         } finally {
           setLoading(false);
         }

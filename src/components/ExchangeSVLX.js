@@ -168,17 +168,25 @@ const ExchangeSVLX = ({ classes }) => {
         open={isError}
         onClose={() => {
           setIsError(false);
-          setErrorMsg("");
+          setErrorMsg({});
         }}
       >
         <MuiAlert
           severity="error"
           onClose={() => {
             setIsError(false);
-            setErrorMsg("");
+            setErrorMsg({});
           }}
         >
-          {errorMsg}
+          {typeof errorMsg === "object" ? (
+            errorMsg.type === "SVLX_WITHDRAW_ERR" ? (
+              <FormattedMessage id="SVLX_WITHDRAW_ERR" />
+            ) : (
+              JSON.stringify(errorMsg)
+            )
+          ) : (
+            errorMsg
+          )}
         </MuiAlert>
       </Snackbar>
       {providerNetwork &&
@@ -257,8 +265,11 @@ const ExchangeSVLX = ({ classes }) => {
                   parseFloat(formatEther(balanceState.vlx)) ||
                 loading
               }
-              onClick={() => {
-                if (amount > 0) svlxDeposit(parseEther(amount.toString()));
+              onClick={async () => {
+                if (amount > 0) {
+                  await svlxDeposit(parseEther(amount.toString()));
+                  setAmount(0);
+                }
               }}
             >
               {loading ? (
@@ -354,15 +365,17 @@ const ExchangeSVLX = ({ classes }) => {
                   parseFloat(formatEther(balanceState.svlx)) ||
                 loading
               }
-              onClick={() => {
-                if (svlxAmount > 0)
-                  svlxWithdraw(
+              onClick={async () => {
+                if (svlxAmount > 0) {
+                  await svlxWithdraw(
                     parseEther(
                       Math.floor(svlxAmount * svlxExchangeRate * 1000000) /
                         1000000 +
                         ""
                     )
                   );
+                  setSvlxAmount(0);
+                }
               }}
             >
               {loading ? (
