@@ -6,7 +6,7 @@ import {makeStyles} from "@material-ui/core/styles";
 import {FormattedMessage} from "react-intl";
 import Menu from "@material-ui/icons/Menu";
 
-import logo_xswap from "../../assets/symblox-logo@2x.png";
+import logo_xswap from "../../assets/symblox-logo.png";
 
 import {WalletSelector} from "../WalletSelector";
 
