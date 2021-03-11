@@ -168,17 +168,25 @@ const ExchangeSVLX = ({ classes }) => {
         open={isError}
         onClose={() => {
           setIsError(false);
-          setErrorMsg("");
+          setErrorMsg({});
         }}
       >
         <MuiAlert
           severity="error"
           onClose={() => {
             setIsError(false);
-            setErrorMsg("");
+            setErrorMsg({});
           }}
         >
-          {errorMsg}
+          {typeof errorMsg === "object" ? (
+            errorMsg.type === "SVLX_WITHDRAW_ERR" ? (
+              <FormattedMessage id="SVLX_WITHDRAW_ERR" />
+            ) : (
+              JSON.stringify(errorMsg)
+            )
+          ) : (
+            errorMsg
+          )}
         </MuiAlert>
       </Snackbar>
       {providerNetwork &&

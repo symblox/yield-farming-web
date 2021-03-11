@@ -93,7 +93,7 @@ const en_US = {
   VLX_EXCHANGE_RATE: "VLX exchange SVLX rate",
   EXCHANGE_TOTAL_SUPPLY: "Max old SYX to new SYX liquidity",
   EXCHANGE_WALLET_BALANCE: "Redeemable balance: {amount}",
-  EXCHANGE_WALLET_BALANCE2: "Redeemable balance: {amount} {amount2}",
+  EXCHANGE_WALLET_BALANCE2: "Redeemable balance: {amount} ｜ {amount2}",
   EXCHANGE_WARNING:
     "DO NOT use the above exchange function if you have already set delegation in the voting app, or you will lose your SYX toknes PERMANENTLY",
   DAPP_MINING_V1: "Farm V1",
@@ -112,5 +112,7 @@ const en_US = {
   EXPECTED_TO_GET: "Expected to get",
   DEPOSIT: "Deposit",
   WITHDRAW: "Withdraw",
+  SVLX_WITHDRAW_ERR:
+    "VELAS Staking Node is in locked state now. Please try again in 30 minutes",
 };
 export default en_US;

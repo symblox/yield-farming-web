@@ -12,7 +12,7 @@ const Routes = () => (
     <Route path="/home" component={Farming} />
     <PoolContextProvider>
       <Route path="/exchange" component={ExchangeSyxPage} />
-      <Route path="/exchangeSVLX" component={ExchangeSVLXPage} />
+      <Route path="/svlx" component={ExchangeSVLXPage} />
     </PoolContextProvider>
     <Route path="*" component={Farming} />
   </Switch>

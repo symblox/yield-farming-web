@@ -90,7 +90,7 @@ const zh_CN = {
   VLX_EXCHANGE_RATE: "VLX 兑换 SVLX 比例",
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
-  EXCHANGE_WALLET_BALANCE2: "可兑换余额: {amount} {amount2}",
+  EXCHANGE_WALLET_BALANCE2: "可兑换余额: {amount} ｜ {amount2}",
   EXCHANGE_WARNING:
     "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_V1: "V1 矿池",
@@ -109,5 +109,6 @@ const zh_CN = {
   EXPECTED_TO_GET: "预计将获得",
   DEPOSIT: "存入",
   WITHDRAW: "取出",
+  SVLX_WITHDRAW_ERR: "当前 VELAS 节点暂时锁定，请过30分钟以后再试",
 };
 export default zh_CN;
