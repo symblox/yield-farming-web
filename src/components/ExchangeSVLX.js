@@ -365,15 +365,17 @@ const ExchangeSVLX = ({ classes }) => {
                   parseFloat(formatEther(balanceState.svlx)) ||
                 loading
               }
-              onClick={() => {
-                if (svlxAmount > 0)
-                  svlxWithdraw(
+              onClick={async () => {
+                if (svlxAmount > 0) {
+                  await svlxWithdraw(
                     parseEther(
                       Math.floor(svlxAmount * svlxExchangeRate * 1000000) /
                         1000000 +
                         ""
                     )
                   );
+                  setSvlxAmount(0);
+                }
               }}
             >
               {loading ? (
