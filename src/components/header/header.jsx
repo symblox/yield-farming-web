@@ -1,21 +1,14 @@
-import React, { useContext } from "react";
+import React, {useContext} from "react";
 import "../../App.scss";
 import "./header.scss";
-import {
-  Link,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Hidden,
-  Drawer,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import { FormattedMessage } from "react-intl";
+import {Link, AppBar, Toolbar, IconButton, Hidden, Drawer} from "@material-ui/core";
+import {makeStyles} from "@material-ui/core/styles";
+import {FormattedMessage} from "react-intl";
 import Menu from "@material-ui/icons/Menu";
 
-import logo_xswap from "../../assets/symblox-logo@2x.png";
+import logo_xswap from "../../assets/symblox-logo.png";
 
-import { WalletSelector } from "../WalletSelector";
+import {WalletSelector} from "../WalletSelector";
 
 const useStyles = makeStyles({
   bar: {
@@ -23,17 +16,17 @@ const useStyles = makeStyles({
     boxShadow: "inherit",
     padding: "32px 0",
     maxWidth: "1200px",
-    margin: "auto",
+    margin: "auto"
   },
   growFlex: {
     flexGrow: 1,
     textAlign: "right",
-    fontSize: "20px",
+    fontSize: "20px"
   },
   link: {
     color: "white",
     padding: "0 12px",
-    fontSize: "18px",
+    fontSize: "18px"
   },
   mobileLink: {
     color: "white",
@@ -46,11 +39,11 @@ const useStyles = makeStyles({
 
     "&:hover": {
       backgroundColor: "white",
-      color: "black",
-    },
+      color: "black"
+    }
   },
   menu: {
-    padding: 0,
+    padding: 0
   },
   drawerPaper: {
     border: "none",
@@ -73,8 +66,8 @@ const useStyles = makeStyles({
     paddingLeft: "0",
     // transition: "all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1)",
     backgroundColor: "black",
-    opacity: 0.7,
-  },
+    opacity: 0.7
+  }
 });
 
 export const Header = () => {
@@ -84,26 +77,27 @@ export const Header = () => {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-
   return (
     <AppBar className={classes.bar} position="static">
       <Toolbar className={classes.container}>
         <div className={classes.flex}>
-          <Link href="https://app.symblox.io">
-            <img
-              src={logo_xswap}
-              alt="logo"
-              style={{ height: "30px", marginTop: "4px" }}
-            />
+          <Link href="/">
+            <img src={logo_xswap} alt="logo" style={{height: "30px", marginTop: "4px"}} />
           </Link>
         </div>
         <div className={classes.growFlex}>
           <Hidden xsDown implementation="css">
             <Link href="/exchange" className={classes.link}>
-              <FormattedMessage id="SYX_TOKEN_EXCHANGE" />
+              <FormattedMessage id="REDEEM_SYX" />
+            </Link>
+            <Link href="/svlx" className={classes.link}>
+              <FormattedMessage id="SWAP_SVLX" />
             </Link>
             <Link href="https://v1.symblox.io" className={classes.link}>
-              <FormattedMessage id="DAPP_MINING_OLD" />
+              <FormattedMessage id="DAPP_MINING_V1" />
+            </Link>
+            <Link href="https://v2.symblox.io" className={classes.link}>
+              <FormattedMessage id="DAPP_MINING_V2" />
             </Link>
             <Link href="https://x.symblox.io" className={classes.link}>
               <FormattedMessage id="DAPP_CROSS_CHAIN" />
@@ -115,12 +109,7 @@ export const Header = () => {
         </div>
         <WalletSelector />
         <Hidden smUp>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            className={classes.menu}
-            onClick={handleDrawerToggle}
-          >
+          <IconButton color="inherit" aria-label="open drawer" className={classes.menu} onClick={handleDrawerToggle}>
             <Menu />
           </IconButton>
         </Hidden>
@@ -131,16 +120,22 @@ export const Header = () => {
           anchor={"top"}
           open={mobileOpen}
           classes={{
-            paper: classes.drawerPaper,
+            paper: classes.drawerPaper
           }}
           onClose={handleDrawerToggle}
         >
           <div className={classes.appResponsive}>
             <Link href="/exchange" className={classes.mobileLink}>
-              <FormattedMessage id="SYX_TOKEN_EXCHANGE" />
+              <FormattedMessage id="REDEEM_SYX" />
+            </Link>
+            <Link href="/svlx" className={classes.mobileLink}>
+              <FormattedMessage id="SWAP_SVLX" />
             </Link>
             <Link href="https://v1.symblox.io" className={classes.mobileLink}>
-              <FormattedMessage id="DAPP_MINING_OLD" />
+              <FormattedMessage id="DAPP_MINING_V1" />
+            </Link>
+            <Link href="https://v2.symblox.io" className={classes.mobileLink}>
+              <FormattedMessage id="DAPP_MINING_V2" />
             </Link>
             <Link href="https://x.symblox.io" className={classes.mobileLink}>
               <FormattedMessage id="DAPP_CROSS_CHAIN" />
