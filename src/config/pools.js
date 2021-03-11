@@ -17,13 +17,13 @@ let vlxSyxPool = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 //new pool type
 let vlxSyxPool2 = {
   id: "SYX/VLX",
-  featured: true,
+  featured: false,
   address: config.vlxSyxMultiBpt,
   symbol: "BPT",
   type: "swap-native",
@@ -36,7 +36,7 @@ let vlxSyxPool2 = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 let usdtSyxPool = {
@@ -54,12 +54,12 @@ let usdtSyxPool = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 let svlxSyxPool2 = {
   id: "SYX/SVLX",
-  featured: true,
+  featured: false,
   address: config.svlxSyxMultiBpt,
   symbol: "BPT",
   type: "swap",
@@ -72,13 +72,13 @@ let svlxSyxPool2 = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 //new pool type
 let usdtSyxPool2 = {
   id: "SYX/USDT",
-  featured: true,
+  featured: false,
   address: config.usdtSyxMultiBpt,
   symbol: "BPT",
   type: "swap",
@@ -92,7 +92,7 @@ let usdtSyxPool2 = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 let vlxUsdtPool = {
@@ -110,7 +110,7 @@ let vlxUsdtPool = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 let vlxEthPool = {
@@ -128,7 +128,7 @@ let vlxEthPool = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 let ethSyxPool = {
@@ -146,13 +146,13 @@ let ethSyxPool = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 //new pool type
 let ethSyxPool2 = {
   id: "SYX/ETH",
-  featured: true,
+  featured: false,
   address: config.ethSyxMultiBpt,
   symbol: "BPT",
   type: "swap",
@@ -166,7 +166,7 @@ let ethSyxPool2 = {
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
   poolAddress: config.rewardPool,
-  poolABI: config.rewardPoolABI,
+  poolABI: config.rewardPoolABI
 };
 
 function getPools() {
@@ -180,25 +180,11 @@ function getPools() {
       vlxUsdtPool.index,
       usdtSyxPool.index,
       ethSyxPool.index,
-      vlxEthPool.index,
+      vlxEthPool.index
     ] = [5, 6, 7, 0, 1, 2, 3, 4];
-    return [
-      vlxSyxPool2,
-      usdtSyxPool2,
-      ethSyxPool2,
-      vlxSyxPool,
-      vlxUsdtPool,
-      usdtSyxPool,
-      ethSyxPool,
-      vlxEthPool,
-    ];
+    return [vlxSyxPool2, usdtSyxPool2, ethSyxPool2, vlxSyxPool, vlxUsdtPool, usdtSyxPool, ethSyxPool, vlxEthPool];
   } else {
-    [
-      vlxSyxPool2.index,
-      svlxSyxPool2.index,
-      usdtSyxPool2.index,
-      ethSyxPool2.index,
-    ] = [0, 1, 4, 3]; //2 is error
+    [vlxSyxPool2.index, svlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 4, 3]; //2 is error
     return [vlxSyxPool2, svlxSyxPool2, usdtSyxPool2, ethSyxPool2];
   }
 }
