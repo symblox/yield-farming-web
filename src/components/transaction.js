@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
-import { FormattedMessage } from "react-intl";
-import { atom, useAtom } from "jotai";
-import { parseUnits, formatUnits } from "@ethersproject/units";
-import { AddressZero } from "@ethersproject/constants";
-import { withStyles } from "@material-ui/core/styles";
+import React, {useContext, useEffect, useState} from "react";
+import {FormattedMessage} from "react-intl";
+import {atom, useAtom} from "jotai";
+import {parseUnits, formatUnits} from "@ethersproject/units";
+import {AddressZero} from "@ethersproject/constants";
+import {withStyles} from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -14,39 +14,31 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
-import { Web3Context } from "../contexts/Web3Context";
+import {Web3Context} from "../contexts/Web3Context";
 import styles from "../styles/transaction";
-import tokenBalanceAtom, {
-  fetchTokenBalanceValues,
-} from "../hooks/useTokenBalance";
-import sorAtom, {
-  findBestSwapsMulti,
-  fetchPoolData,
-  fetchPathData,
-} from "../hooks/useSor";
+import tokenBalanceAtom, {fetchTokenBalanceValues} from "../hooks/useTokenBalance";
+import sorAtom, {findBestSwapsMulti, fetchPoolData, fetchPathData} from "../hooks/useSor";
 import useTrade from "../hooks/payables/useTrade";
-import config, { tradeTokens } from "../config";
-import { debounce } from "../utils/debounce.js";
-import { bnum } from "../utils/bignumber";
+import config, {tradeTokens} from "../config";
+import {debounce} from "../utils/debounce.js";
+import {bnum} from "../utils/bignumber";
 
-const loadingAtom = atom((get) => {
+const loadingAtom = atom(get => {
   const tokenBalances = get(tokenBalanceAtom);
   let loading = false;
   if (Object.keys(tokenBalances).length === 0) loading = true;
   return loading;
 });
 
-const Transaction = (props) => {
-  const { classes, showHash, errorReturned } = props;
-  const tradableAmountAtom = atom((get) => {
+const Transaction = props => {
+  const {classes, showHash, errorReturned} = props;
+  const tradableAmountAtom = atom(get => {
     const tokenBalances = get(tokenBalanceAtom);
     let tradableAmount = {};
     for (let key in tokenBalances) {
       if (key === "VLX") {
         tokenBalances[key] =
-          tokenBalances[key] > config.minReservedAmount
-            ? tokenBalances[key] - config.minReservedAmount
-            : 0;
+          tokenBalances[key] > config.minReservedAmount ? tokenBalances[key] - config.minReservedAmount : 0;
       }
 
       tradableAmount[key] = tokenBalances[key];
@@ -55,7 +47,7 @@ const Transaction = (props) => {
     return tradableAmount;
   });
   const trade = useTrade();
-  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const {account, ethersProvider, providerNetwork} = useContext(Web3Context);
   const [txLoading, setTxLoading] = useState(false);
   const [sellToken, setSellToken] = useState({});
   const [buyToken, setBuyToken] = useState({});
@@ -74,13 +66,7 @@ const Transaction = (props) => {
   useEffect(() => {
     if (!ethersProvider || !providerNetwork || !account) return;
     fetchPoolList();
-    fetchTokenBalanceValues(
-      account,
-      ethersProvider,
-      providerNetwork,
-      tradeTokens,
-      setTokenBalances
-    );
+    fetchTokenBalanceValues(account, ethersProvider, providerNetwork, tradeTokens, setTokenBalances);
   }, [ethersProvider, providerNetwork, account]);
 
   useEffect(() => {
@@ -95,35 +81,18 @@ const Transaction = (props) => {
     setPoolList(poolList);
   };
 
-  const fetchTradePrice = async (
-    type = "swapExactIn",
-    sellToken,
-    buyToken,
-    amount = 1,
-    callback
-  ) => {
+  const fetchTradePrice = async (type = "swapExactIn", sellToken, buyToken, amount = 1, callback) => {
     if (poolList.length > 0 && amount > 0) {
       setCalcPriceLoading(true);
       debounce(1000, async () => {
         const inputToken = sellToken.address;
         const outputToken = buyToken.address;
         try {
-          const newSor = await fetchPathData(
-            inputToken,
-            outputToken,
-            sor,
-            poolList,
-            setSor
-          );
+          const newSor = await fetchPathData(inputToken, outputToken, sor, poolList, setSor);
           const [totalReturn, swap] = await findBestSwapsMulti(
             newSor,
             type,
-            bnum(
-              parseUnits(
-                amount.toString(),
-                type === "swapExactIn" ? sellToken.decimals : buyToken.decimals
-              )
-            ),
+            bnum(parseUnits(amount.toString(), type === "swapExactIn" ? sellToken.decimals : buyToken.decimals)),
             poolList.length,
             0
           );
@@ -150,7 +119,7 @@ const Transaction = (props) => {
     }
   };
 
-  const getAnotherToken = (tokenSymbol) => {
+  const getAnotherToken = tokenSymbol => {
     for (let i = 0; i < tradeTokens.length; i++) {
       if (tokenSymbol !== tradeTokens[i].symbol) {
         return tradeTokens[i];
@@ -158,8 +127,8 @@ const Transaction = (props) => {
     }
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const handleChange = event => {
+    const {name, value} = event.target;
     const anotherToken = getAnotherToken(value.symbol);
     switch (name) {
       case "sellToken":
@@ -188,21 +157,21 @@ const Transaction = (props) => {
     setBuyAmount("");
   };
 
-  const amountChange = async (event) => {
-    const { name, value } = event.target;
+  const amountChange = async event => {
+    const {name, value} = event.target;
     let amount;
     switch (name) {
       case "sellToken":
         setSellAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice("swapExactIn", sellToken, buyToken, amount, (price) => {
+        fetchTradePrice("swapExactIn", sellToken, buyToken, amount, price => {
           setBuyAmount(amount * parseFloat(price) || "");
         });
         break;
       case "buyToken":
         setBuyAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice("swapExactOut", sellToken, buyToken, amount, (price) =>
+        fetchTradePrice("swapExactOut", sellToken, buyToken, amount, price =>
           setSellAmount(amount * parseFloat(price) || "")
         );
         break;
@@ -229,13 +198,7 @@ const Transaction = (props) => {
     const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
     setTxLoading(true);
     try {
-      const tx = await trade(
-        swaps,
-        sellToken.address,
-        buyToken.address,
-        tokenAmountIn,
-        minAmountOut
-      );
+      const tx = await trade(swaps, sellToken.address, buyToken.address, tokenAmountIn, minAmountOut);
       showHash(tx.hash);
       //await tx.wait();
     } catch (error) {
@@ -249,15 +212,11 @@ const Transaction = (props) => {
     <div>
       <div>
         <Typography gutterBottom align="right">
-          <span style={{ float: "left" }}>
+          <span style={{float: "left"}}>
             <FormattedMessage id="POPUP_LABEL_FROM" />
           </span>
           <span className={classes.textPrimy}>
-            <img
-              className={classes.icon}
-              src={"/" + sellToken.name + ".png"}
-              alt=""
-            />
+            <img className={classes.icon} src={"/" + sellToken.name + ".png"} alt="" />
             <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
             {": "}
             <NumberFormat
@@ -273,7 +232,7 @@ const Transaction = (props) => {
           </span>
         </Typography>
         <div className={classes.formContent}>
-          <FormControl variant="outlined" style={{ flex: "4" }}>
+          <FormControl variant="outlined" style={{flex: "4"}}>
             <OutlinedInput
               error={false}
               className={classes.customInput}
@@ -284,71 +243,55 @@ const Transaction = (props) => {
               onChange={amountChange}
               endAdornment={
                 <InputAdornment position="end">
-                  <Button
-                    className={classes.maxBtn}
-                    disabled={loading || txLoading || calcPriceLoading}
-                    onClick={max}
-                  >
+                  <Button className={classes.maxBtn} disabled={loading || txLoading || calcPriceLoading} onClick={max}>
                     <FormattedMessage id="POPUP_INPUT_MAX" />
                   </Button>
                 </InputAdornment>
               }
             />
-            {false ? (
-              <span style={{ color: "red" }}>
+            {sellAmount > tradableAmount[sellToken.symbol] ? (
+              <span style={{color: "red"}}>
                 <FormattedMessage id="TRADE_ERROR_BALANCE" />
               </span>
             ) : (
               <></>
             )}
           </FormControl>
-          <FormControl
-            variant="outlined"
-            className={classes.formControl}
-            style={{ flex: "1" }}
-          >
+          <FormControl variant="outlined" className={classes.formControl} style={{flex: "1"}}>
             <Select
               className={classes.select}
               value={sellToken}
               onChange={handleChange}
               inputProps={{
                 name: "sellToken",
-                id: "outlined-token",
+                id: "outlined-token"
               }}
             >
               {tradeTokens.map((v, i) => (
                 <MenuItem value={v} key={i}>
-                  <img
-                    className={classes.icon}
-                    src={"/" + v.name + ".png"}
-                    alt=""
-                  />
+                  <img className={classes.icon} src={"/" + v.name + ".png"} alt="" />
                   {v.name}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </div>
-        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        <div style={{textAlign: "center", marginBottom: "16px"}}>
           <img
             className={classes.icon}
             style={{
-              width: "20px",
+              width: "20px"
             }}
             src={"/down2.svg"}
             alt=""
           />
         </div>
         <Typography gutterBottom align="right">
-          <span style={{ float: "left" }}>
+          <span style={{float: "left"}}>
             <FormattedMessage id="POPUP_LABEL_TO" />
           </span>{" "}
           <span className={classes.textPrimy}>
-            <img
-              className={classes.icon}
-              src={"/" + buyToken.name + ".png"}
-              alt=""
-            />
+            <img className={classes.icon} src={"/" + buyToken.name + ".png"} alt="" />
             <FormattedMessage id="POPUP_TRADEABLE_AMOUNT" />
             {": "}
             <NumberFormat
@@ -364,7 +307,7 @@ const Transaction = (props) => {
           </span>
         </Typography>
         <div className={classes.formContent}>
-          <FormControl variant="outlined" style={{ flex: "4" }}>
+          <FormControl variant="outlined" style={{flex: "4"}}>
             <OutlinedInput
               className={classes.customInput}
               id="outlined-adornment-password"
@@ -374,32 +317,33 @@ const Transaction = (props) => {
               onChange={amountChange}
             />
           </FormControl>
-          <FormControl
-            variant="outlined"
-            className={classes.formControl}
-            style={{ flex: "1" }}
-          >
+          <FormControl variant="outlined" className={classes.formControl} style={{flex: "1"}}>
             <Select
               className={classes.select}
               value={buyToken}
               onChange={handleChange}
               inputProps={{
                 name: "buyToken",
-                id: "outlined-token",
+                id: "outlined-token"
               }}
             >
               {tradeTokens.map((v, i) => (
                 <MenuItem value={v} key={i}>
-                  <img
-                    className={classes.icon}
-                    src={"/" + v.name + ".png"}
-                    alt=""
-                  />
+                  <img className={classes.icon} src={"/" + v.name + ".png"} alt="" />
                   {v.name}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+        </div>
+        <div>
+          <span style={{color: "red"}}>
+            {!loading && !txLoading && !calcPriceLoading && sellAmount && !buyAmount ? (
+              <FormattedMessage id="EXCHANGEABLE_AMOUNT_NOT_ENOUGH" />
+            ) : (
+              <></>
+            )}
+          </span>
         </div>
         <div>
           <span className={classes.text}>
@@ -411,7 +355,7 @@ const Transaction = (props) => {
               values={{
                 tokenFrom: sellToken.name,
                 tokenTo: buyToken.name,
-                rate: price,
+                rate: price
               }}
             />
           </span>
@@ -441,7 +385,7 @@ const Transaction = (props) => {
             <Input
               id="slippage-tolerance"
               name="slippage"
-              classes={{ input: classes.textAlignRight }}
+              classes={{input: classes.textAlignRight}}
               value={slippageTolerance}
               onChange={amountChange}
               endAdornment={<InputAdornment position="end">%</InputAdornment>}

@@ -53,12 +53,10 @@ const en_US = {
   RATIO: "Ratio",
   ACTION: "Action",
   STAKING_TIP: "Deposit VLX to the pools you select to earn rewards",
-  WITHDRAW_REWARDS_TIP:
-    "Please find the reward token SYX in the wallet after claimed",
+  WITHDRAW_REWARDS_TIP: "Please find the reward token SYX in the wallet after claimed",
   UNIT_PRICE: "Unit Price",
   HOME_TITLE: "Bringing real-world assets to blockchain",
-  HOME_SUBTITLE:
-    "Symblox is a decentralized synthetic asset issuance and trading protocol",
+  HOME_SUBTITLE: "Symblox is a decentralized synthetic asset issuance and trading protocol",
   JOIN: "Join",
   TOTAL_SUPPLY: "Total supply",
   HOLD: "Staked",
@@ -67,12 +65,10 @@ const en_US = {
   TRADE_ERROR_BALANCE: "Available balance not enough",
   SEE_DETAIL: "See detail",
   REWARD_DISTRIBUTION_RATIO: "Reward distribution ratio",
-  NETWORK_ERROR:
-    "Current newtwork is not supported, please switch to {requiredNetwork} (RPC URL: {rpcUrl})",
+  NETWORK_ERROR: "Current newtwork is not supported, please switch to {requiredNetwork} (RPC URL: {rpcUrl})",
   POPUP_WITHDRAW_AMOUNT: "Amount to withdraw",
   POPUP_WITHDRAW_REWARD: "Rewards to claim",
-  RISK_WARNING:
-    "This contract is under auditing. PLEASE REVIEW THE CONTRACT BEFORE PROCEEDING.",
+  RISK_WARNING: "This contract is under auditing. PLEASE REVIEW THE CONTRACT BEFORE PROCEEDING.",
   COMMUNITY: "Community",
   CONTRACT: "Contract",
   SYX_TOKEN: "SYX (V2)",
@@ -85,8 +81,7 @@ const en_US = {
   WALLET_DISCONNECT: "Discconnect",
   EXCHANGE: "Exchange",
   EXCHANGE_TITLE: "Redeem SYX tokens for ALL NEW Symblox yield farming",
-  EXCHANGE_SUB_TITLE:
-    "How many SYX tokens would you like to redeem for the new ones?",
+  EXCHANGE_SUB_TITLE: "How many SYX tokens would you like to redeem for the new ones?",
   EXCHANGE_TIP: "Enter the amount you would like to exchange",
   EXCHANGE_RATE: "SYX exchange rate",
   SVLX_EXCHANGE_RATE: "SVLX exchange VLX rate",
@@ -112,7 +107,7 @@ const en_US = {
   EXPECTED_TO_GET: "Expected to get",
   DEPOSIT: "Deposit",
   WITHDRAW: "Withdraw",
-  SVLX_WITHDRAW_ERR:
-    "VELAS Staking Node is in locked state now. Please try again in 30 minutes",
+  SVLX_WITHDRAW_ERR: "VELAS Staking Node is in locked state now. Please try again in 30 minutes",
+  EXCHANGEABLE_AMOUNT_NOT_ENOUGH: "exchangeable amount not enough"
 };
 export default en_US;

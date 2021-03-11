@@ -65,12 +65,10 @@ const zh_CN = {
   TRADE_ERROR_BALANCE: "可用余额不足",
   SEE_DETAIL: "查看详情",
   REWARD_DISTRIBUTION_RATIO: "奖励分配比例",
-  NETWORK_ERROR:
-    "当前网络不支持，请切换到 {requiredNetwork} 使用（可在钱包设置网络节点RPC地址为：{rpcUrl})",
+  NETWORK_ERROR: "当前网络不支持，请切换到 {requiredNetwork} 使用（可在钱包设置网络节点RPC地址为：{rpcUrl})",
   POPUP_WITHDRAW_AMOUNT: "取出抵押资产",
   POPUP_WITHDRAW_REWARD: "取出奖励",
-  RISK_WARNING:
-    "该项目合约正在审计中，请在使用之前查看合约具体内容并了解需要承担的风险",
+  RISK_WARNING: "该项目合约正在审计中，请在使用之前查看合约具体内容并了解需要承担的风险",
   COMMUNITY: "社区",
   CONTRACT: "合约",
   SYX_TOKEN: "SYX (V2)",
@@ -91,8 +89,7 @@ const zh_CN = {
   EXCHANGE_TOTAL_SUPPLY: "SYX 可兑换总数",
   EXCHANGE_WALLET_BALANCE: "可兑换余额: {amount}",
   EXCHANGE_WALLET_BALANCE2: "可兑换余额: {amount} ｜ {amount2}",
-  EXCHANGE_WARNING:
-    "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
+  EXCHANGE_WARNING: "如果设置过《 SYX 投票委托》，请勿使用以上兑换功能，以免造成你的 SYX 代币损失！",
   DAPP_MINING_V1: "V1 矿池",
   DAPP_MINING_V2: "V2 矿池",
   REDEEM_SYX: "SYX 兑换",
@@ -110,5 +107,6 @@ const zh_CN = {
   DEPOSIT: "存入",
   WITHDRAW: "取出",
   SVLX_WITHDRAW_ERR: "当前 VELAS 节点暂时锁定，请过30分钟以后再试",
+  EXCHANGEABLE_AMOUNT_NOT_ENOUGH: "可兑换金额不足"
 };
 export default zh_CN;
