@@ -83,34 +83,27 @@ export const Header = () => {
             <Toolbar className={classes.container}>
                 <div className={classes.flex}>
                     <Link href="https://app.symblox.io">
-                    <img
-                        src={logo_xswap}
-                        alt="logo"
-                        style={{height: "30px", marginTop: "4px"}}
-                    />
+                        <img src={logo_xswap} alt="logo" style={{height: "30px", marginTop: "4px"}} />
                     </Link>
                 </div>
                 <div className={classes.growFlex}>
                     <Hidden xsDown implementation="css">
                         <Link href="/exchange" className={classes.link}>
-                            <FormattedMessage id="SYX_TOKEN_EXCHANGE" />
+                            <FormattedMessage id="REDEEM_SYX" />
                         </Link>
-                        <Link
-                            href="https://v1.symblox.io"
-                            className={classes.link}
-                        >
-                            <FormattedMessage id="DAPP_MINING_OLD" />
+                        <Link href="/svlx" className={classes.link}>
+                            <FormattedMessage id="SWAP_SVLX" />
                         </Link>
-                        <Link
-                            href="https://x.symblox.io"
-                            className={classes.link}
-                        >
+                        <Link href="https://v1.symblox.io" className={classes.link}>
+                            <FormattedMessage id="DAPP_MINING_V1" />
+                        </Link>
+                        <Link href="https://v2.symblox.io" className={classes.link}>
+                            <FormattedMessage id="DAPP_MINING_V2" />
+                        </Link>
+                        <Link href="https://x.symblox.io" className={classes.link}>
                             <FormattedMessage id="DAPP_CROSS_CHAIN" />
                         </Link>
-                        <Link
-                            href="https://pvlx.symblox.io"
-                            className={classes.link}
-                        >
+                        <Link href="https://pvlx.symblox.io" className={classes.link}>
                             <FormattedMessage id="DAPP_PVLX" />
                         </Link>
                     </Hidden>
@@ -139,24 +132,21 @@ export const Header = () => {
                 >
                     <div className={classes.appResponsive}>
                         <Link href="/exchange" className={classes.mobileLink}>
-                            <FormattedMessage id="SYX_TOKEN_EXCHANGE" />
+                            <FormattedMessage id="REDEEM_SYX" />
                         </Link>
-                        <Link
-                            href="https://v1.symblox.io"
-                            className={classes.mobileLink}
-                        >
-                            <FormattedMessage id="DAPP_MINING_OLD" />
+                        <Link href="/svlx" className={classes.mobileLink}>
+                            <FormattedMessage id="SWAP_SVLX" />
                         </Link>
-                        <Link
-                            href="https://x.symblox.io"
-                            className={classes.mobileLink}
-                        >
+                        <Link href="https://v1.symblox.io" className={classes.mobileLink}>
+                            <FormattedMessage id="DAPP_MINING_V1" />
+                        </Link>
+                        <Link href="https://v2.symblox.io" className={classes.mobileLink}>
+                            <FormattedMessage id="DAPP_MINING_V2" />
+                        </Link>
+                        <Link href="https://x.symblox.io" className={classes.mobileLink}>
                             <FormattedMessage id="DAPP_CROSS_CHAIN" />
                         </Link>
-                        <Link
-                            href="https://pvlx.symblox.io"
-                            className={classes.mobileLink}
-                        >
+                        <Link href="https://pvlx.symblox.io" className={classes.mobileLink}>
                             <FormattedMessage id="DAPP_PVLX" />
                         </Link>
                     </div>
