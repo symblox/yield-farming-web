@@ -108,5 +108,6 @@ const zh_CN = {
   EXPECTED_TO_GET: "预计将获得",
   DEPOSIT: "存入",
   WITHDRAW: "取出",
+  SVLX_WITHDRAW_ERR: "当前 VELAS 节点暂时锁定，请过30分钟以后再试",
 };
 export default zh_CN;
