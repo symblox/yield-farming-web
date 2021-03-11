@@ -4,7 +4,7 @@ const config = env;
 //If vlx is a tradable token of the pool, it is defined to erc20Address
 let seedPool = {
   id: "VLX",
-  featured: true,
+  featured: false,
   name: "VLX",
   website: "Reward Pool",
   address: config.wvlx,
@@ -57,7 +57,7 @@ let vlxSyxPool = {
 //new pool type
 let vlxSyxPool2 = {
   id: "SYX2/VLX",
-  featured: true,
+  featured: false,
   name: "VLX",
   website: "Reward Pool",
   address: config.vlxSyxMultiBpt,
@@ -111,7 +111,7 @@ let vlxSyxPool2 = {
 
 let svlxSyxPool = {
   id: "SYX2/SVLX",
-  featured: true,
+  featured: false,
   name: "SVLX",
   website: "Reward Pool",
   address: config.svlxSyxBpt,
@@ -223,7 +223,7 @@ let usdtSyxPool = {
 //new pool type
 let usdtSyxPool2 = {
   id: "SYX2/USDT",
-  featured: true,
+  featured: false,
   name: "USDT",
   website: "Reward Pool",
   address: config.usdtSyxMultiBpt,
@@ -366,7 +366,7 @@ let ethSyxPool = {
 //new pool type
 let ethSyxPool2 = {
   id: "SYX2/ETH",
-  featured: true,
+  featured: false,
   name: "ETH",
   website: "Reward Pool",
   address: config.ethSyxMultiBpt,
