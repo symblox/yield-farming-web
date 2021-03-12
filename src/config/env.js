@@ -4,12 +4,12 @@ let requiredNetworkId = process.env.REACT_APP_ENV === "production" ? 106 : 111;
 
 const rpcUrls = {
   111: "https://explorer.testnet.veladev.net/rpc",
-  106: "https://rpc.symblox.net:8080/",
+  106: "https://rpc.symblox.net:8080/"
 };
 
 const browserUrls = {
   111: "https://explorer.testnet.veladev.net",
-  106: "https://explorer.velas.com",
+  106: "https://explorer.velas.com"
 };
 
 console.log("REACT_APP_ENV: ", process.env.REACT_APP_ENV);
@@ -25,25 +25,27 @@ function env() {
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
       weth: "0x380f73bad5e7396b260f737291ae5a8100baabcd",
       usdt: "0x4b773e1ae1baa4894e51cc1d1faf485c91b1012f",
-      syx: "0x01Db6ACFA20562Ba835aE9F5085859580A0b1386",
+      syx: "0xD0CB9244844F3E11061fb3Ea136Aab3a6ACAC017",
       oldSyx: "0x2de7063fe77aAFB5b401d65E5A108649Ec577170",
+      oldSyx2: "0x01Db6ACFA20562Ba835aE9F5085859580A0b1386",
       wvlx: "0x2b1aBEb48f875465bf0D3A262a2080ab1C7A3E39",
       svlx: "0xaADBAa6758fC00dEc9B43A0364a372605D8f1883",
-      bptFactory: "0xC850E858367971B11ed74d97AA0C87ec85a03Ea1",
+      bptFactory: "0x48BBEA6964139E18cE119297Dc49282e7df0f228",
       vlxSyxBpt: "0x7bD57dCA1C703E068F4A0A3Bc506612372eF7dC6",
       vlxUsdtBpt: "0x1fA22A3F8B36B5b24deE233fdaC1114E930b9Cda",
       usdtSyxBpt: "0xf02F3959C0B52a337D0C662a123103618fd38F74",
       ethSyxBpt: "0x4F5D1990F667bAa8f5d5A76282707508AD2DEF05",
       vlxEthBpt: "0xAa47D5475D89a837d61e0a33ce32Ac31D3aAf0dd",
-      vlxSyxMultiBpt: "0x7Ac28A9FFd42c29d9ec8302898e7353b30740DE1",
-      usdtSyxMultiBpt: "0xd47DB7DF9078d3c5d5029b5E88144a0be29E4084",
-      ethSyxMultiBpt: "0x616B7e367612D81512608a8D552E991847a981c8",
+      vlxSyxMultiBpt: "0x720b92Ef8ee928c5cbE9cA787321802610bcbf6E",
+      svlxSyxMultiBpt: "0x2af1FEa48018Fe9F1266d67d45B388935df1c14D",
+      usdtSyxMultiBpt: "0xE7557EFbE705E425De6A57E90447ba5AD70E9dE5",
+      ethSyxMultiBpt: "0x974D24a6bce9e0A0A27228e627c9CA1437fE0286",
       connectorFactory: "0xBE6A1f0b0236BB39E0b16B0fc5cb6C291fFdFC2E", //no set governor
       bptConnector: "0xC37673764FEd37EB3c3f3C46D696B41f322123C6", //BptReferralConnector
-      rewardPool: "0x9fCdD9eb40CaC90A5C385C9Ef37b48E847B178a3",
+      rewardPool: "0x44DDf8BDcF16667f0E9F452D3E3733Dddf438da0",
       // wvlxConnector: "0xf6182f2924065343947E7F12ec4a989Fd9D2A9Ec",
-      timelock: "0x2aCC7A7279394bB9AC0265249E6d78d5B7012465",
-      governor: "0x7DF0c84197D35356b1d4F29912082371f3469fF5",
+      timelock: "0xCCBd500aDdE791f4133cE0fec95B2042fF4f9ab3",
+      governor: "0x8fA9dD0dA03bC91508D70d2C254dBC25560C04b5",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",
       erc20ABI: abis.erc20ABI,
       rewardPoolABI: abis.rewardPoolABI,
@@ -54,7 +56,7 @@ function env() {
       connectorFactoryABI: abis.connectorFactoryABI,
       stakingAuRaABI: abis.stakingAuRaABI,
       svlxABI: abis.svlxABI,
-      secPerBlock: 5,
+      secPerBlock: 5
     };
   } else {
     return {
@@ -104,7 +106,7 @@ function env() {
       wvlxConnectorABI: abis.wvlxConnectorABI,
       connectorFactoryABI: abis.connectorFactoryABI,
       stakingAuRaABI: abis.stakingAuRaABI,
-      secPerBlock: 15,
+      secPerBlock: 15
     };
   }
 }
