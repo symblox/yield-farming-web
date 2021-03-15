@@ -1,34 +1,25 @@
-import React, { useContext, useEffect, useState } from "react";
-import { parseEther, formatEther } from "@ethersproject/units";
-import { withRouter } from "react-router-dom";
+import React, {useContext, useEffect, useState} from "react";
+import {parseEther, formatEther} from "@ethersproject/units";
+import {withRouter} from "react-router-dom";
 import NumberFormat from "react-number-format";
-import { withStyles } from "@material-ui/core/styles";
+import {withStyles} from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import { FormattedMessage } from "react-intl";
-import {
-  Box,
-  Button,
-  FormControl,
-  InputAdornment,
-  OutlinedInput,
-  Typography,
-  Grid,
-  Divider,
-} from "@material-ui/core";
+import {FormattedMessage} from "react-intl";
+import {Box, Button, FormControl, InputAdornment, OutlinedInput, Typography, Grid, Divider} from "@material-ui/core";
 
-import { PoolContext } from "../contexts/PoolContext";
-import { Web3Context } from "../contexts/Web3Context";
+import {PoolContext} from "../contexts/PoolContext";
+import {Web3Context} from "../contexts/Web3Context";
 import BalanceBar from "./BalanceBar";
 import NetworkErrModal from "./modal/networkErrModal";
 import config from "../config";
 
-const styles = (theme) => ({
+const styles = theme => ({
   container: {
-    textAlign: "center",
+    textAlign: "center"
   },
   heroText: {
     color: "#FFFFFF",
@@ -36,8 +27,8 @@ const styles = (theme) => ({
     marginTop: "2rem",
     marginBottom: "4rem",
     [theme.breakpoints.down("xs")]: {
-      display: "none",
-    },
+      display: "none"
+    }
   },
   root: {
     background: "#FFFFFF",
@@ -47,20 +38,20 @@ const styles = (theme) => ({
 
     "& Button": {},
     "& p": {
-      margin: "8px 0",
-    },
+      margin: "8px 0"
+    }
   },
 
   title: {
     margin: "0 0 16px 0",
-    textAlign: "left",
+    textAlign: "left"
   },
   subTitle: {
     // margin: "8px 0",
-    fontWeight: "500",
+    fontWeight: "500"
   },
   box: {
-    width: "100%",
+    width: "100%"
   },
   button: {
     background: "linear-gradient(135deg, #42D9FE 0%, #2872FA 100%, #42D9FE)",
@@ -73,40 +64,33 @@ const styles = (theme) => ({
     width: "100%",
     margin: "26px auto 0 auto",
     "&:hover": {
-      background: "linear-gradient(315deg, #4DB5FF 0%, #57E2FF 100%, #4DB5FF)",
+      background: "linear-gradient(315deg, #4DB5FF 0%, #57E2FF 100%, #4DB5FF)"
     },
     "&.Mui-disabled": {
       background:
         "linear-gradient(135deg, rgb(66, 217, 254, 0.12) 0%, rgb(40, 114, 250,0.12) 100%, rgb(66, 217, 254, 0.12))",
-      color: "#FFFFFF",
-    },
-  },
+      color: "#FFFFFF"
+    }
+  }
 });
 
-const ExchangeSyx = ({ classes }) => {
-  const {
-    oldSyxSupply,
-    balanceState,
-    exchangeSyx,
-    loading,
-    isError,
-    setIsError,
-    errorMsg,
-    setErrorMsg,
-  } = useContext(PoolContext);
-  const { providerNetwork } = useContext(Web3Context);
+const ExchangeSyx = ({classes}) => {
+  const {oldSyxSupply, balanceState, exchangeSyx, loading, isError, setIsError, errorMsg, setErrorMsg} = useContext(
+    PoolContext
+  );
+  const {providerNetwork} = useContext(Web3Context);
 
   const [amount, setAmount] = useState(0);
   const [balances, setBalances] = useState([]);
   const [curToken, setCurToken] = useState({});
   const [tokens, setTokens] = useState([]);
 
-  const tokenHandleChange = (event) => {
+  const tokenHandleChange = event => {
     setCurToken(event.target.value);
     setAmount(0);
   };
 
-  const amountChange = (event) => {
+  const amountChange = event => {
     if (event.target.value && Number.isNaN(parseFloat(event.target.value))) {
       setAmount(0);
     } else {
@@ -137,16 +121,17 @@ const ExchangeSyx = ({ classes }) => {
         if (i === "oldSyx2") {
           name = "SYX2";
         }
-        array.push({
-          name,
-          balance,
-        });
+        if (i !== "vlx")
+          array.push({
+            name,
+            balance
+          });
       }
       if (i === "oldSyx" || i === "oldSyx2")
         tokens.push({
           type: i,
           name: i === "oldSyx" ? "syx v1" : "syx v2",
-          symbol: "syx",
+          symbol: "syx"
         });
     }
     setBalances(array);
@@ -157,7 +142,7 @@ const ExchangeSyx = ({ classes }) => {
   return (
     <Box paddingX={2} marginBottom={32}>
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "left"}}
         open={isError}
         onClose={() => {
           setIsError(false);
@@ -183,25 +168,14 @@ const ExchangeSyx = ({ classes }) => {
         </MuiAlert>
       </Snackbar>
       {providerNetwork &&
-        (config.requiredNetworkId.toString() !==
-        providerNetwork.chainId.toString() ? (
-          <NetworkErrModal />
-        ) : (
-          <></>
-        ))}
+        (config.requiredNetworkId.toString() !== providerNetwork.chainId.toString() ? <NetworkErrModal /> : <></>)}
       <Typography variant="h2" className={classes.heroText}>
         <FormattedMessage id="EXCHANGE_TITLE" />
       </Typography>
       <Box maxWidth="60rem" marginX="auto">
         <BalanceBar balances={balances} />
       </Box>
-      <Box
-        maxWidth="60rem"
-        marginX="auto"
-        marginY="2rem"
-        p={6}
-        className={classes.root}
-      >
+      <Box maxWidth="60rem" marginX="auto" marginY="2rem" p={6} className={classes.root}>
         <Grid container spacing={8}>
           <Grid item xs={12} sm={8}>
             <Typography variant="h6" className={classes.title}>
@@ -222,10 +196,7 @@ const ExchangeSyx = ({ classes }) => {
                     onChange={amountChange}
                     endAdornment={
                       <InputAdornment position="end">
-                        <Button
-                          onClick={getMaxAmount}
-                          style={{ padding: "10px 0px", minWidth: "44px" }}
-                        >
+                        <Button onClick={getMaxAmount} style={{padding: "10px 0px", minWidth: "44px"}}>
                           <FormattedMessage id="POPUP_INPUT_MAX" />
                         </Button>
                       </InputAdornment>
@@ -253,13 +224,10 @@ const ExchangeSyx = ({ classes }) => {
                     amount: (
                       <NumberFormat
                         value={formatEther(
-                          parseFloat(balanceState.oldSyx).toLocaleString(
-                            "fullwide",
-                            {
-                              maximumFractionDigits: 10,
-                              useGrouping: false,
-                            }
-                          )
+                          parseFloat(balanceState.oldSyx).toLocaleString("fullwide", {
+                            maximumFractionDigits: 10,
+                            useGrouping: false
+                          })
                         )}
                         defaultValue={"-"}
                         displayType={"text"}
@@ -273,13 +241,10 @@ const ExchangeSyx = ({ classes }) => {
                     amount2: (
                       <NumberFormat
                         value={formatEther(
-                          parseFloat(balanceState.oldSyx2).toLocaleString(
-                            "fullwide",
-                            {
-                              maximumFractionDigits: 10,
-                              useGrouping: false,
-                            }
-                          )
+                          parseFloat(balanceState.oldSyx2).toLocaleString("fullwide", {
+                            maximumFractionDigits: 10,
+                            useGrouping: false
+                          })
                         )}
                         defaultValue={"-"}
                         displayType={"text"}
@@ -289,7 +254,7 @@ const ExchangeSyx = ({ classes }) => {
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
-                    ),
+                    )
                   }}
                 />
               </Typography>
@@ -298,12 +263,8 @@ const ExchangeSyx = ({ classes }) => {
               className={classes.button}
               disabled={
                 amount == 0 ||
-                (curToken.type === "oldSyx" &&
-                  parseFloat(amount) >
-                    parseFloat(formatEther(balanceState.oldSyx))) ||
-                (curToken.type === "oldSyx2" &&
-                  parseFloat(amount) >
-                    parseFloat(formatEther(balanceState.oldSyx2))) ||
+                (curToken.type === "oldSyx" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx))) ||
+                (curToken.type === "oldSyx2" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx2))) ||
                 loading
               }
               onClick={async () => {
@@ -317,7 +278,7 @@ const ExchangeSyx = ({ classes }) => {
                 <CircularProgress
                   style={{
                     width: "24px",
-                    height: "24px",
+                    height: "24px"
                   }}
                 ></CircularProgress>
               ) : (
