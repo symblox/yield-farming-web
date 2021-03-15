@@ -68,8 +68,8 @@ function env() {
       rpcUrl: rpcUrls[requiredNetworkId],
       browser: browserUrls[requiredNetworkId],
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
-      rewardPool: "0x5EddDA6482029E466F296AeD75cFcc624245bB80",
-      connectorFactory: "0xaD96a8bd3150C0D4371a217f6E5088207c18C0B1",
+      rewardPool: "0x7f701D014c80e0644920CC87BAAa0908F7e97A2F",
+      connectorFactory: "0xCB1B4505926a3194B43aa628421EdC72ae0f6DbF",
       bptConnector: "0xC2598222A80b99f425c958aF3be446e5D25D3929", //BptReferralConnector
       bptFactory: "0x35E1B850033BfFCf0b33A3d486F950d375bD32A1",
       wvlx: "0x78f18612775a2c54efc74c2911542aa034fe8d3f",
@@ -81,8 +81,8 @@ function env() {
       oldSyx2: "0x28a6312D786e9d7a78637dD137AbeF5332F3b2Aa",
       vlxSyxMultiBpt: "0x09F8eca78684b49ea207c8015635F5467CA63489",
       svlxSyxMultiBpt: "0x2B28B4cE25aA0c0AdbEc93cDBEf89B0F07544310",
-      usdtSyxMultiBpt: "0x1875e77AbA5ABE4C1F7cBA3E5f15b031c8D02a16",
       ethSyxMultiBpt: "0x5EA860466a3baac87b4FA92546aca45179e2fA8e",
+      usdtSyxMultiBpt: "0x1875e77AbA5ABE4C1F7cBA3E5f15b031c8D02a16",
       // vlxSyxBpt: "0x3FBaf23119a999336bb9bB0744bcC6f60540B4B4",
       // vlxSyxMultiBpt: "0xFf5508e0DEFF2723a354bf1399815B8eA9421a30",
       // vlxUsdtBpt: "0x4b067bc68b54133fe64832affbab3d7a6d361ba5",

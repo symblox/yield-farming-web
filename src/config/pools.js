@@ -184,8 +184,8 @@ function getPools() {
     ] = [5, 6, 7, 0, 1, 2, 3, 4];
     return [vlxSyxPool2, usdtSyxPool2, ethSyxPool2, vlxSyxPool, vlxUsdtPool, usdtSyxPool, ethSyxPool, vlxEthPool];
   } else {
-    [vlxSyxPool2.index, svlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 4, 3]; //2 is error
-    return [vlxSyxPool2, svlxSyxPool2, usdtSyxPool2, ethSyxPool2];
+    [vlxSyxPool2.index, svlxSyxPool2.index, ethSyxPool2.index, usdtSyxPool2.index] = [0, 1, 2, 3]; //2 is error
+    return [vlxSyxPool2, svlxSyxPool2, ethSyxPool2, usdtSyxPool2];
   }
 }
 export default getPools;
