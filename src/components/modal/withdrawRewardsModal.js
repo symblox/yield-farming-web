@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { FormattedMessage } from "react-intl";
-import { withStyles } from "@material-ui/core/styles";
+import React, {useEffect, useState} from "react";
+import {FormattedMessage} from "react-intl";
+import {withStyles} from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import Dialog from "@material-ui/core/Dialog";
@@ -16,17 +16,13 @@ import NumberFormat from "react-number-format";
 import useWithdrawReward from "../../hooks/payables/useWithdrawReward";
 import styles from "../../styles/withdrawReward";
 
-const DialogTitle = withStyles(styles)((props) => {
-  const { children, classes, onClose, ...other } = props;
+const DialogTitle = withStyles(styles)(props => {
+  const {children, classes, onClose, ...other} = props;
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
       {onClose ? (
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={onClose}
-        >
+        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
           <CloseIcon />
         </IconButton>
       ) : null}
@@ -34,42 +30,35 @@ const DialogTitle = withStyles(styles)((props) => {
   );
 });
 
-const DialogContent = withStyles((theme) => ({
+const DialogContent = withStyles(theme => ({
   root: {
-    padding: theme.spacing(2),
-  },
+    padding: theme.spacing(2)
+  }
 }))(MuiDialogContent);
 
-const DialogActions = withStyles((theme) => ({
+const DialogActions = withStyles(theme => ({
   root: {
     margin: 0,
-    padding: theme.spacing(1),
-  },
+    padding: theme.spacing(1)
+  }
 }))(MuiDialogActions);
 
-const WithdrawRewardsModal = (props) => {
-  const {
-    data: pools,
-    classes,
-    closeModal,
-    modalOpen,
-    showHash,
-    errorReturned,
-  } = props;
+const WithdrawRewardsModal = props => {
+  const {data: pools, classes, closeModal, modalOpen, showHash, errorReturned} = props;
   const fullScreen = window.innerWidth < 450;
   const withdrawReward = useWithdrawReward();
-  const [curPool, setCurPool] = useState({ rewardToken: {} });
+  const [curPool, setCurPool] = useState({rewardToken: {}});
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!pools || pools.length === 0) return;
-    pools.forEach((pool) => {
-      if (pool.entryContractAddress) {
+    pools.forEach(pool => {
+      if (pool.entryContractAddress != "0x0000000000000000000000000000000000000000" && !curPool.rewardToken.name) {
         setCurPool(pool);
       }
     });
   }, [pools]);
 
-  const poolHandleChange = (event) => {
+  const poolHandleChange = event => {
     setCurPool(event.target.value);
   };
 
@@ -78,7 +67,7 @@ const WithdrawRewardsModal = (props) => {
     try {
       const tx = await withdrawReward(curPool);
       showHash(tx.hash);
-      //await tx.wait();
+      await tx.wait();
     } catch (error) {
       console.log(error);
       errorReturned(JSON.stringify(error));
@@ -94,10 +83,7 @@ const WithdrawRewardsModal = (props) => {
       fullWidth={true}
       fullScreen={fullScreen}
     >
-      <DialogTitle
-        id="customized-dialog-title"
-        onClose={closeModal}
-      ></DialogTitle>
+      <DialogTitle id="customized-dialog-title" onClose={closeModal}></DialogTitle>
       <DialogContent>
         <>
           <Typography gutterBottom className={classes.mb16}>
@@ -106,11 +92,7 @@ const WithdrawRewardsModal = (props) => {
               {": "}
             </span>
             <span className={classes.rightText}>
-              <img
-                className={classes.icon}
-                src={"/" + curPool.rewardToken.symbol + ".png"}
-                alt=""
-              />{" "}
+              <img className={classes.icon} src={"/" + curPool.rewardToken.symbol + ".png"} alt="" />{" "}
               <NumberFormat
                 value={curPool.rewardsAvailable}
                 defaultValue={"-"}
@@ -125,15 +107,11 @@ const WithdrawRewardsModal = (props) => {
           </Typography>
           <div className={classes.customSelect}>
             <FormattedMessage id="RP_LIST_TITLE" />:
-            <img
-              className={classes.icon}
-              src={"/" + curPool.rewardToken.symbol + ".png"}
-              alt=""
-            />
+            <img className={classes.icon} src={"/" + curPool.rewardToken.symbol + ".png"} alt="" />
             {curPool.id}
             <Select value={curPool} onChange={poolHandleChange}>
               {pools.map((v, i) => {
-                if (v.entryContractAddress) {
+                if (v.entryContractAddress != "0x0000000000000000000000000000000000000000") {
                   return (
                     <MenuItem value={v} key={i}>
                       {v.id}
@@ -147,18 +125,8 @@ const WithdrawRewardsModal = (props) => {
         </>
       </DialogContent>
       <DialogActions>
-        <Button
-          className={classes.buttonSecondary}
-          disabled={loading}
-          autoFocus
-          onClick={onClaim}
-          fullWidth={true}
-        >
-          {loading ? (
-            <CircularProgress></CircularProgress>
-          ) : (
-            <FormattedMessage id="RP_WITHDRAW_REWARDS" />
-          )}
+        <Button className={classes.buttonSecondary} disabled={loading} autoFocus onClick={onClaim} fullWidth={true}>
+          {loading ? <CircularProgress></CircularProgress> : <FormattedMessage id="RP_WITHDRAW_REWARDS" />}
         </Button>
       </DialogActions>
     </Dialog>
