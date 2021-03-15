@@ -203,7 +203,7 @@ const Pool = props => {
                   <Button
                     variant="contained"
                     size="small"
-                    style={{margin: "12px 0", minWidth: "95%"}}
+                    style={{margin: "0px 0", minWidth: "95%"}}
                     className={classes.button}
                     disabled={loading}
                     onClick={onDeposit}
@@ -215,7 +215,7 @@ const Pool = props => {
                   <Button
                     variant="contained"
                     size="small"
-                    style={{margin: "12px 0", minWidth: "95%"}}
+                    style={{margin: "0px 0", minWidth: "95%"}}
                     className={classes.buttonSecondary}
                     disabled={loading}
                     onClick={onWithdraw}
