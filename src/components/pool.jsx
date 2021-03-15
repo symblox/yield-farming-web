@@ -179,14 +179,14 @@ const Pool = props => {
                     if (i === 0) {
                       return (
                         <span className={classes.textThirdColor} style={{float: "right"}}>
-                          {" / "} {value}
+                          {value}
                         </span>
                       );
                     } else {
                       return (
-                        <span className={classes.textThirdColor} style={{float: "right"}}>
+                        <div className={classes.textThirdColor} style={{textAlign: "right"}}>
                           {value}
-                        </span>
+                        </div>
                       );
                     }
                   }}
