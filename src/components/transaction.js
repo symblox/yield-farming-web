@@ -279,6 +279,12 @@ const Transaction = props => {
         <div style={{textAlign: "center", marginBottom: "16px"}}>
           <img
             className={classes.icon}
+            onClick={() => {
+              const tempToken = sellToken;
+              setSellToken(buyToken);
+              setBuyToken(tempToken);
+              fetchTradePrice("swapExactIn", buyToken, sellToken);
+            }}
             style={{
               width: "20px"
             }}
