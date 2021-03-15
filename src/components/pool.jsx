@@ -13,6 +13,7 @@ import NumberFormat from "react-number-format";
 import styles from "../styles/pool";
 import {fetchPoolTokenBalance} from "../hooks/usePoolTokenBalance";
 import {Web3Context} from "../contexts/Web3Context";
+import {bnum} from "../utils/bignumber";
 
 const Pool = props => {
   const {data: pool, apr, loading, onDeposit, onWithdraw, onJoin, classes} = props;
@@ -167,7 +168,14 @@ const Pool = props => {
               return (
                 <NumberFormat
                   key={i}
-                  value={(parseFloat(pool.stakeAmount) / parseFloat(pool.totalSupply)) * poolTokenBalance[v.symbol]}
+                  value={
+                    pool.stakeAmount && pool.totalSupply && poolTokenBalance[v.symbol]
+                      ? bnum(pool.stakeAmount)
+                          .div(bnum(pool.totalSupply))
+                          .times(poolTokenBalance[v.symbol])
+                          .toFixed(1, 4)
+                      : "-"
+                  }
                   defaultValue={"-"}
                   displayType={"text"}
                   thousandSeparator={true}
