@@ -7,6 +7,7 @@ const zh_CN = {
   LP_TRADING_PAIR: "交易对",
   LP_SYX_PRICE: "价格",
   LP_MY_SHARE: "我的份额",
+  LP_MY_DEPOSIT: "质押数量",
   LP_DEPOSIT: "质押",
   LP_WITHDRAW: "赎回",
   LP_DEPOSIT_WITHDRAW_REWARD: "确定",

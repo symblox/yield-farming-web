@@ -7,6 +7,7 @@ const en_US = {
   LP_TRADING_PAIR: "Trading Pair",
   LP_SYX_PRICE: "Price",
   LP_MY_SHARE: "My Shares",
+  LP_MY_DEPOSIT: "Guaranty Amount",
   LP_DEPOSIT: "Guaranty",
   LP_WITHDRAW: "Redeem",
   LP_DEPOSIT_WITHDRAW_REWARD: "Confirm",
