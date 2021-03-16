@@ -82,7 +82,7 @@ const en_US = {
   REFERRER: "Referrer Address",
   WALLET_CONNECT_TO: "Connected to {network}",
   WALLET_DISCONNECT: "Discconnect",
-  EXCHANGE: "Exchange",
+  EXCHANGE: "Swap",
   EXCHANGE_TITLE: "Redeem SYX tokens for ALL NEW Symblox yield farming",
   EXCHANGE_SUB_TITLE: "How many SYX tokens would you like to redeem for the new ones?",
   EXCHANGE_TIP: "Enter the amount you would like to exchange",
