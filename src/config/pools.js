@@ -172,8 +172,8 @@ let ethSyxPool2 = {
 function getPools() {
   // assign pool IDs to the pools
   if (process.env.REACT_APP_ENV === "production") {
-    [vlxSyxPool2.index, svlxSyxPool2.index, ethSyxPool2.index, usdtSyxPool2.index] = [0, 1, 2, 3]; //2 is error
-    return [vlxSyxPool2, svlxSyxPool2, ethSyxPool2, usdtSyxPool2];
+    [vlxSyxPool2.index, svlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 2, 3];
+    return [vlxSyxPool2, svlxSyxPool2, usdtSyxPool2, ethSyxPool2];
   } else {
     [vlxSyxPool2.index, svlxSyxPool2.index, ethSyxPool2.index, usdtSyxPool2.index] = [0, 1, 2, 3]; //2 is error
     return [vlxSyxPool2, svlxSyxPool2, ethSyxPool2, usdtSyxPool2];
