@@ -108,8 +108,8 @@ const en_US = {
     "The amount that can be withdrawn directly is {maxWithdrawable}, booked amount{orderedAmount}, and the remaining amount can be withdrawn in {stakingEpochDuration} minutes after applying",
   WITHDRAW_APPLY: "Apply for withdrawal",
   EXPECTED_TO_GET: "Expected to get",
-  DEPOSIT: "Guaranty",
-  WITHDRAW: "Redeem",
+  DEPOSIT: "Stake",
+  WITHDRAW: "Unstake",
   SVLX_WITHDRAW_ERR: "VELAS Staking Node is in locked state now. Please try again in 30 minutes",
   EXCHANGEABLE_AMOUNT_NOT_ENOUGH: "exchangeable amount not enough"
 };
