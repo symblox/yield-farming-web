@@ -33,12 +33,10 @@ export async function fetchPoolTokenBalance(
 ) {
   if (provider && pool) {
     try {
-      let array = [];
       setMulticallAddress(providerNetwork.chainId, config.multicall);
       const ethcallProvider = new Provider(provider);
       await ethcallProvider.init();
       const bptContract = new Contract(pool.address, pool.abi);
-
       let calls = [];
       for (let i = 0; i < pool.supportTokens.length; i++) {
         calls.push(bptContract.getBalance(pool.supportTokens[i].address));
@@ -52,9 +50,9 @@ export async function fetchPoolTokenBalance(
           pool.supportTokens[i].decimals
         );
       }
-
       setPoolTokenBalance(amounts);
     } catch (e) {
+      console.log("fetchPoolTokenBalance error");
       console.error(e);
       return;
     }

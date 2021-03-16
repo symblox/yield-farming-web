@@ -5,6 +5,7 @@ import bptRefConnector from "./bptRefConnector.json";
 import wvlxConnector from "./wvlxConnector.json";
 import connectorFactory from "./connectorFactory.json";
 import erc20 from "./erc20.json";
+import exchangeProxy from "./exchangeProxy.json";
 import svlx from "./svlx.json";
 import stakingAuRa from "./stakingAuRa.json";
 
@@ -15,6 +16,7 @@ const bptRefConnectorABI = bptRefConnector;
 const wvlxConnectorABI = wvlxConnector;
 const connectorFactoryABI = connectorFactory;
 const erc20ABI = erc20;
+const exchangeProxyAbi = exchangeProxy;
 const svlxABI = svlx;
 const stakingAuRaABI = stakingAuRa;
 
@@ -26,6 +28,7 @@ export default {
   wvlxConnectorABI,
   connectorFactoryABI,
   erc20ABI,
+  exchangeProxyAbi,
   svlxABI,
   stakingAuRaABI,
 };

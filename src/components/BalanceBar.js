@@ -39,6 +39,7 @@ const BalanceBar = ({ classes, balances }) => {
             key={i}
             outline={true}
             name={data.name}
+            symbol={data.name}
             balance={data.balance}
           />
         ))}

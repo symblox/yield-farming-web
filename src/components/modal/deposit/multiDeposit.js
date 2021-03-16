@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
-import { FormattedMessage } from "react-intl";
-import { atom, useAtom } from "jotai";
-import { parseUnits, parseEther } from "@ethersproject/units";
-import { BigNumber } from "@ethersproject/bignumber";
-import { withStyles } from "@material-ui/core/styles";
+import React, {useContext, useEffect, useState} from "react";
+import {FormattedMessage} from "react-intl";
+import {atom, useAtom} from "jotai";
+import {parseUnits, parseEther} from "@ethersproject/units";
+import {AddressZero} from "@ethersproject/constants";
+import {withStyles} from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
@@ -17,32 +17,22 @@ import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import NumberFormat from "react-number-format";
-import { Web3Context } from "../../../contexts/Web3Context";
-import availableAmountAtom, {
-  fetchAvailableValues,
-} from "../../../hooks/useAvailableAmount";
-import tokenBalanceAtom, {
-  fetchTokenBalanceValues,
-} from "../../../hooks/useTokenBalance";
-import poolTokenBalanceAtom, {
-  fetchPoolTokenBalance,
-} from "../../../hooks/usePoolTokenBalance";
+import {Web3Context} from "../../../contexts/Web3Context";
+import availableAmountAtom, {fetchAvailableValues} from "../../../hooks/useAvailableAmount";
+import tokenBalanceAtom, {fetchTokenBalanceValues} from "../../../hooks/useTokenBalance";
+import poolTokenBalanceAtom, {fetchPoolTokenBalance} from "../../../hooks/usePoolTokenBalance";
 import useMultiDeposit from "../../../hooks/payables/useMultiDeposit";
-
+import {bnum} from "../../../utils/bignumber";
 import styles from "../../../styles/deposit";
 import config from "../../../config";
 
-const DialogTitle = withStyles(styles)((props) => {
-  const { children, classes, onClose, ...other } = props;
+const DialogTitle = withStyles(styles)(props => {
+  const {children, classes, onClose, ...other} = props;
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
       {onClose ? (
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={onClose}
-        >
+        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
           <CloseIcon />
         </IconButton>
       ) : null}
@@ -63,7 +53,7 @@ function getUrlParams() {
   return theRequest;
 }
 
-const loadingAtom = atom((get) => {
+const loadingAtom = atom(get => {
   const availableAmounts = get(availableAmountAtom);
   const poolTokenBalance = get(poolTokenBalanceAtom);
   const tokenBalances = get(tokenBalanceAtom);
@@ -77,57 +67,49 @@ const loadingAtom = atom((get) => {
   return loading;
 });
 
-const MultiDepositModal = (props) => {
-  const {
-    data: pool,
-    classes,
-    closeModal,
-    modalOpen,
-    showHash,
-    errorReturned,
-  } = props;
+const MultiDepositModal = props => {
+  const {data: pool, classes, closeModal, modalOpen, showHash, errorReturned} = props;
   const fullScreen = window.innerWidth < 450;
   const poolAtom = atom(pool);
-  const maxTokenDepositAmountAtom = atom((get) => {
+  const maxTokenDepositAmountAtom = atom(get => {
     const pool = get(poolAtom);
-    const poolTokenBalance = get(poolTokenBalanceAtom);
+    const poolTokenBalances = get(poolTokenBalanceAtom);
     const tokenBalances = get(tokenBalanceAtom);
     let maxTokenDepositAmount = {},
-      minRatio = -1;
+      minRatio = bnum("Infinity");
     for (let key in tokenBalances) {
+      let tokenBalance = bnum(tokenBalances[key]);
+      const poolTokenBalance = bnum(poolTokenBalances[key]);
       if (key === "VLX") {
-        tokenBalances[key] =
-          tokenBalances[key] > config.minReservedAmount
-            ? tokenBalances[key] - config.minReservedAmount
-            : 0;
+        const minReservedAmount = bnum(config.minReservedAmount);
+        tokenBalance = tokenBalance.gt(minReservedAmount) ? tokenBalance.minus(minReservedAmount) : 0;
       }
-
-      const tokenMaxIn = poolTokenBalance[key] * pool.maxIn;
+      const tokenMaxIn = poolTokenBalance.times(bnum(pool.maxIn));
       let maxAmount;
-      if (tokenMaxIn > tokenBalances[key]) {
-        maxAmount = tokenBalances[key];
+      if (tokenMaxIn.gt(tokenBalance)) {
+        maxAmount = tokenBalance;
       } else {
         maxAmount = tokenMaxIn;
       }
-      const ratio = maxAmount / poolTokenBalance[key];
-      if (minRatio != -1) {
-        if (ratio < minRatio) {
-          minRatio = ratio;
-        }
-      } else {
+      const ratio = maxAmount.div(poolTokenBalance);
+
+      if (minRatio.isNaN() || ratio.lt(minRatio)) {
         minRatio = ratio;
       }
 
-      maxTokenDepositAmount[key] = poolTokenBalance[key];
+      maxTokenDepositAmount[key] = poolTokenBalance;
     }
     for (let key in maxTokenDepositAmount) {
-      maxTokenDepositAmount[key] = maxTokenDepositAmount[key] * minRatio;
+      maxTokenDepositAmount[key] = maxTokenDepositAmount[key].times(minRatio);
+      if (maxTokenDepositAmount[key].isNaN()) {
+        maxTokenDepositAmount[key] = "-";
+      }
     }
 
     return maxTokenDepositAmount;
   });
   const multiDeposit = useMultiDeposit();
-  const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const {account, ethersProvider, providerNetwork} = useContext(Web3Context);
   const [amounts, setAmounts] = useState({});
   const [referral, setReferral] = useState("");
   const [txLoading, setTxLoading] = useState(false);
@@ -136,70 +118,48 @@ const MultiDepositModal = (props) => {
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [poolTokenBalance, setPoolTokenBalance] = useAtom(poolTokenBalanceAtom);
   const [maxTokenDepositAmount] = useAtom(maxTokenDepositAmountAtom);
+
   useEffect(() => {
     setReferral(getUrlParams()["referral"]);
     if (!ethersProvider || !pool) return;
-    fetchAvailableValues(
-      ethersProvider,
-      providerNetwork,
-      pool,
-      setAvailableAmounts
-    );
+    fetchAvailableValues(ethersProvider, providerNetwork, pool, setAvailableAmounts);
 
-    fetchTokenBalanceValues(
-      account,
-      ethersProvider,
-      providerNetwork,
-      pool.supportTokens,
-      setTokenBalances
-    );
+    fetchTokenBalanceValues(account, ethersProvider, providerNetwork, pool.supportTokens, setTokenBalances);
 
-    fetchPoolTokenBalance(
-      ethersProvider,
-      providerNetwork,
-      pool,
-      setPoolTokenBalance
-    );
+    fetchPoolTokenBalance(ethersProvider, providerNetwork, pool, setPoolTokenBalance);
   }, [ethersProvider, pool]);
 
-  const referralChange = (event) => {
+  const referralChange = event => {
     setReferral(event.target.value);
   };
 
-  const amountChange = (event) => {
-    const { name, value } = event.target;
-    const ratio =
-      parseFloat(value) /
-      parseFloat(
-        maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol]
-      );
+  const amountChange = event => {
+    const {name, value} = event.target;
+    const ratio = bnum(value).div(bnum(maxTokenDepositAmount[pool.supportTokens[parseInt(name)].symbol]));
 
     let amounts = [];
     pool.supportTokens.forEach((token, i) => {
       if (name === i + "") {
         amounts.push(value);
       } else {
-        let amount = ratio * parseFloat(maxTokenDepositAmount[token.symbol]);
-        const minAmount = 0.000001;
-        amount = parseInt(amount * 1000000) / 1000000;
-        if (amount < minAmount)
-          amount = amount.toLocaleString("fullwide", { useGrouping: false });
-
-        amounts.push(Number.isNaN(ratio) ? "" : amount + "");
+        let amount;
+        if (ratio.eq(bnum(0)) || bnum(maxTokenDepositAmount[token.symbol]).eq(bnum(0))) {
+          amount = 0;
+        } else {
+          amount = ratio.times(bnum(maxTokenDepositAmount[token.symbol]));
+        }
+        amounts.push(amount.toFixed(token.decimals, 0));
       }
     });
     setAmounts(amounts);
   };
 
   const max = (token, key) => {
-    let amount = parseFloat(maxTokenDepositAmount[token.symbol]) || 0;
-    const minAmount = 0.000001;
-    if (amount < minAmount) amount = 0;
     amountChange({
       target: {
         name: key,
-        value: parseInt(amount * 1000000) / 1000000 + "",
-      },
+        value: maxTokenDepositAmount[token.symbol]
+      }
     });
   };
 
@@ -212,44 +172,25 @@ const MultiDepositModal = (props) => {
 
   const confirm = async () => {
     // @TODO - fix calcs so no buffer is needed
-    const buffer = 0.995;
+    const buffer = bnum("0.995"); //0.5%
     //All token ratios are the same, so just use the first one
-    const ratio =
-      parseFloat(amounts[0]) /
-      parseFloat(poolTokenBalance[pool.supportTokens[0].symbol]);
+    const ratio = bnum(amounts[0]).div(bnum(poolTokenBalance[pool.supportTokens[0].symbol]));
+    const poolAmountOut = parseEther(bnum(pool.totalSupply).times(ratio).times(buffer).toFixed(pool.decimals, 1));
 
-    const bptAmount = parseFloat(pool.totalSupply) * parseFloat(ratio);
-    const poolAmountOut = parseEther(
-      parseInt(bptAmount * 100000000000 * buffer) / 100000000000 + ""
-    );
-    // console.log({
-    //   ratio,
-    //   bptAmount,
-    //   totalSupply: pool.totalSupply,
-    //   poolAmountOut,
-    // });
-
-    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-    const tokensIn = pool.supportTokens.map((v) => {
+    const tokensIn = pool.supportTokens.map(v => {
       if (v.symbol === "VLX") {
-        return ZERO_ADDRESS;
+        return AddressZero;
       } else {
         return v.address;
       }
     });
 
     const maxAmountsIn = amounts.map((v, i) => {
-      console.log(v, pool.supportTokens[i].decimals);
-      return parseUnits(v + "", pool.supportTokens[i].decimals);
+      return parseUnits(bnum(v).toFixed(pool.supportTokens[i].decimals, 1), pool.supportTokens[i].decimals);
     });
 
-    const params = [
-      poolAmountOut,
-      tokensIn,
-      maxAmountsIn,
-      referral || ZERO_ADDRESS,
-    ];
-    console.log(params);
+    const params = [poolAmountOut, tokensIn, maxAmountsIn, referral || AddressZero];
+
     setTxLoading(true);
     try {
       const tx = await multiDeposit(pool, params);
@@ -266,44 +207,33 @@ const MultiDepositModal = (props) => {
   const inputHtmls = pool.supportTokens.map((v, i) => {
     return (
       <div className={classes.formContent} key={i}>
-        <FormControl variant="outlined" style={{ flex: "4" }}>
+        <FormControl variant="outlined" style={{flex: "4"}}>
           <OutlinedInput
             className={classes.customInput}
             name={i + ""}
-            error={
-              parseFloat(amounts[i] || 0) >
-              parseFloat(maxTokenDepositAmount[v.symbol] || 0)
-            }
+            error={parseFloat(amounts[i] || 0) > parseFloat(maxTokenDepositAmount[v.symbol] || 0)}
             id="outlined-adornment-password"
             type={"text"}
             value={amounts[i] || ""}
             onChange={amountChange}
             endAdornment={
               <InputAdornment position="end">
-                <Button
-                  className={classes.maxBtn}
-                  disabled={loading || txLoading}
-                  onClick={max.bind(this, v, i + "")}
-                >
+                <Button className={classes.maxBtn} disabled={loading || txLoading} onClick={max.bind(this, v, i + "")}>
                   <FormattedMessage id="POPUP_INPUT_MAX" />
                 </Button>
               </InputAdornment>
             }
           />
-          {parseFloat(amounts[i] || 0) >
-          parseFloat(maxTokenDepositAmount[v.symbol] || 0) ? (
-            <span style={{ color: "red" }}>
+          {parseFloat(amounts[i] || 0) > parseFloat(maxTokenDepositAmount[v.symbol] || 0) ||
+          parseFloat(maxTokenDepositAmount[v.symbol] || 0) === 0 ? (
+            <span style={{color: "red"}}>
               <FormattedMessage id="TRADE_ERROR_BALANCE" />
             </span>
           ) : (
             <></>
           )}
         </FormControl>
-        <FormControl
-          variant="outlined"
-          className={classes.formControl}
-          style={{ flex: "1" }}
-        >
+        <FormControl variant="outlined" className={classes.formControl} style={{flex: "1"}}>
           <div className={classes.tokenBtn}>
             <img className={classes.icon} src={"/" + v.name + ".png"} alt="" />
             {v.name}
@@ -327,14 +257,14 @@ const MultiDepositModal = (props) => {
       <MuiDialogContent>
         {pool.referral ? (
           <>
-            <Typography gutterBottom style={{ overflow: "scroll" }}>
-              <span style={{ color: "#ACAEBC" }}>
+            <Typography gutterBottom style={{overflow: "scroll"}}>
+              <span style={{color: "#ACAEBC"}}>
                 <FormattedMessage id="REFERRER" />
                 {": "}
               </span>
             </Typography>
             <div className={classes.formContent}>
-              <FormControl variant="outlined" style={{ flex: "1" }}>
+              <FormControl variant="outlined" style={{flex: "1"}}>
                 <OutlinedInput
                   className={classes.customInput}
                   id="outlined-adornment-password"
@@ -348,13 +278,13 @@ const MultiDepositModal = (props) => {
         ) : (
           <></>
         )}
-        <div style={{ overflow: "scroll" }}>
-          <span style={{ color: "#ACAEBC" }}>
+        <div style={{overflow: "scroll"}}>
+          <span style={{color: "#ACAEBC"}}>
             <FormattedMessage id="TOTAL_STAKE" />
             {": "}
           </span>
           <span className={classes.rightText}>
-            {Array.isArray(availableAmounts) ? (
+            {Array.isArray(availableAmounts) && availableAmounts.length > 0 ? (
               availableAmounts.map((v, i) => (
                 <span key={i}>
                   <NumberFormat
@@ -375,8 +305,8 @@ const MultiDepositModal = (props) => {
             )}
           </span>
         </div>
-        <Typography gutterBottom style={{ overflow: "scroll" }}>
-          <span style={{ color: "#ACAEBC" }}>
+        <Typography gutterBottom style={{overflow: "scroll"}}>
+          <span style={{color: "#ACAEBC"}}>
             <FormattedMessage id="POPUP_DEPOSITABLE_AMOUNT" />
             {": "}
           </span>
@@ -387,12 +317,9 @@ const MultiDepositModal = (props) => {
                   <NumberFormat
                     value={
                       maxTokenDepositAmount[v.symbol]
-                        ? maxTokenDepositAmount[v.symbol].toLocaleString(
-                            undefined,
-                            {
-                              maximumFractionDigits: 10,
-                            }
-                          )
+                        ? maxTokenDepositAmount[v.symbol].toLocaleString(undefined, {
+                            maximumFractionDigits: 10
+                          })
                         : "-"
                     }
                     defaultValue={"-"}
@@ -402,7 +329,7 @@ const MultiDepositModal = (props) => {
                     suffix={v.name}
                     decimalScale={4}
                     fixedDecimalScale={true}
-                    renderText={(value) => <span>{value}</span>}
+                    renderText={value => <span>{value}</span>}
                   />
                   {i === pool.supportTokens.length - 1 ? "" : " / "}
                 </span>
@@ -424,20 +351,12 @@ const MultiDepositModal = (props) => {
             suffix={pool.rewardToken.name}
             decimalScale={4}
             fixedDecimalScale={true}
-            renderText={(value) => (
-              <span className={classes.rightText}>{value}</span>
-            )}
+            renderText={value => <span className={classes.rightText}>{value}</span>}
           />
         </Typography>
       </MuiDialogContent>
       <MuiDialogActions>
-        <Button
-          autoFocus
-          disabled={loading || txLoading}
-          onClick={confirm}
-          className={classes.button}
-          fullWidth={true}
-        >
+        <Button autoFocus disabled={loading || txLoading} onClick={confirm} className={classes.button} fullWidth={true}>
           {loading || txLoading ? (
             <CircularProgress></CircularProgress>
           ) : (

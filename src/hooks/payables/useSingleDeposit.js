@@ -4,7 +4,7 @@ import { MaxUint256, AddressZero } from "@ethersproject/constants";
 import { Web3Context } from "../../contexts/Web3Context";
 import config from "../../config";
 
-export default function useMultiDeposit() {
+export default function useSingleDeposit() {
   const { account, signer } = useContext(Web3Context);
 
   const approve = async (tokenAddress, targetAddress, amount) => {
@@ -17,7 +17,7 @@ export default function useMultiDeposit() {
   };
 
   return useCallback(
-    async (pool, params) => {
+    async (pool, params, tokenAmountIn) => {
       const connectorFactoryContract = new Contract(
         config.connectorFactory,
         config.connectorFactoryABI,
@@ -29,37 +29,31 @@ export default function useMultiDeposit() {
       );
 
       let value = "0";
-      //0: poolAmountOut,1: tokensIn,2: maxAmountsIn,3: referral
-      const [, tokensIn, maxAmountsIn] = params;
-      if (Array.isArray(tokensIn)) {
-        for (let i = 0; i < tokensIn.length; i++) {
-          if (tokensIn[i] === AddressZero) {
-            value = maxAmountsIn[i];
-          } else {
-            await approve(tokensIn[i], connectorAddress, maxAmountsIn[i]);
-          }
-        }
+      let action = "deposit(address,uint256,uint256,address)";
+      if (
+        params[0] === AddressZero ||
+        params[0].toLowerCase() === config.wvlx.toLowerCase()
+      ) {
+        value = tokenAmountIn;
+      } else {
+        await approve(params[0], connectorAddress, params[1]);
       }
+
       const connectorContract = new Contract(
         connectorAddress,
         pool.entryContractABI,
         signer
       );
-
       let gasLimit;
       try {
-        gasLimit = await connectorContract.estimateGas[
-          "multiDeposit(uint256,address[],uint256[],address)"
-        ](...params, {
+        gasLimit = await connectorContract.estimateGas[action](...params, {
           value,
         });
       } catch (err) {
         gasLimit = 1000000;
       }
 
-      return connectorContract[
-        "multiDeposit(uint256,address[],uint256[],address)"
-      ](...params, {
+      return connectorContract[action](...params, {
         gasLimit,
         value,
       });
