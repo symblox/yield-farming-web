@@ -40,8 +40,8 @@ function env() {
       svlxSyxMultiBpt: "0x2af1FEa48018Fe9F1266d67d45B388935df1c14D",
       usdtSyxMultiBpt: "0xE7557EFbE705E425De6A57E90447ba5AD70E9dE5",
       ethSyxMultiBpt: "0x974D24a6bce9e0A0A27228e627c9CA1437fE0286",
-      connectorFactory: "0xBE6A1f0b0236BB39E0b16B0fc5cb6C291fFdFC2E", //no set governor
-      bptConnector: "0xC37673764FEd37EB3c3f3C46D696B41f322123C6", //BptReferralConnector
+      connectorFactory: "0x8Ee0f91b43D7Dd3685198510e6A4b7861A3eacbf", //no set governor
+      bptConnector: "0x4e6D9C58856b0ABF8A7ca703d4a5D5f2a0714921", //BptReferralConnector
       rewardPool: "0x44DDf8BDcF16667f0E9F452D3E3733Dddf438da0",
       // wvlxConnector: "0xf6182f2924065343947E7F12ec4a989Fd9D2A9Ec",
       timelock: "0xCCBd500aDdE791f4133cE0fec95B2042fF4f9ab3",
