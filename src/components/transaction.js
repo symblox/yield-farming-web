@@ -218,7 +218,7 @@ const Transaction = props => {
       try {
         const tx = await trade(tradeType, swaps, sellToken.address, buyToken.address, maxTotalAmountIn);
         showHash(tx.hash);
-        //await tx.wait();
+        await tx.wait();
       } catch (error) {
         console.log(error);
         errorReturned(JSON.stringify(error));
@@ -235,13 +235,15 @@ const Transaction = props => {
       try {
         const tx = await trade(tradeType, swaps, sellToken.address, buyToken.address, tokenAmountIn, minAmountOut);
         showHash(tx.hash);
-        //await tx.wait();
+        await tx.wait();
       } catch (error) {
         console.log(error);
         errorReturned(JSON.stringify(error));
       }
     }
-    
+    fetchTokenBalanceValues(account, ethersProvider, providerNetwork, tradeTokens, setTokenBalances);
+    setSellAmount("");
+    setBuyAmount("");
     setTxLoading(false);
   };
 
