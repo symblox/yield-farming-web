@@ -35,13 +35,15 @@ const Transaction = props => {
   const tradableAmountAtom = atom(get => {
     const tokenBalances = get(tokenBalanceAtom);
     let tradableAmount = {};
+    let balance;
     for (let key in tokenBalances) {
+      balance = tokenBalances[key];
       if (key === "VLX") {
-        tokenBalances[key] =
+        balance =
           tokenBalances[key] > config.minReservedAmount ? tokenBalances[key] - config.minReservedAmount : 0;
       }
 
-      tradableAmount[key] = tokenBalances[key];
+      tradableAmount[key] = balance;
     }
 
     return tradableAmount;
