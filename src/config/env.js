@@ -20,6 +20,8 @@ function env() {
       requiredNetworkId,
       requiredNetwork: "VELAS Mainnet",
       multicall: "0xB417D3E1B9A6E07e4fd849Ad45564Cf63e87A538",
+      bRegistry: "0x0cef9adB991dDe1930F458cD998E52fa352cD57B",
+      exchangeProxy: "0xDb2ef43eB626AF1000f743a60b877e03f98561d9",
       rpcUrl: "https://explorer.velas.com/rpc",
       browser: browserUrls[requiredNetworkId],
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
@@ -47,6 +49,7 @@ function env() {
       timelock: "0xCCBd500aDdE791f4133cE0fec95B2042fF4f9ab3",
       governor: "0x8fA9dD0dA03bC91508D70d2C254dBC25560C04b5",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",
+      exchangeAbi: abis.exchangeProxyAbi,
       erc20ABI: abis.erc20ABI,
       rewardPoolABI: abis.rewardPoolABI,
       bptABI: abis.bptABI,
