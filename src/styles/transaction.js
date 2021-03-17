@@ -98,12 +98,18 @@ const styles = (theme) => ({
       color: "#ACAEBC",
     },
   },
+  slippageInput: {
+    textAlign: "right !important",
+    border: "1px solid #ccc",
+    padding: "4px 8px",
+    width: "100px"
+  },
   maxBtn: {
     padding: "10px 18px",
   },
   textAlignRight: {
     textAlign: "right !important",
-  },
+  }
 });
 
 export default styles;

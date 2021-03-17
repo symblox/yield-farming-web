@@ -422,7 +422,7 @@ const Transaction = props => {
             <Input
               id="slippage-tolerance"
               name="slippage"
-              classes={{input: classes.textAlignRight}}
+              classes={{input: classes.slippageInput}}
               value={slippageTolerance}
               onChange={amountChange}
               endAdornment={<InputAdornment position="end">%</InputAdornment>}
