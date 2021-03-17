@@ -20,6 +20,8 @@ function env() {
       requiredNetworkId,
       requiredNetwork: "VELAS Mainnet",
       multicall: "0xB417D3E1B9A6E07e4fd849Ad45564Cf63e87A538",
+      bRegistry: "0x0cef9adB991dDe1930F458cD998E52fa352cD57B",
+      exchangeProxy: "0xDb2ef43eB626AF1000f743a60b877e03f98561d9",
       rpcUrl: "https://explorer.velas.com/rpc",
       browser: browserUrls[requiredNetworkId],
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
