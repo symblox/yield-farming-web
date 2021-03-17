@@ -195,7 +195,13 @@ const Transaction = props => {
   const max = () => {
     const amount = parseFloat(tradableAmount[sellToken.symbol]) || "";
     setSellAmount(amount);
-    setBuyAmount(amount * price || "");
+    setTradeType("swapExactIn");
+    fetchTradePrice("swapExactIn", sellToken, buyToken, amount, buyAmount => {
+      setBuyAmount(formatUnits(
+        buyAmount,
+         buyToken.decimals
+      ) || ""); 
+    });
   };
 
   const confirm = async () => {
