@@ -101,7 +101,7 @@ const styles = (theme) => ({
     },
   },
   slippageInput: {
-    textAlign: "right !important",
+    textAlign: "center !important",
     border: "1px solid #ccc",
     padding: "4px 8px",
     width: "100px"
