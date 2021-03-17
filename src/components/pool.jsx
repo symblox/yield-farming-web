@@ -173,7 +173,7 @@ const Pool = props => {
                       ? bnum(pool.stakeAmount)
                           .div(bnum(pool.totalSupply))
                           .times(poolTokenBalance[v.symbol])
-                          .toFixed(1, 4)
+                          .toFixed(4,1)
                       : "-"
                   }
                   defaultValue={"-"}
