@@ -49,6 +49,7 @@ function env() {
       timelock: "0xCCBd500aDdE791f4133cE0fec95B2042fF4f9ab3",
       governor: "0x8fA9dD0dA03bC91508D70d2C254dBC25560C04b5",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",
+      exchangeAbi: abis.exchangeProxyAbi,
       erc20ABI: abis.erc20ABI,
       rewardPoolABI: abis.rewardPoolABI,
       bptABI: abis.bptABI,
