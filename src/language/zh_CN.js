@@ -101,7 +101,7 @@ const zh_CN = {
   SWAP_SVLX: "sVLX",
   V1: "V1",
   LANGUAGE: "语言",
-  SLIPPAGE_TOLERANCE: "滑点",
+  SLIPPAGE_TOLERANCE: "价格滑点保护",
   MIN_RECEIVED: "最低收到",
   WITHDRAWABLE_TIP:
     "可直接取出金额为{maxWithdrawable}, 已预约金额{orderedAmount}, 剩余可在申请后{stakingEpochDuration}分钟后取出",
