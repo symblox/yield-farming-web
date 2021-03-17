@@ -17,7 +17,7 @@ export default function useTrade() {
   };
 
   return useCallback(
-    async (swaps, sellToken, buyToken, tokenAmountIn, minAmountOut) => {
+    async (tradeType, swaps, sellToken, buyToken, tokenAmountIn, minAmountOut) => {
       const exchangeContract = new Contract(
         config.exchangeProxy,
         config.exchangeAbi,
@@ -25,9 +25,17 @@ export default function useTrade() {
       );
 
       let value = "0";
-      let action =
+      let action,params;
+      if(tradeType === "swapExactIn"){
+        action =
         "multihopBatchSwapExactIn((address,address,address,uint256,uint256,uint256)[][],address,address,uint256,uint256)";
-      let params = [swaps, sellToken, buyToken, tokenAmountIn, minAmountOut];
+        params = [swaps, sellToken, buyToken, tokenAmountIn, minAmountOut];
+      }else{
+        action =
+        "multihopBatchSwapExactOut((address,address,address,uint256,uint256,uint256)[][],address,address,uint256)";
+        params = [swaps, sellToken, buyToken, tokenAmountIn];
+      }
+      
       if (
         sellToken === AddressZero ||
         sellToken.toLowerCase() === config.wvlx.toLowerCase()
