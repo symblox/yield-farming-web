@@ -93,17 +93,25 @@ const styles = (theme) => ({
     "& button": {
       borderRadius: "0px",
       margin: "0",
-      fontSize: "20px",
+      fontSize: "18px",
       lineHeight: "23px",
       color: "#ACAEBC",
+      padding: "0",
+      minWidth: "52px"
     },
+  },
+  slippageInput: {
+    textAlign: "right !important",
+    border: "1px solid #ccc",
+    padding: "4px 8px",
+    width: "100px"
   },
   maxBtn: {
     padding: "10px 18px",
   },
   textAlignRight: {
     textAlign: "right !important",
-  },
+  }
 });
 
 export default styles;

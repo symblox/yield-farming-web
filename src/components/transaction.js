@@ -195,7 +195,13 @@ const Transaction = props => {
   const max = () => {
     const amount = parseFloat(tradableAmount[sellToken.symbol]) || "";
     setSellAmount(amount);
-    setBuyAmount(amount * price || "");
+    setTradeType("swapExactIn");
+    fetchTradePrice("swapExactIn", sellToken, buyToken, amount, buyAmount => {
+      setBuyAmount(formatUnits(
+        buyAmount,
+         buyToken.decimals
+      ) || ""); 
+    });
   };
 
   const confirm = async () => {
@@ -422,7 +428,7 @@ const Transaction = props => {
             <Input
               id="slippage-tolerance"
               name="slippage"
-              classes={{input: classes.textAlignRight}}
+              classes={{input: classes.slippageInput}}
               value={slippageTolerance}
               onChange={amountChange}
               endAdornment={<InputAdornment position="end">%</InputAdornment>}
