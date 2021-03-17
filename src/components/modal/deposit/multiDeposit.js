@@ -103,6 +103,8 @@ const MultiDepositModal = props => {
       maxTokenDepositAmount[key] = maxTokenDepositAmount[key].times(minRatio);
       if (maxTokenDepositAmount[key].isNaN()) {
         maxTokenDepositAmount[key] = "-";
+      }else{
+        maxTokenDepositAmount[key] = maxTokenDepositAmount[key].toFixed(6,1);
       }
     }
 
@@ -148,7 +150,7 @@ const MultiDepositModal = props => {
         } else {
           amount = ratio.times(bnum(maxTokenDepositAmount[token.symbol]));
         }
-        amounts.push(amount.toFixed(token.decimals, 0));
+        amounts.push(amount.toFixed(6, 1));
       }
     });
     setAmounts(amounts);

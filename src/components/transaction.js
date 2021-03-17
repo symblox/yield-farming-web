@@ -35,13 +35,15 @@ const Transaction = props => {
   const tradableAmountAtom = atom(get => {
     const tokenBalances = get(tokenBalanceAtom);
     let tradableAmount = {};
+    let balance;
     for (let key in tokenBalances) {
+      balance = tokenBalances[key];
       if (key === "VLX") {
-        tokenBalances[key] =
+        balance =
           tokenBalances[key] > config.minReservedAmount ? tokenBalances[key] - config.minReservedAmount : 0;
       }
 
-      tradableAmount[key] = tokenBalances[key];
+      tradableAmount[key] = balance;
     }
 
     return tradableAmount;
@@ -58,6 +60,7 @@ const Transaction = props => {
   const [slippageTolerance, setSlippageTolerance] = useState(1); //%
   const [calcPriceLoading, setCalcPriceLoading] = useState(false);
   const [poolList, setPoolList] = useState([]);
+  const [tradeType, setTradeType] = useState("swapExactIn");
   const [sor, setSor] = useAtom(sorAtom);
   const [tokenBalances, setTokenBalances] = useAtom(tokenBalanceAtom);
   const [tradableAmount] = useAtom(tradableAmountAtom);
@@ -109,7 +112,7 @@ const Transaction = props => {
             setPrice((1 / price).toFixed(6));
           }
 
-          if (typeof callback === "function") callback(price);
+          if (typeof callback === "function") callback(totalReturn.toString());
         } catch (error) {
           console.log(error);
           errorReturned(JSON.stringify(error));
@@ -164,16 +167,24 @@ const Transaction = props => {
       case "sellToken":
         setSellAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice("swapExactIn", sellToken, buyToken, amount, price => {
-          setBuyAmount(amount * parseFloat(price) || "");
+        setTradeType("swapExactIn");
+        fetchTradePrice("swapExactIn", sellToken, buyToken, amount, buyAmount => {
+          setBuyAmount(formatUnits(
+            buyAmount,
+             buyToken.decimals
+          ) || ""); 
         });
         break;
       case "buyToken":
         setBuyAmount(value);
         amount = parseFloat(value) || "";
-        fetchTradePrice("swapExactOut", sellToken, buyToken, amount, price =>
-          setSellAmount(amount * parseFloat(price) || "")
-        );
+        setTradeType("swapExactOut");
+        fetchTradePrice("swapExactOut", sellToken, buyToken, amount, sellAmount => {
+          setSellAmount(formatUnits(
+            sellAmount,
+            sellToken.decimals
+          ) || "")
+        });
         break;
       case "slippage":
         setSlippageTolerance(value);
@@ -189,22 +200,42 @@ const Transaction = props => {
 
   const confirm = async () => {
     if (!Array.isArray(swaps) || swaps.length === 0) return;
-    const minAmountOut = parseUnits(
-      bnum(buyAmount)
-        .div(bnum(1).plus(bnum(slippageTolerance).div(bnum(100))))
-        .toFixed(buyToken.decimals, 1), //buyAmount / (1 + slippageTolerance / 100)
-      buyToken.decimals
-    );
-    const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
     setTxLoading(true);
-    try {
-      const tx = await trade(swaps, sellToken.address, buyToken.address, tokenAmountIn, minAmountOut);
-      showHash(tx.hash);
-      //await tx.wait();
-    } catch (error) {
-      console.log(error);
-      errorReturned(JSON.stringify(error));
+    if(tradeType==="swapExactOut"){
+      const maxTotalAmountIn = parseUnits(
+        bnum(sellAmount)
+          .div(bnum(1).minus(bnum(slippageTolerance).div(bnum(100))))
+          .toFixed(buyToken.decimals, 1), //buyAmount / (1 + slippageTolerance / 100)
+        buyToken.decimals
+      );
+
+      try {
+        const tx = await trade(tradeType, swaps, sellToken.address, buyToken.address, maxTotalAmountIn);
+        showHash(tx.hash);
+        //await tx.wait();
+      } catch (error) {
+        console.log(error);
+        errorReturned(JSON.stringify(error));
+      }
+    }else{
+      const minAmountOut = parseUnits(
+        bnum(buyAmount)
+          .div(bnum(1).plus(bnum(slippageTolerance).div(bnum(100))))
+          .toFixed(buyToken.decimals, 1), //buyAmount / (1 + slippageTolerance / 100)
+        buyToken.decimals
+      );
+      const tokenAmountIn = parseUnits(sellAmount + "", sellToken.decimals);
+      
+      try {
+        const tx = await trade(tradeType, swaps, sellToken.address, buyToken.address, tokenAmountIn, minAmountOut);
+        showHash(tx.hash);
+        //await tx.wait();
+      } catch (error) {
+        console.log(error);
+        errorReturned(JSON.stringify(error));
+      }
     }
+    
     setTxLoading(false);
   };
 

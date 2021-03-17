@@ -96,7 +96,7 @@ const MultiWithdrawModal = (props) => {
     }
 
     for (let key in maxTokenWithdrawAmount) {
-      maxTokenWithdrawAmount[key] = maxTokenWithdrawAmount[key].times(minRatio);
+      maxTokenWithdrawAmount[key] = maxTokenWithdrawAmount[key].times(minRatio).toFixed(6,1);
     }
 
     return maxTokenWithdrawAmount;
@@ -146,7 +146,7 @@ const MultiWithdrawModal = (props) => {
         } else {
           amount = ratio.times(bnum(maxTokenWithdrawAmount[token.symbol]));
         }
-        amounts.push(amount.toFixed(token.decimals, 1));
+        amounts.push(amount.toFixed(6, 1));
       }
     });
     setAmounts(amounts);

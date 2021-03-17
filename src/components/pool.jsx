@@ -144,16 +144,16 @@ const Pool = props => {
           <Typography className={classes.textThird}>
             <FormattedMessage id="LP_MY_SHARE" />:
             <NumberFormat
-              value={(pool.totalSupply > 0
+              value={bnum(pool.totalSupply > 0
                 ? (parseFloat(pool.stakeAmount) / parseFloat(pool.totalSupply)) * 100
                 : 0
-              ).toLocaleString(undefined, {maximumFractionDigits: 10})}
+              ).toFixed(4,0)}
               defaultValue={"-"}
               displayType={"text"}
               thousandSeparator={true}
               isNumericString={true}
               suffix={"%"}
-              decimalScale={6}
+              decimalScale={4}
               fixedDecimalScale={true}
               renderText={value => (
                 <span className={classes.textThirdColor} style={{float: "right"}}>
@@ -173,7 +173,7 @@ const Pool = props => {
                       ? bnum(pool.stakeAmount)
                           .div(bnum(pool.totalSupply))
                           .times(poolTokenBalance[v.symbol])
-                          .toFixed(1, 4)
+                          .toFixed(4,1)
                       : "-"
                   }
                   defaultValue={"-"}
