@@ -6,10 +6,9 @@ function getTradeTokens() {
   } else {
     return [
       tokens["BNB"],
-      tokens["WBNB"],
+      // tokens["WBNB"],
       tokens["SYX"],
-      tokens["SYX-VELAS"],
-      tokens["SYX/BNB-LP"],
+      tokens["syUSD/BNB-LP"],
     ];
   }
 }

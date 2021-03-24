@@ -10,13 +10,6 @@ function getTokens() {
       abi: config.syxABI,
       decimals: 18,
     },
-    "SYX-VELAS": {
-      symbol: "SYX-VELAS",
-      name: "SYX-VELAS",
-      address: config.vSyx,
-      abi: config.syxABI,
-      decimals: 18,
-    },
     BNB: {
       symbol: "BNB",
       name: "BNB",
@@ -31,10 +24,10 @@ function getTokens() {
       abi: config.erc20ABI,
       decimals: 18,
     },
-    "SYX/BNB-LP": {
-      symbol: "SYX/BNB-LP",
-      name: "SYX/BNB-LP",
-      address: config.bnbSyxPoolMutil,
+    "syUSD/BNB-LP": {
+      symbol: "syUSD/BNB-LP",
+      name: "syUSD/BNB-LP",
+      address: config.bnbSyUSDPoolMutil,
       abi: config.erc20ABI,
       decimals: 18,
     },

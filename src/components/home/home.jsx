@@ -124,9 +124,7 @@ const Home = (props) => {
           setRewardPools
         );
 
-        let pricesForRewardToken = {
-          "SYX-VELAS": bnum("1"),
-        };
+        let pricesForRewardToken = {};
         let balanceForRewardToken = {};
         const promises = rewardPool.pools.map(async (v) => {
           const result = await findPairPriceForSyx(v);
