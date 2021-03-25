@@ -12,7 +12,7 @@ const styles = theme => ({
     lineHeight: "28px",
     color: "#ACAEBC",
     boxShadow: "0px 0px 35px 0px rgba(94, 85, 126, 0.15)",
-    height: "430px"
+    height: "440px"
   },
   featuredRoot: {
     position: "relative",
@@ -81,12 +81,12 @@ const styles = theme => ({
     opacity: "1 !important"
   },
   textSecondary: {
-    fontSize: "18px",
+    fontSize: "16px",
     paddingTop: "24px",
     textAlign: "left"
   },
   textThird: {
-    fontSize: "18px",
+    fontSize: "16px",
     paddingTop: "8px",
     textAlign: "left"
   },
@@ -128,7 +128,7 @@ const styles = theme => ({
     fontSize: "20px",
     color: "#FFFFFF",
     margin: "0px 24px 24px 24px",
-    minWidth: "213px",
+    minWidth: "80%",
     "&:hover": {
       background: "linear-gradient(315deg, #FF78E1 0%, #FF736E 100%, #FF78E1)"
     },
