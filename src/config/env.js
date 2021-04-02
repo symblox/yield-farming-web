@@ -20,7 +20,7 @@ function env() {
   } else {
     return {
       requiredNetworkId,
-      requiredNetwork: "VELAS Testnet",
+      requiredNetwork: "BSC Testnet",
       multicall: "0xb5c307d583F90bE6996A4524D665b033D1BEf751",
       rpcUrl: rpcUrls[requiredNetworkId],
       browser: browserUrls[requiredNetworkId],
@@ -30,10 +30,10 @@ function env() {
         "https://pancake-swap-git-symblox-symblox-dev.vercel.app/#/swap",
       bridgeUrl: "https://dev.x.symblox.io/",
       minReservedAmount: 0.1, //18 wei，The minimum reserved amount of native tokens, so as not to pay the handling fee
-      rewardPool: "0x14ca472D52Be44a37C88430C15EA8F948B12f603",
-      syx: "0xcD8D7a4d239962AAE70fE58Db9b2AdAebB57f2F1",
+      rewardPool: "0x5E39cBDcB852b8C2C83ec676F60Db5520936C80d",
+      syx: "0xd31216D08002f88c7aFE99F58245F05C8b59B046",
       wbnb: "0xae13d989dac2f0debff460ac112a837c89baa7cd",
-      bnbSyUSDPoolMutil: "0x468e1afc9886b8ad4e34c5b4678e80e444a86981",
+      bnbSyUSDPoolMutil: "0x683368e9d7583a0d14e85c27c6ac1440456ed4ca",
       devFund: "0x17d8A87BF9F3f8ca7469D576d958bE345c1D9D5D",
       pancakePairAbi: abis.pancakePairAbi,
       erc20ABI: abis.erc20ABI,

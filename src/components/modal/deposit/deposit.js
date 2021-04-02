@@ -86,7 +86,7 @@ const DepositModal = (props) => {
   const max = () => {
     amountChange({
       target: {
-        value: tokenBalances[pool.symbol],
+        value: bnum(tokenBalances[pool.symbol]).toFixed(4, 1),
       },
     });
   };
