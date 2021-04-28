@@ -182,6 +182,10 @@ const styles = (theme) => ({
     color: "#ACAEBC",
     margin: "24px auto 0px auto",
   },
+  context: {
+    fontSize: "18px",
+    lineHeight: "36px",
+  },
   divider: {
     position: "absolute",
     height: "50%",

@@ -7,6 +7,7 @@ import connectorFactory from "./connectorFactory.json";
 import erc20 from "./erc20.json";
 import exchangeProxy from "./exchangeProxy.json";
 import pancakePair from "./pancakePair.json";
+import rewardEscrow from "./rewardEscrow.json";
 
 const rewardPoolABI = rewardPool;
 const bptABI = bpt;
@@ -17,6 +18,7 @@ const connectorFactoryABI = connectorFactory;
 const erc20ABI = erc20;
 const exchangeProxyAbi = exchangeProxy;
 const pancakePairAbi = pancakePair;
+const rewardEscrowAbi = rewardEscrow;
 
 export default {
   rewardPoolABI,
@@ -28,4 +30,5 @@ export default {
   erc20ABI,
   exchangeProxyAbi,
   pancakePairAbi,
+  rewardEscrowAbi,
 };

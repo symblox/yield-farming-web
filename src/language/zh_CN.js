@@ -12,6 +12,7 @@ const zh_CN = {
   LP_DEPOSIT_WITHDRAW_REWARD: "确定",
   LP_SWAP: "交易",
   RP_LIST_TITLE: "奖励池",
+  REWARD_ESCROW: "奖励托管",
   RP_TYPE: "名称",
   RP_MY_REWARDS: "我的奖励",
   RP_MY_STAKES: "已抵押",
@@ -99,5 +100,7 @@ const zh_CN = {
   MIN_RECEIVED: "最低收到",
   LIQUIDITY: "流动性",
   BRIDGE: "跨链",
+  REWARD_ESCROW_AMOUNT: "奖励: {userRewards} SYX",
+  REWARD_ESCROW_UNLOCK: "剩余冷却时间: {unLockTime} 分钟",
 };
 export default zh_CN;

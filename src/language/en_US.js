@@ -12,6 +12,7 @@ const en_US = {
   LP_DEPOSIT_WITHDRAW_REWARD: "Confirm",
   LP_SWAP: "Swap",
   RP_LIST_TITLE: "Reward Pools",
+  REWARD_ESCROW: "Reward escrow",
   RP_TYPE: "Name",
   RP_MY_REWARDS: "My Rewards",
   RP_MY_STAKES: "My Stakes",
@@ -102,5 +103,7 @@ const en_US = {
   MIN_RECEIVED: "Minimum received",
   LIQUIDITY: "Liquidity",
   BRIDGE: "Bridge",
+  REWARD_ESCROW_AMOUNT: "Reward: {userRewards} SYX",
+  REWARD_ESCROW_UNLOCK: "Remaining cooling time: {unLockTime} minutes",
 };
 export default en_US;

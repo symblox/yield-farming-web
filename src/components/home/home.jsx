@@ -35,6 +35,9 @@ import Loader from "../loader";
 import "./home.scss";
 import styles from "../../styles/home";
 import userBalanceAtom, { fetchUserBalance } from "../../hooks/useUserBalance";
+import rewardEscrowAtom, {
+  fetchRewardEscrowValues,
+} from "../../hooks/useRewardEscrow";
 import rewardPoolsAtom, {
   fetchRewardPoolsValues,
 } from "../../hooks/useRewardPools";
@@ -43,6 +46,7 @@ import rewardAprsAtom, {
 } from "../../hooks/useRewardAprs";
 import useInterval from "../../hooks/useInterval";
 import useFindPairPriceForSyx from "../../hooks/useFindPairPriceForSyx";
+import useClaim from "../../hooks/payables/useClaim";
 import { bnum } from "../../utils/bignumber";
 
 function TabPanel(props) {
@@ -89,6 +93,7 @@ const loadingAtom = atom((get) => {
 const Home = (props) => {
   const { classes } = props;
   const { account, ethersProvider, providerNetwork } = useContext(Web3Context);
+  const claim = useClaim();
   const [tabValue, setTabValue] = useState(0);
   const [txLoading, setTxLoading] = useState(false);
   const [depositModalOpen, setDepositModalOpen] = useState(false);
@@ -101,11 +106,13 @@ const Home = (props) => {
   const [snackbarType, setSnackbarType] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [userBalances, setUserBalance] = useAtom(userBalanceAtom);
+  const [rewardEscrow, setRewardEscrow] = useAtom(rewardEscrowAtom);
   const [rewardPool, setRewardPools] = useAtom(rewardPoolsAtom);
   const [aprs, setAprs] = useAtom(rewardAprsAtom);
   const [totalRewardsAvailable] = useAtom(totalRewardsAvailableAtom);
   const [loading] = useAtom(loadingAtom);
   const findPairPriceForSyx = useFindPairPriceForSyx();
+  const curTime = new Date().getTime() / 1000; //sec
 
   const loadData = async () => {
     if (account && ethersProvider && providerNetwork) {
@@ -116,6 +123,12 @@ const Home = (props) => {
           providerNetwork,
           tradeTokens,
           setUserBalance
+        );
+        fetchRewardEscrowValues(
+          account,
+          ethersProvider,
+          providerNetwork,
+          setRewardEscrow
         );
         await fetchRewardPoolsValues(
           account,
@@ -174,6 +187,19 @@ const Home = (props) => {
   useEffect(() => {
     loadData();
   }, [account, ethersProvider, providerNetwork]);
+
+  const claimReward = async () => {
+    setTxLoading(true);
+    try {
+      const tx = await claim();
+      showHash(tx.hash);
+      //await tx.wait();
+    } catch (error) {
+      console.log(error);
+      errorReturned(JSON.stringify(error));
+    }
+    setTxLoading(false);
+  };
 
   const showHash = (txHash) => {
     setSnackbarType("Hash");
@@ -440,6 +466,7 @@ const Home = (props) => {
             centered
           >
             <Tab label={<FormattedMessage id="RP_LIST_TITLE" />} />
+            <Tab label={<FormattedMessage id="REWARD_ESCROW" />} />
             <Link href={config.liquidityPageUrl} target="_blank">
               <Tab label={<FormattedMessage id="LIQUIDITY" />} />
             </Link>
@@ -464,6 +491,40 @@ const Home = (props) => {
                 </Grid>
               ))}
             </Grid>
+          </TabPanel>
+          <TabPanel value={tabValue} index={1} className={classes.container}>
+            <div className={classes.paper}>
+              <div className={classes.context}>
+                <FormattedMessage
+                  id="REWARD_ESCROW_AMOUNT"
+                  values={{
+                    userRewards: parseFloat(rewardEscrow.userRewards).toFixed(
+                      4
+                    ),
+                  }}
+                />
+              </div>
+              <div>
+                <FormattedMessage
+                  id="REWARD_ESCROW_UNLOCK"
+                  values={{
+                    unLockTime:
+                      curTime >= rewardEscrow.unLockTime
+                        ? 0
+                        : ((rewardEscrow.unLockTime - curTime) / 60).toFixed(2),
+                  }}
+                />
+              </div>
+              <Button
+                style={{ marginTop: "9px" }}
+                className={classes.buttonSecondary}
+                variant="contained"
+                disabled={loading || txLoading}
+                onClick={claimReward}
+              >
+                <FormattedMessage id="RP_WITHDRAW_REWARDS" />
+              </Button>
+            </div>
           </TabPanel>
         </Paper>
       </Container>
