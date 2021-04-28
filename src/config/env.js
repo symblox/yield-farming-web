@@ -59,7 +59,7 @@ function env() {
       connectorFactoryABI: abis.connectorFactoryABI,
       stakingAuRaABI: abis.stakingAuRaABI,
       svlxABI: abis.svlxABI,
-      secPerBlock: 0.4
+      secPerBlock: 5
     };
   } else {
     return {
@@ -109,7 +109,7 @@ function env() {
       wvlxConnectorABI: abis.wvlxConnectorABI,
       connectorFactoryABI: abis.connectorFactoryABI,
       stakingAuRaABI: abis.stakingAuRaABI,
-      secPerBlock: 0.4
+      secPerBlock: 5
     };
   }
 }
