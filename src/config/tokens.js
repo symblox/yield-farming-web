@@ -31,6 +31,13 @@ function getTokens() {
       abi: config.erc20ABI,
       decimals: 18,
     },
+    "syUSD/SYX-LP": {
+      symbol: "syUSD/SYX-LP",
+      name: "syUSD/SYX-LP",
+      address: config.syxSyUSDPoolMutil,
+      abi: config.erc20ABI,
+      decimals: 18,
+    },
   };
 }
 export default getTokens;

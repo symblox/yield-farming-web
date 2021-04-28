@@ -31,12 +31,25 @@ let bnbSyUSDPoolMutil = {
   poolABI: config.rewardPoolABI,
 };
 
+let syxSyUSDPoolMutil = {
+  id: "syUSD/SYX-LP",
+  featured: true,
+  address: config.syxSyUSDPoolMutil,
+  symbol: "syUSD/SYX-LP",
+  rewardToken: tokens["SYX"],
+  supportTokens: [tokens["syUSD/SYX-LP"]],
+  abi: config.pancakePairAbi,
+  decimals: 18,
+  poolAddress: config.rewardPool,
+  poolABI: config.rewardPoolABI,
+};
+
 function getPools() {
   // assign pool IDs to the pools
   if (process.env.REACT_APP_ENV === "production") {
   } else {
-    [bnbSyUSDPoolMutil.index] = [0];
-    return [bnbSyUSDPoolMutil];
+    [bnbSyUSDPoolMutil.index, syxSyUSDPoolMutil.index] = [0, 1];
+    return [bnbSyUSDPoolMutil, syxSyUSDPoolMutil];
   }
 }
 export default getPools;
