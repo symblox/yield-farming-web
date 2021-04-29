@@ -87,7 +87,7 @@ let usdtSyxPool2 = {
   withdrawModal: "multiWithdraw",
   rewardToken: tokens["SYX"],
   //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
-  supportTokens: [tokens["USDT"], tokens["SYX"]],
+  supportTokens: [tokens["SYX"], tokens["USDT"]],
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
@@ -175,8 +175,8 @@ function getPools() {
     [vlxSyxPool2.index, svlxSyxPool2.index, usdtSyxPool2.index, ethSyxPool2.index] = [0, 1, 2, 3];
     return [vlxSyxPool2, svlxSyxPool2, usdtSyxPool2, ethSyxPool2];
   } else {
-    [vlxSyxPool2.index, svlxSyxPool2.index, ethSyxPool2.index, usdtSyxPool2.index] = [0, 1, 2, 3]; //2 is error
-    return [vlxSyxPool2, svlxSyxPool2, ethSyxPool2, usdtSyxPool2];
+    [vlxSyxPool2.index, ethSyxPool2.index, usdtSyxPool2.index] = [0, 1, 2];
+    return [vlxSyxPool2, ethSyxPool2, usdtSyxPool2];
   }
 }
 export default getPools;

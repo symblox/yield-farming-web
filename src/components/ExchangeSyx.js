@@ -104,6 +104,8 @@ const ExchangeSyx = ({classes}) => {
       balance = Math.floor(formatEther(balanceState.oldSyx) * 10000) / 10000;
     } else if (curToken.type === "oldSyx2") {
       balance = Math.floor(formatEther(balanceState.oldSyx2) * 10000) / 10000;
+    } else if (curToken.type === "oldSyx3") {
+      balance = Math.floor(formatEther(balanceState.oldSyx3) * 10000) / 10000;
     }
     setAmount(balance + "");
   };
@@ -121,16 +123,19 @@ const ExchangeSyx = ({classes}) => {
         if (i === "oldSyx2") {
           name = "SYX2";
         }
+        if (i === "oldSyx3") {
+          name = "SYX3";
+        }
         if (i !== "vlx")
           array.push({
             name,
             balance
           });
       }
-      if (i === "oldSyx" || i === "oldSyx2")
+      if (i === "oldSyx" || i === "oldSyx2" || i === "oldSyx3")
         tokens.push({
           type: i,
-          name: i === "oldSyx" ? "syx v1" : "syx v2",
+          name: i === "oldSyx" ? "syx v1" : i === "oldSyx2" ? "syx v2" : "syx v3",
           symbol: "syx"
         });
     }
@@ -206,7 +211,7 @@ const ExchangeSyx = ({classes}) => {
                 <Grid item xs={3}>
                   <Select value={curToken} onChange={tokenHandleChange}>
                     {tokens.map((v, i) => {
-                      if (v.type === "oldSyx" || v.type === "oldSyx2") {
+                      if (v.type === "oldSyx" || v.type === "oldSyx2" || v.type === "oldSyx3") {
                         return (
                           <MenuItem value={v} key={i}>
                             {v.name}
@@ -254,6 +259,23 @@ const ExchangeSyx = ({classes}) => {
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
+                    ),
+                    amount3: (
+                      <NumberFormat
+                        value={formatEther(
+                          parseFloat(balanceState.oldSyx3).toLocaleString("fullwide", {
+                            maximumFractionDigits: 10,
+                            useGrouping: false
+                          })
+                        )}
+                        defaultValue={"-"}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        isNumericString={true}
+                        suffix={" SYX3"}
+                        decimalScale={4}
+                        fixedDecimalScale={true}
+                      />
                     )
                   }}
                 />
@@ -265,6 +287,7 @@ const ExchangeSyx = ({classes}) => {
                 amount == 0 ||
                 (curToken.type === "oldSyx" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx))) ||
                 (curToken.type === "oldSyx2" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx2))) ||
+                (curToken.type === "oldSyx3" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx3))) ||
                 loading
               }
               onClick={async () => {

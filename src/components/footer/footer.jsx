@@ -78,8 +78,20 @@ const Footer = ({classes}) => {
                   padding: "6px 0px"
                 }}
               >
-                <Link target="_blank" href={config.browser + "/address/" + ethToVlx(config.syx)}>
+                <Link target="_blank" href={config.browser + "/address/" + ethToVlx(config.oldSyx2)}>
                   <FormattedMessage id="SYX_TOKEN_V2" />:{formatAddress(config.oldSyx2)}
+                </Link>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                style={{
+                  fontSize: "16px",
+                  padding: "6px 0px"
+                }}
+              >
+                <Link target="_blank" href={config.browser + "/address/" + ethToVlx(config.oldSyx3)}>
+                  <FormattedMessage id="SYX_TOKEN_V2" />:{formatAddress(config.oldSyx3)}
                 </Link>
               </Grid>
               <Grid

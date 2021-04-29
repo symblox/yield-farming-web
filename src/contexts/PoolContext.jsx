@@ -9,6 +9,7 @@ const initialBalanceState = {
   syx: 0,
   oldSyx: 0,
   oldSyx2: 0,
+  oldSyx3: 0,
   vlx: 0,
   svlx: 0
 };
@@ -26,6 +27,10 @@ function balanceReducer(state, action) {
     case "oldSyx2":
       return Object.assign({}, state, {
         oldSyx2: action.data
+      });
+    case "oldSyx3":
+      return Object.assign({}, state, {
+        oldSyx3: action.data
       });
     case "svlx":
       return Object.assign({}, state, {
@@ -107,14 +112,19 @@ export function PoolContextProvider({children}) {
         const oldSyxContract = new Contract(config.oldSyx, config.erc20ABI, ethersProvider);
         const oldSyxBalance = await oldSyxContract.balanceOf(account);
         const oldSyxBalanceLockedOnSyxV2 = await oldSyxContract.balanceOf(config.oldSyx2);
+
         const oldSyxSupply = await oldSyxContract.totalSupply();
 
         const oldSyx2Contract = new Contract(config.oldSyx2, config.erc20ABI, ethersProvider);
+        const oldSyx3Contract = new Contract(config.oldSyx3, config.erc20ABI, ethersProvider);
         const oldSyx2Balance = await oldSyx2Contract.balanceOf(account);
         const oldSyx2Supply = await oldSyx2Contract.totalSupply();
-        setOldSyxSupply(oldSyxSupply.add(oldSyx2Supply).sub(oldSyxBalanceLockedOnSyxV2));
+        const oldSyx3Balance = await oldSyx3Contract.balanceOf(account);
+        const oldSyx3Supply = await oldSyx3Contract.totalSupply();
+        setOldSyxSupply(oldSyxSupply.add(oldSyx2Supply).add(oldSyx3Supply).sub(oldSyxBalanceLockedOnSyxV2));
         balanceDispatch({type: "oldSyx", data: oldSyxBalance});
         balanceDispatch({type: "oldSyx2", data: oldSyx2Balance});
+        balanceDispatch({type: "oldSyx3", data: oldSyx3Balance});
       } catch (error) {
         setIsError(true);
         setErrorMsg(error);
