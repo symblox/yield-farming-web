@@ -87,7 +87,7 @@ let usdtSyxPool2 = {
   withdrawModal: "multiWithdraw",
   rewardToken: tokens["SYX"],
   //The order of tokens needs to be consistent with the order of tokens in bpt, otherwise the order of maxAmountsIn in the multiDeposit method needs to be adjusted
-  supportTokens: [tokens["SYX"], tokens["USDT"]],
+  supportTokens: [tokens["USDT"], tokens["SYX"]],
   abi: config.bptABI,
   decimals: 18,
   entryContractABI: config.bptRefConnectorABI,
