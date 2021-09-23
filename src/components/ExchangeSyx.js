@@ -75,9 +75,8 @@ const styles = theme => ({
 });
 
 const ExchangeSyx = ({classes}) => {
-  const {oldSyxSupply, balanceState, exchangeSyx, loading, isError, setIsError, errorMsg, setErrorMsg} = useContext(
-    PoolContext
-  );
+  const {oldSyxSupply, balanceState, exchangeSyx, loading, isError, setIsError, errorMsg, setErrorMsg} =
+    useContext(PoolContext);
   const {providerNetwork} = useContext(Web3Context);
 
   const [amount, setAmount] = useState(0);
@@ -102,10 +101,6 @@ const ExchangeSyx = ({classes}) => {
     let balance = 0;
     if (curToken.type === "oldSyx") {
       balance = Math.floor(formatEther(balanceState.oldSyx) * 10000) / 10000;
-    } else if (curToken.type === "oldSyx2") {
-      balance = Math.floor(formatEther(balanceState.oldSyx2) * 10000) / 10000;
-    } else if (curToken.type === "oldSyx3") {
-      balance = Math.floor(formatEther(balanceState.oldSyx3) * 10000) / 10000;
     }
     setAmount(balance + "");
   };
@@ -120,22 +115,16 @@ const ExchangeSyx = ({classes}) => {
         if (i === "oldSyx") {
           name = "SYX1";
         }
-        if (i === "oldSyx2") {
-          name = "SYX2";
-        }
-        if (i === "oldSyx3") {
-          name = "SYX3";
-        }
         if (i !== "vlx")
           array.push({
             name,
             balance
           });
       }
-      if (i === "oldSyx" || i === "oldSyx2" || i === "oldSyx3")
+      if (i === "oldSyx")
         tokens.push({
           type: i,
-          name: i === "oldSyx" ? "syx v1" : i === "oldSyx2" ? "syx v2" : "syx v3",
+          name: i === "oldSyx" ? "syx Old" : "",
           symbol: "syx"
         });
     }
@@ -211,7 +200,7 @@ const ExchangeSyx = ({classes}) => {
                 <Grid item xs={3}>
                   <Select value={curToken} onChange={tokenHandleChange}>
                     {tokens.map((v, i) => {
-                      if (v.type === "oldSyx" || v.type === "oldSyx2" || v.type === "oldSyx3") {
+                      if (v.type === "oldSyx") {
                         return (
                           <MenuItem value={v} key={i}>
                             {v.name}
@@ -224,7 +213,7 @@ const ExchangeSyx = ({classes}) => {
               </Grid>
               <Typography variant="body2">
                 <FormattedMessage
-                  id="EXCHANGE_WALLET_BALANCE2"
+                  id="EXCHANGE_WALLET_BALANCE"
                   values={{
                     amount: (
                       <NumberFormat
@@ -238,41 +227,7 @@ const ExchangeSyx = ({classes}) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         isNumericString={true}
-                        suffix={" SYX1"}
-                        decimalScale={4}
-                        fixedDecimalScale={true}
-                      />
-                    ),
-                    amount2: (
-                      <NumberFormat
-                        value={formatEther(
-                          parseFloat(balanceState.oldSyx2).toLocaleString("fullwide", {
-                            maximumFractionDigits: 10,
-                            useGrouping: false
-                          })
-                        )}
-                        defaultValue={"-"}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        isNumericString={true}
-                        suffix={" SYX2"}
-                        decimalScale={4}
-                        fixedDecimalScale={true}
-                      />
-                    ),
-                    amount3: (
-                      <NumberFormat
-                        value={formatEther(
-                          parseFloat(balanceState.oldSyx3).toLocaleString("fullwide", {
-                            maximumFractionDigits: 10,
-                            useGrouping: false
-                          })
-                        )}
-                        defaultValue={"-"}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        isNumericString={true}
-                        suffix={" SYX3"}
+                        suffix={" SYX Old"}
                         decimalScale={4}
                         fixedDecimalScale={true}
                       />
@@ -286,8 +241,6 @@ const ExchangeSyx = ({classes}) => {
               disabled={
                 amount == 0 ||
                 (curToken.type === "oldSyx" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx))) ||
-                (curToken.type === "oldSyx2" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx2))) ||
-                (curToken.type === "oldSyx3" && parseFloat(amount) > parseFloat(formatEther(balanceState.oldSyx3))) ||
                 loading
               }
               onClick={async () => {

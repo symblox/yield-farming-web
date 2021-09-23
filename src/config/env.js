@@ -1,6 +1,6 @@
 import abis from "./abis";
 
-let requiredNetworkId = process.env.REACT_APP_ENV === "production" ? 106 : 111;
+let requiredNetworkId = process.env.REACT_APP_ENV === "production" ? 106 : 42;
 
 const rpcUrls = {
   111: "https://explorer.testnet.veladev.net/rpc",
@@ -79,10 +79,13 @@ function env() {
       svlx: "0xE5D72F0506bC6C0701E701caC1e255D16801B5C0",
       weth: "0x41e7fb07236a736e06b3460e458a5b827e552521",
       usdt: "0xA23bAeA56de679FD1baf200E92a75ac8d5eeBc8A",
-      syx: "0xC119b1d91b44012Db8d0ac5537f04c7FD7629c84",
-      oldSyx: "0xC20932B245840CA1C6F8c9c90BDb2F4E0289DE48",
-      oldSyx2: "0x28a6312D786e9d7a78637dD137AbeF5332F3b2Aa",
-      oldSyx3: "0x946b06FE625aB1AaA27294F8ed09713C8812626c",
+      syx: "0x6EE61Da2c561Bba92Fbed28507eEf728AB90bb7e", //on kovan
+      syxMinter: "0xe0c5416b32DBdeD2E2d81612cC39dB6351C204E9",
+      //syx: "0xC119b1d91b44012Db8d0ac5537f04c7FD7629c84",
+      oldSyx: "0x77007E18B6EF19d6C30dBd7BddfA1935fc16bDaD",
+      // oldSyx: "0xC20932B245840CA1C6F8c9c90BDb2F4E0289DE48",
+      // oldSyx2: "0x28a6312D786e9d7a78637dD137AbeF5332F3b2Aa",
+      // oldSyx3: "0x946b06FE625aB1AaA27294F8ed09713C8812626c",
       vlxSyxMultiBpt: "0x72c3F39e57c8306e29d088ABFc1C24427649c9f9",
       ethSyxMultiBpt: "0x988269D4599Da30C926a7946D84Ce441a88ceDd2",
       usdtSyxMultiBpt: "0x5dB61B3C05c1B7d1845123F77448888057D96184",
@@ -94,6 +97,7 @@ function env() {
       rewardPoolABI: abis.rewardPoolABI,
       bptABI: abis.bptABI,
       syxABI: abis.syxABI,
+      syxMinterABI: abis.syxMinterABI,
       svlxABI: abis.svlxABI,
       bptRefConnectorABI: abis.bptRefConnectorABI,
       wvlxConnectorABI: abis.wvlxConnectorABI,
