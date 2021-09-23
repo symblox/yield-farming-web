@@ -66,7 +66,7 @@ const zh_CN = {
   TRADE_ERROR_BALANCE: "可用余额不足",
   SEE_DETAIL: "查看详情",
   REWARD_DISTRIBUTION_RATIO: "奖励分配比例",
-  NETWORK_ERROR: "当前网络不支持，请切换到 {requiredNetwork} 使用（可在钱包设置网络节点RPC地址为：{rpcUrl})",
+  NETWORK_ERROR: "当前网络不支持，请切换到 {requiredNetwork} 使用",
   POPUP_WITHDRAW_AMOUNT: "取出抵押资产",
   POPUP_WITHDRAW_REWARD: "取出奖励",
   RISK_WARNING: "该项目合约正在审计中，请在使用之前查看合约具体内容并了解需要承担的风险",

@@ -66,7 +66,7 @@ const en_US = {
   TRADE_ERROR_BALANCE: "Available balance not enough",
   SEE_DETAIL: "See detail",
   REWARD_DISTRIBUTION_RATIO: "Reward distribution ratio",
-  NETWORK_ERROR: "Current newtwork is not supported, please switch to {requiredNetwork} (RPC URL: {rpcUrl})",
+  NETWORK_ERROR: "Current newtwork is not supported, please switch to {requiredNetwork}",
   POPUP_WITHDRAW_AMOUNT: "Amount to withdraw",
   POPUP_WITHDRAW_REWARD: "Rewards to claim",
   RISK_WARNING: "This contract is under auditing. PLEASE REVIEW THE CONTRACT BEFORE PROCEEDING.",

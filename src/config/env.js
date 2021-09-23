@@ -64,7 +64,7 @@ function env() {
   } else {
     return {
       requiredNetworkId,
-      requiredNetwork: "VELAS Testnet",
+      requiredNetwork: "Kovan",
       multicall: "0x4fd276206056D994D8F52053679CcaAA1709597e",
       bRegistry: "0xc84Bccf70c5bCd690EAD8917E832EE94Df4a5690",
       exchangeProxy: "0xC7a6Fc1DC99ff6E16f23091053eC1a21e08F5E1d",
